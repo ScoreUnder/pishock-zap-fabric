@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import moe.score.pishockzap.config.PishockZapConfig;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.entity.LivingEntity;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -12,6 +13,8 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import static moe.score.pishockzap.ZapController.MAX_DAMAGE;
 
 public class PishockZapMod implements ClientModInitializer {
     public static final String NAME = "PiShock-Zap";
@@ -24,6 +27,7 @@ public class PishockZapMod implements ClientModInitializer {
     private final Logger logger = Logger.getLogger(NAME);
     private final Path configFile = FabricLoader.getInstance().getConfigDir().resolve(NAME.toLowerCase() + ".json");
     private final PishockZapConfig config = new PishockZapConfig();
+    private final PlayerHpWatcher playerHpWatcher = new PlayerHpWatcher();
 
     public PishockZapConfig getConfig() {
         return config;
@@ -61,6 +65,19 @@ public class PishockZapMod implements ClientModInitializer {
         }
 
         config.setFromConfig(configMap);
+    }
+
+    public void onPlayerHpChange(LivingEntity player, int hp) {
+        hp = Math.max(0, Math.min(hp, MAX_DAMAGE));
+
+        int damage = playerHpWatcher.updatePlayerHpAndGetDamage(player, hp);
+        if (damage > 0) {
+            // TODO: hook up to zaps
+            logger.info("Player took " + damage + " damage");
+            if (hp == 0) {
+                logger.info("Player died");
+            }
+        }
     }
 
     @Override

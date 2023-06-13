@@ -15,11 +15,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
+import static moe.score.pishockzap.pishockapi.PiShockApi.PISHOCK_MAX_DURATION;
+import static moe.score.pishockzap.pishockapi.PiShockApi.PISHOCK_MAX_INTENSITY;
+
 @SuppressWarnings("unused")
 public class PishockZapModConfigMenu implements ModMenuApi {
-    public static final int PISHOCK_MAX_DURATION = 15;
-    public static final int PISHOCK_MAX_INTENSITY = 100;
-
     private static Screen createConfigScreen(Screen parent) {
         var mod = PishockZapMod.getInstance();
         var config = mod.getConfig();

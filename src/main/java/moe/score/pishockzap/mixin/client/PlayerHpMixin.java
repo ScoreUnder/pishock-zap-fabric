@@ -1,5 +1,6 @@
 package moe.score.pishockzap.mixin.client;
 
+import moe.score.pishockzap.PishockZapMod;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.LivingEntity;
@@ -21,7 +22,7 @@ public abstract class PlayerHpMixin {
 		}
 
 		if (data == LivingEntityAccessor.getHealth()) {
-			System.out.println("Health changed! Now: " + player.getHealth());
+			PishockZapMod.getInstance().onPlayerHpChange(player, Math.round(player.getHealth()));
 		}
 	}
 }
