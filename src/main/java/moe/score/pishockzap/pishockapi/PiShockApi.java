@@ -37,6 +37,7 @@ public class PiShockApi {
     private final Random random = new Random();
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private int roundRobinIndex = 0;
+    private final Gson gson = new Gson();
 
     public PiShockApi(PishockZapConfig config) {
         this.config = config;
@@ -158,13 +159,22 @@ public class PiShockApi {
             try {
                 URLConnection connection = API_URL.openConnection();
                 connection.setDoOutput(true);
+                connection.setRequestProperty("Content-Type", "application/json");
+
+                // Send data as JSON
                 try (var outputStream = connection.getOutputStream()) {
-                    outputStream.write(new Gson().toJson(data).getBytes());
+                    String json = gson.toJson(data);
+                    logger.info("Sending PiShock API call: " + json);
+                    outputStream.write(json.getBytes());
                 }
+
+                // Read response and convert to string
                 String response;
                 try (var inputStream = connection.getInputStream()) {
                     response = new String(inputStream.readAllBytes());
                 }
+
+                // Test if successful (not reported in status code)
                 if (!response.contains("Succe")) {
                     logger.warning("PiShock API call failed; response: " + response);
                 }

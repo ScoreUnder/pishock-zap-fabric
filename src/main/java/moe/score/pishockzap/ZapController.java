@@ -30,6 +30,7 @@ public class ZapController {
 
     public void stop() {
         this.thread.interrupt();
+        this.api.teardown();
     }
 
     private void run() {
@@ -44,6 +45,7 @@ public class ZapController {
                 }
 
                 var shockData = transformShock(shock);
+                logger.info("Performing shock: " + shockData);
                 api.performOp(shockData.distribution, shockData.type, shockData.intensity, shockData.duration);
 
                 // Waiting for shock to complete and then waiting for debounce time, so not a busy-wait per se
@@ -177,6 +179,7 @@ public class ZapController {
     }
 
     public void queueShock(ShockDistribution distribution, boolean isDeath, int damageEquivalent, float duration) {
+        logger.info("Queueing shock: " + distribution + ", " + isDeath + ", " + damageEquivalent + ", " + duration);
         queue.add(new QueuedShock(distribution, isDeath, damageEquivalent, duration));
     }
 
@@ -194,17 +197,5 @@ public class ZapController {
         }
     }
 
-    private static final class FinalShock {
-        private final ShockDistribution distribution;
-        private final OpType type;
-        private final int intensity;
-        private final float duration;
-
-        public FinalShock(ShockDistribution distribution, OpType type, int intensity, float duration) {
-            this.distribution = distribution;
-            this.type = type;
-            this.intensity = intensity;
-            this.duration = duration;
-        }
-    }
+    private record FinalShock(ShockDistribution distribution, OpType type, int intensity, float duration) {}
 }

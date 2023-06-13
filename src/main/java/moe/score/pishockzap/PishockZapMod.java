@@ -2,6 +2,8 @@ package moe.score.pishockzap;
 
 import com.google.gson.Gson;
 import moe.score.pishockzap.config.PishockZapConfig;
+import moe.score.pishockzap.config.ShockDistribution;
+import moe.score.pishockzap.pishockapi.PiShockApi;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.LivingEntity;
@@ -28,6 +30,7 @@ public class PishockZapMod implements ClientModInitializer {
     private final Path configFile = FabricLoader.getInstance().getConfigDir().resolve(NAME.toLowerCase() + ".json");
     private final PishockZapConfig config = new PishockZapConfig();
     private final PlayerHpWatcher playerHpWatcher = new PlayerHpWatcher();
+    private final ZapController zapController = new ZapController(new PiShockApi(config), config);
 
     public PishockZapConfig getConfig() {
         return config;
@@ -67,16 +70,21 @@ public class PishockZapMod implements ClientModInitializer {
         config.setFromConfig(configMap);
     }
 
-    public void onPlayerHpChange(LivingEntity player, int hp) {
+    public void onPlayerHpChange(LivingEntity player) {
+        int hp = Math.round(player.getHealth());
         hp = Math.max(0, Math.min(hp, MAX_DAMAGE));
 
         int damage = playerHpWatcher.updatePlayerHpAndGetDamage(player, hp);
         if (damage > 0) {
-            // TODO: hook up to zaps
-            logger.info("Player took " + damage + " damage");
-            if (hp == 0) {
-                logger.info("Player died");
+            boolean deathZap = hp == 0;
+            logger.info("Death? " + deathZap + ", damage: " + damage + ", hp: " + hp);
+            ShockDistribution distribution = deathZap && config.isShockOnDeath() ? config.getShockDistributionDeath() : config.getShockDistribution();
+            int damageEquivalent = config.isShockOnHealth() ? MAX_DAMAGE - hp : damage;
+            if (damageEquivalent > MAX_DAMAGE) {
+                logger.warning("Damage equivalent " + damageEquivalent + " exceeds max damage " + MAX_DAMAGE + ", capping");
+                damageEquivalent = MAX_DAMAGE;
             }
+            zapController.queueShock(distribution, deathZap, damageEquivalent, config.getDuration());
         }
     }
 
@@ -85,5 +93,6 @@ public class PishockZapMod implements ClientModInitializer {
         instance = this;
         // This entrypoint is suitable for setting up client-specific logic, such as rendering.
         loadConfig();
+        zapController.start();
     }
 }

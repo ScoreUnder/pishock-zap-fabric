@@ -22,7 +22,7 @@ public abstract class PlayerHpMixin {
 		}
 
 		if (data == LivingEntityAccessor.getHealth()) {
-			PishockZapMod.getInstance().onPlayerHpChange(player, Math.round(player.getHealth()));
+			PishockZapMod.getInstance().onPlayerHpChange(player);
 		}
 	}
 }
