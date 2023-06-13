@@ -1,0 +1,61 @@
+{
+  "title.pishock-zap.config": "PiShock-Zap Config",
+
+  "title.pishock-zap.config.general": "General",
+  "title.pishock-zap.config.general.enabled": "Enabled",
+  "title.pishock-zap.config.general.vibration_only": "Vibration only (no shocks)",
+  "title.pishock-zap.config.general.shock_on_death": "Shock on death",
+  "title.pishock-zap.config.general.shock_on_health": "Shock by remaining health",
+
+  "title.pishock-zap.config.limits": "Limits",
+  "title.pishock-zap.config.limits.duration": "Duration",
+  "title.pishock-zap.config.limits.max_duration": "Maximum duration",
+  "title.pishock-zap.config.limits.vibration_threshold": "Vibration/shock damage threshold",
+  "title.pishock-zap.config.limits.vibration_intensity_min": "Minimum vibration intensity",
+  "title.pishock-zap.config.limits.vibration_intensity_max": "Maximum vibration intensity",
+  "title.pishock-zap.config.limits.shock_intensity_min": "Minimum shock intensity",
+  "title.pishock-zap.config.limits.shock_intensity_max": "Maximum shock intensity",
+  "title.pishock-zap.config.limits.shock_intensity_death": "Shock intensity on death",
+  "title.pishock-zap.config.limits.shock_duration_death": "Shock duration on death",
+  "title.pishock-zap.config.limits.shock_distribution": "Shock distribution on damage",
+  "title.pishock-zap.config.limits.shock_distribution_death": "Shock distribution on death",
+
+  "title.pishock-zap.config.debounce": "Debounce",
+  "title.pishock-zap.config.debounce.debounce_time": "Debounce time",
+  "title.pishock-zap.config.debounce.accumulate_duration": "Accumulate duration",
+  "title.pishock-zap.config.debounce.accumulate_intensity": "Accumulate intensity",
+  "title.pishock-zap.config.debounce.queue_different": "Queue different-sized shocks",
+
+  "title.pishock-zap.config.api": "API",
+  "title.pishock-zap.config.api.log_identifier": "Log identifier",
+  "title.pishock-zap.config.api.username": "Username",
+  "title.pishock-zap.config.api.api_key": "API key",
+  "title.pishock-zap.config.api.share_code": "Share codes",
+
+  "tooltip.pishock-zap.config.general.enabled": "Enable/disable the mod",
+  "tooltip.pishock-zap.config.general.vibration_only": "Only vibrate the device, don't shock, even on death",
+  "tooltip.pishock-zap.config.general.shock_on_death": "Shock the user on death with a\nconfigurable intensity and duration.\nIf disabled, normal damage shocks will still occur.",
+  "tooltip.pishock-zap.config.general.shock_on_health": "Shock the user with an intensity\nbased on remaining health instead of damage.\nThis may encourage the user to stay healed up.",
+
+  "tooltip.pishock-zap.config.limits.duration": "The duration of the shock/vibration by default",
+  "tooltip.pishock-zap.config.limits.max_duration": "The maximum duration of the shock/vibration\nif the duration is accumulated",
+  "tooltip.pishock-zap.config.limits.vibration_threshold": "The damage threshold below which the device\nwill vibrate instead of shocking\nThis is in half-hearts, so 1 is half a heart,\n2 is a heart, etc.\nSet to 0 to disable vibration.",
+  "tooltip.pishock-zap.config.limits.vibration_intensity_min": "The minimum intensity of the vibration\non damage",
+  "tooltip.pishock-zap.config.limits.vibration_intensity_max": "The maximum intensity of the vibration\non damage (when just at threshold)",
+  "tooltip.pishock-zap.config.limits.shock_intensity_min": "The minimum intensity of shocks on damage\n(when just above threshold)",
+  "tooltip.pishock-zap.config.limits.shock_intensity_max": "The maximum intensity of shocks on damage",
+  "tooltip.pishock-zap.config.limits.shock_intensity_death": "The intensity of shocks on death",
+  "tooltip.pishock-zap.config.limits.shock_duration_death": "The duration of shocks on death",
+  "tooltip.pishock-zap.config.limits.shock_distribution": "Which devices to activate on damage",
+  "tooltip.pishock-zap.config.limits.shock_distribution_death": "Which devices to activate on death",
+
+  "tooltip.pishock-zap.config.debounce.debounce_time": "The minimum time between shocks/vibrations,\nin seconds\nFor practical reasons, this is limited to 1 second.",
+  "tooltip.pishock-zap.config.debounce.accumulate_duration": "Accumulate the duration of shocks/vibrations\nIf this is enabled, when debouncing, the duration of\nthe shocks/vibrations that could not be sent\nwill be added to the next shock/vibration.",
+  "tooltip.pishock-zap.config.debounce.accumulate_intensity": "Accumulate the intensity of shocks/vibrations\nIf this is enabled, when debouncing, the intensity of\nthe shocks/vibrations that could not be sent\nwill be added to the next shock/vibration.\nLimits are of course still respected.\nThis is similar to the effect of taking the damage all at once.\nIf this is disabled, the intensity of the resulting shock/vibration\nwill be the greatest of the queued shocks/vibrations.\nDisabling it is easier on the user :)",
+  "tooltip.pishock-zap.config.debounce.queue_different": "Queue differently-sized shocks/vibrations separately\nIf this is enabled, when debouncing, differently-sized\nshocks/vibrations will not accumulate duration with each other,\nand will instead be sent separately.\nIncompatible with intensity accumulation.",
+
+  "tooltip.pishock-zap.config.api.log_identifier": "The identifier to display in the PiShock logs",
+  "tooltip.pishock-zap.config.api.username": "Your PiShock account username",
+  "tooltip.pishock-zap.config.api.api_key": "Your PiShock account API key",
+  "tooltip.pishock-zap.config.api.share_code": "The share codes of the devices you want\nto control with this mod\n(comma-separated)"
+}
