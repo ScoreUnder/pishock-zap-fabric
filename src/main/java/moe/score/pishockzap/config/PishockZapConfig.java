@@ -3,6 +3,7 @@ package moe.score.pishockzap.config;
 import lombok.Data;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -31,9 +32,9 @@ public class PishockZapConfig {
     /// The maximum intensity of a shock
     private int shockIntensityMax = 60;
     /// The intensity of a shock when the player dies
-    private int shockIntensityDeath = 80;
+    private int shockIntensityDeath = 75;
     /// The duration of a shock when the player dies
-    private int shockDurationDeath = 10;
+    private int shockDurationDeath = 5;
     /// The distribution of shocks when the player takes damage
     private ShockDistribution shockDistribution = ShockDistribution.ROUND_ROBIN;
     /// The distribution of shocks when the player dies
@@ -52,18 +53,24 @@ public class PishockZapConfig {
     private String username = "";
     /// PiShock account API key
     private String apiKey = "";
-    /// PiShock device share code
-    private String shareCode = "";
+    /// PiShock device share codes
+    private List<String> shareCodes = List.of();
     /// Identifier for on-site logs
     private String logIdentifier = "PiShock-Zap (Minecraft)";
 
     private void setSingleFromConfig(Map<String, Object> config, Field field, Object value) {
         try {
+            Class<?> type = field.getType();
+            if (type.isAssignableFrom(ShockDistribution.class)) {
+                value = ShockDistribution.valueOf((String)value);
+            } else if (type.isAssignableFrom(Integer.class) || type.isAssignableFrom(int.class) && value instanceof Double) {
+                value = ((Double) value).intValue();
+            }
             field.set(this, value);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            System.err.println("Config value " + field.getName() + " is not of type " + field.getType().getName());
+        } catch (IllegalArgumentException | ClassCastException e) {
+            System.err.printf("Config value %s is not of type %s (got %s)%n", field.getName(), field.getType().getName(), value.getClass().getName());
         }
     }
 
@@ -79,7 +86,11 @@ public class PishockZapConfig {
     public void copyToConfig(Map<String, Object> config) {
         for (Field field : getClass().getDeclaredFields()) {
             try {
-                config.put(field.getName(), field.get(this));
+                Object value = field.get(this);
+                if (value instanceof ShockDistribution sv) {
+                    value = sv.name();
+                }
+                config.put(field.getName(), value);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }

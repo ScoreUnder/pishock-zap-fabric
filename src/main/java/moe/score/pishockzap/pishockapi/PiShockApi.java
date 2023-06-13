@@ -10,7 +10,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -68,7 +67,7 @@ public class PiShockApi {
         if (logIdentifier.isBlank()) logIdentifier = "PiShock-Zap (Minecraft)";
         else logIdentifier = logIdentifier.trim();
 
-        String[] shockers = Arrays.stream(config.getShareCode().split(","))
+        String[] shockers = config.getShareCodes().stream()
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .toArray(String[]::new);

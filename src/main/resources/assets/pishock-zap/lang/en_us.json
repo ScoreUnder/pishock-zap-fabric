@@ -30,7 +30,7 @@
   "title.pishock-zap.config.api.log_identifier": "Log identifier",
   "title.pishock-zap.config.api.username": "Username",
   "title.pishock-zap.config.api.api_key": "API key",
-  "title.pishock-zap.config.api.share_code": "Share codes",
+  "title.pishock-zap.config.api.share_codes": "Share codes",
 
   "tooltip.pishock-zap.config.general.enabled": "Enable/disable the mod",
   "tooltip.pishock-zap.config.general.vibration_only": "Only vibrate the device, don't shock, even on death",
@@ -57,5 +57,8 @@
   "tooltip.pishock-zap.config.api.log_identifier": "The identifier to display in the PiShock logs",
   "tooltip.pishock-zap.config.api.username": "Your PiShock account username",
   "tooltip.pishock-zap.config.api.api_key": "Your PiShock account API key",
-  "tooltip.pishock-zap.config.api.share_code": "The share codes of the devices you want\nto control with this mod\n(comma-separated)"
+  "tooltip.pishock-zap.config.api.share_codes": "The share codes of the devices you want\nto control with this mod",
+
+  "error.pishock-zap.config.api.share_codes.entry.empty": "Share code cannot be empty",
+  "error.pishock-zap.config.api.share_codes.entry.invalid": "Share code appears invalid"
 }
