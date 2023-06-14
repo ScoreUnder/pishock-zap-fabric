@@ -124,8 +124,8 @@ public class ZapController {
             if (shock.damageEquivalent > vibrationThreshold) {
                 type = OpType.SHOCK;
                 intensity = transformIntensityIntoRange(
-                        shock.damageEquivalent - vibrationThreshold,
-                        MAX_DAMAGE - vibrationThreshold,
+                        shock.damageEquivalent - vibrationThreshold - 1,
+                        MAX_DAMAGE - vibrationThreshold - 1,
                         config.getShockIntensityMin(),
                         config.getShockIntensityMax());
             } else {
