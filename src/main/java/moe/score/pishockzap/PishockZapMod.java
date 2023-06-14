@@ -51,6 +51,7 @@ public class PishockZapMod implements ClientModInitializer {
         }
     }
 
+    @SuppressWarnings("unchecked")  // Type erasure means we can't get a Map<String, Object> "safely"
     public void loadConfig() {
         if (!Files.exists(configFile)) {
             logger.info("Config file not found, using default config");
@@ -61,7 +62,6 @@ public class PishockZapMod implements ClientModInitializer {
         Gson gson = new Gson();
         Map<String, Object> configMap;
         try {
-            //noinspection unchecked
             configMap = gson.fromJson(Files.newBufferedReader(configFile), Map.class);
         } catch (Exception e) {
             logger.warning("Failed to load config file, exception details follow");
