@@ -8,7 +8,6 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.text.Text;
 
 import java.io.BufferedWriter;
@@ -77,24 +76,45 @@ public class PishockZapMod implements ClientModInitializer {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null || player.isSpectator() || player.isCreative()) {
             // Don't zap spectators or creative players
+            // Also, player really shouldn't be null here as it's being called while the player is ticked,
+            // but better to be safe than crashy.
             playerHpWatcher.resetPlayer();
             return;
         }
 
-        int hp = Math.round(player.getHealth());
-        hp = Math.max(0, Math.min(hp, MAX_DAMAGE));
+        // HP is a float, and the game uses ceil() when displaying it.
+        // Death is when HP <= 0.0, so if the HP is 0.000001, the player
+        // is still alive so rounding that down is not appropriate.
+        int hp = (int) Math.ceil(player.getHealth());
+        int maxHealth = (int) Math.ceil(player.getMaxHealth());
+        hp = Math.max(0, Math.min(hp, maxHealth));
 
         int damage = playerHpWatcher.updatePlayerHpAndGetDamage(player, hp);
+
+        if (hp == maxHealth) {
+            // Player is at full HP, can this really be called damage?
+            // (Just in case other mods play with max health, it's not fair to zap the player for that)
+            // Note: this return must be after updating player HP in the watcher, otherwise the watcher will
+            // report incorrect damage the next time the player takes damage.
+            return;
+        }
+
         if (damage > 0) {
             boolean deathZap = hp == 0;
             MinecraftClient.getInstance().inGameHud.setOverlayMessage(Text.of("Death? " + deathZap + " Damage: " + damage + ", hp: " + hp), false);
-            logger.info("Death? " + deathZap + ", damage: " + damage + ", hp: " + hp);
             ShockDistribution distribution = deathZap && config.isShockOnDeath() ? config.getShockDistributionDeath() : config.getShockDistribution();
-            int damageEquivalent = config.isShockOnHealth() ? MAX_DAMAGE - hp : damage;
+            int damageEquivalent = config.isShockOnHealth() ? maxHealth - hp : damage;
+            if (maxHealth != 20) {
+                // Normalize damage to 20 HP if max health is not 20
+                // This keeps zap intensity consistent based on percentage of max health
+                // And means if you mod yourself to play a super tanky character, you'll get weaker zaps and vice versa
+                damageEquivalent = Math.round(damageEquivalent * MAX_DAMAGE / (float) maxHealth);
+            }
             if (damageEquivalent > MAX_DAMAGE) {
                 logger.warning("Damage equivalent " + damageEquivalent + " exceeds max damage " + MAX_DAMAGE + ", capping");
                 damageEquivalent = MAX_DAMAGE;
             }
+            logger.info("Death? " + deathZap + ", damage: " + damage + ", hp: " + hp + ", damage equivalent: " + damageEquivalent);
             zapController.queueShock(distribution, deathZap, damageEquivalent, config.getDuration());
         }
     }
