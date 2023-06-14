@@ -175,12 +175,10 @@ public class PiShockApi {
                 }
 
                 // Test if successful (not reported in status code)
+                // "Operation Succeeded." is the success message
                 if (!response.contains("Succe")) {
                     logger.warning("PiShock API call failed; response: " + response);
                 }
-                logger.info("Sent PiShock API call; response: " + response);//TODO remove
-                // TODO test this
-                // TODO create backoff system
             } catch (Exception e) {
                 logger.warning("PiShock API call failed; exception thrown");
                 e.printStackTrace();
