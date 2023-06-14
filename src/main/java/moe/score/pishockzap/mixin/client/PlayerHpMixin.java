@@ -11,17 +11,15 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @SuppressWarnings("unused")
-@Mixin(LivingEntity.class)
+@Mixin(value = LivingEntity.class, priority = 2000)  // High priority because monitoring final outcome
 public abstract class PlayerHpMixin {
-	@Inject(at = @At("HEAD"), method = "onTrackedDataSet")
-	private void checkHpDamage(TrackedData<?> data, CallbackInfo info) {
+	@Inject(at = @At("RETURN"), method = "setHealth")
+	private void checkHpDamage(float health, CallbackInfo info) {
 		//noinspection ConstantValue
 		if (MinecraftClient.getInstance().player != (Object) this) {
 			return;
 		}
 
-		if (data == LivingEntityAccessor.getHealth()) {
-			PishockZapMod.getInstance().onPlayerHpChange();
-		}
+		PishockZapMod.getInstance().onPlayerHpChange();
 	}
 }
