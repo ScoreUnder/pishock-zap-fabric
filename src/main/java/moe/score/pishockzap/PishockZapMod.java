@@ -6,7 +6,10 @@ import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.pishockapi.PiShockApi;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.text.Text;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -70,13 +73,21 @@ public class PishockZapMod implements ClientModInitializer {
         config.setFromConfig(configMap);
     }
 
-    public void onPlayerHpChange(LivingEntity player) {
+    public void onPlayerHpChange() {
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        if (player == null || player.isSpectator() || player.isCreative()) {
+            // Don't zap spectators or creative players
+            playerHpWatcher.resetPlayer();
+            return;
+        }
+
         int hp = Math.round(player.getHealth());
         hp = Math.max(0, Math.min(hp, MAX_DAMAGE));
 
         int damage = playerHpWatcher.updatePlayerHpAndGetDamage(player, hp);
         if (damage > 0) {
             boolean deathZap = hp == 0;
+            MinecraftClient.getInstance().inGameHud.setOverlayMessage(Text.of("Death? " + deathZap + " Damage: " + damage + ", hp: " + hp), false);
             logger.info("Death? " + deathZap + ", damage: " + damage + ", hp: " + hp);
             ShockDistribution distribution = deathZap && config.isShockOnDeath() ? config.getShockDistributionDeath() : config.getShockDistribution();
             int damageEquivalent = config.isShockOnHealth() ? MAX_DAMAGE - hp : damage;

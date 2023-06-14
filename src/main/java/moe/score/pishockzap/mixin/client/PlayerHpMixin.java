@@ -15,14 +15,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PlayerHpMixin {
 	@Inject(at = @At("HEAD"), method = "onTrackedDataSet")
 	private void checkHpDamage(TrackedData<?> data, CallbackInfo info) {
-		ClientPlayerEntity player = MinecraftClient.getInstance().player;
 		//noinspection ConstantValue
-		if (player != (Object) this) {
+		if (MinecraftClient.getInstance().player != (Object) this) {
 			return;
 		}
 
 		if (data == LivingEntityAccessor.getHealth()) {
-			PishockZapMod.getInstance().onPlayerHpChange(player);
+			PishockZapMod.getInstance().onPlayerHpChange();
 		}
 	}
 }

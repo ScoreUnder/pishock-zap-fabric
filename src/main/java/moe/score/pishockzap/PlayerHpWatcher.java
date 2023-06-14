@@ -18,4 +18,9 @@ public class PlayerHpWatcher {
         lastPlayerHp = hp;
         return damage;
     }
+
+    public void resetPlayer() {
+        lastPlayer = -1;
+        lastPlayerHp = -1;
+    }
 }
