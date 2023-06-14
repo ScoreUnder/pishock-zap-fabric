@@ -164,7 +164,6 @@ public class PiShockApi {
                 // Send data as JSON
                 try (var outputStream = connection.getOutputStream()) {
                     String json = gson.toJson(data);
-                    logger.info("Sending PiShock API call: " + json);
                     outputStream.write(json.getBytes());
                 }
 

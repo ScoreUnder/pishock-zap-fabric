@@ -101,7 +101,6 @@ public class PishockZapMod implements ClientModInitializer {
 
         if (damage > 0) {
             boolean deathZap = hp == 0;
-            MinecraftClient.getInstance().inGameHud.setOverlayMessage(Text.of("Death? " + deathZap + " Damage: " + damage + ", hp: " + hp), false);
             ShockDistribution distribution = deathZap && config.isShockOnDeath() ? config.getShockDistributionDeath() : config.getShockDistribution();
             int damageEquivalent = config.isShockOnHealth() ? maxHealth - hp : damage;
             if (maxHealth != 20) {
