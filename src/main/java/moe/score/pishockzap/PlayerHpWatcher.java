@@ -11,9 +11,14 @@ public class PlayerHpWatcher {
     private int ignore = 0;
 
     public int updatePlayerHpAndGetDamage(LivingEntity player, int hp) {
+        int damage = calculateDamage(player, hp);
+        lastPlayerHp = hp;
+        return damage;
+    }
+
+    private int calculateDamage(LivingEntity player, int hp) {
         if (player != lastPlayer.get()) {
             lastPlayer = new WeakReference<>(player);
-            lastPlayerHp = hp;
             // Ignore the first update after the player is changed
             // because loading into a world will trigger 2 updates
             ignore = 1;
@@ -22,13 +27,10 @@ public class PlayerHpWatcher {
 
         if (ignore != 0) {
             ignore--;
-            lastPlayerHp = hp;
             return 0;
         }
 
-        int damage = lastPlayerHp - hp;
-        lastPlayerHp = hp;
-        return damage;
+        return lastPlayerHp - hp;
     }
 
     public void resetPlayer() {
