@@ -30,8 +30,6 @@ public class PiShockApi {
         }
     }
 
-    private static final int OP_SHOCK = 0;
-    private static final int OP_VIBRATE = 1;
     private final PishockZapConfig config;
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     private final Random random = new Random();
