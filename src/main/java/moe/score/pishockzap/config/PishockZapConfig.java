@@ -58,7 +58,7 @@ public class PishockZapConfig {
     /// Identifier for on-site logs
     private String logIdentifier = "PiShock-Zap (Minecraft)";
 
-    private void setSingleFromConfig(Map<String, Object> config, Field field, Object value) {
+    private void setSingleConfigField(Field field, Object value) {
         try {
             Class<?> type = field.getType();
             if (type.isAssignableFrom(ShockDistribution.class)) {
@@ -78,7 +78,7 @@ public class PishockZapConfig {
         for (Field field : getClass().getDeclaredFields()) {
             Object value = config.get(field.getName());
             if (value != null) {
-                setSingleFromConfig(config, field, value);
+                setSingleConfigField(field, value);
             }
         }
     }
