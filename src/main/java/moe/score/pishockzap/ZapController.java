@@ -125,14 +125,14 @@ public class ZapController {
                 type = OpType.SHOCK;
                 intensity = transformIntensityIntoRange(
                         shock.damageEquivalent - vibrationThreshold - 1,
-                        MAX_DAMAGE - vibrationThreshold - 1,
+                        config.getMaxDamage() - vibrationThreshold - 1,
                         config.getShockIntensityMin(),
                         config.getShockIntensityMax());
             } else {
                 type = OpType.VIBRATE;
                 intensity = transformIntensityIntoRange(
                         shock.damageEquivalent,
-                        vibrationThreshold - 1,
+                        Math.min(vibrationThreshold, config.getMaxDamage()) - 1,
                         config.getVibrationIntensityMin(),
                         config.getVibrationIntensityMax());
             }
@@ -174,7 +174,9 @@ public class ZapController {
     }
 
     private int transformIntensityIntoRange(int damageEquivalent, int damageRange, int intensityMin, int intensityMax) {
-        if (damageRange == 0) return intensityMax;
+        if (damageRange <= 0) return intensityMax;
+        if (damageEquivalent <= 0) return intensityMin;
+        if (damageEquivalent >= damageRange) return intensityMax;
         return Math.round((damageEquivalent / (float) damageRange) * (intensityMax - intensityMin) + intensityMin);
     }
 

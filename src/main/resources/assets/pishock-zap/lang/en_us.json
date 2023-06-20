@@ -11,6 +11,7 @@
   "title.pishock-zap.config.limits.duration": "Duration",
   "title.pishock-zap.config.limits.max_duration": "Maximum duration",
   "title.pishock-zap.config.limits.vibration_threshold": "Vibration/shock damage threshold",
+  "title.pishock-zap.config.limits.max_damage": "Damage for max shock intensity",
   "title.pishock-zap.config.limits.vibration_intensity_min": "Minimum vibration intensity",
   "title.pishock-zap.config.limits.vibration_intensity_max": "Maximum vibration intensity",
   "title.pishock-zap.config.limits.shock_intensity_min": "Minimum shock intensity",
@@ -40,6 +41,7 @@
   "tooltip.pishock-zap.config.limits.duration": "The duration of the shock/vibration by default",
   "tooltip.pishock-zap.config.limits.max_duration": "The maximum duration of the shock/vibration\nif the duration is accumulated\n(See backoff settings)",
   "tooltip.pishock-zap.config.limits.vibration_threshold": "The damage threshold at or below which\nthe device will vibrate instead of shocking\nThis is in half-hearts, so 1 is half a heart,\n2 is a heart, etc.\nSet to 0 to disable vibration, or\nto 20 to save shocks for death only.",
+  "tooltip.pishock-zap.config.limits.max_damage": "The amount of damage which will result in\nthe maximum intensity of shocks/vibrations\nThis is in half-hearts, so 1 is half a heart,\n2 is a heart, etc.\nThis is 20 by default, but can be decreased\nif you want to experience higher intensities\nmore often.",
   "tooltip.pishock-zap.config.limits.vibration_intensity_min": "The minimum intensity of the vibration\non damage",
   "tooltip.pishock-zap.config.limits.vibration_intensity_max": "The maximum intensity of the vibration\non damage (when just at threshold)",
   "tooltip.pishock-zap.config.limits.shock_intensity_min": "The minimum intensity of shocks on damage\n(when just above threshold)",
@@ -59,6 +61,20 @@
   "tooltip.pishock-zap.config.api.api_key": "Your PiShock account API key",
   "tooltip.pishock-zap.config.api.share_codes": "The share codes of the devices you want\nto control with this mod",
 
+  "enum.pishock-zap.config.shock_distribution.first": "First device",
+  "enum.pishock-zap.config.shock_distribution.last": "Last device",
+  "enum.pishock-zap.config.shock_distribution.random": "One random device",
+  "enum.pishock-zap.config.shock_distribution.round_robin": "Each device in turn",
+  "enum.pishock-zap.config.shock_distribution.random_all": "Random devices",
+  "enum.pishock-zap.config.shock_distribution.all": "All devices",
+
   "error.pishock-zap.config.api.share_codes.entry.empty": "Share code cannot be empty",
-  "error.pishock-zap.config.api.share_codes.entry.invalid": "Share code appears invalid"
+  "error.pishock-zap.config.api.share_codes.entry.invalid": "Share code appears invalid",
+
+  "key.category.pishock-zap": "PiShock-Zap",
+
+  "key.pishock-zap.toggle": "Toggle PiShock-Zap enabled",
+
+  "message.pishock-zap.toggle.on": "PiShock-Zap enabled",
+  "message.pishock-zap.toggle.off": "PiShock-Zap disabled"
 }

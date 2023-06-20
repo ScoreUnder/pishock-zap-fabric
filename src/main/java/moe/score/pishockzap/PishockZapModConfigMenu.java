@@ -5,6 +5,7 @@ import com.terraformersmc.modmenu.api.ModMenuApi;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.gui.entries.DropdownBoxEntry;
+import me.shedaniel.clothconfig2.gui.entries.EnumListEntry;
 import me.shedaniel.clothconfig2.impl.builders.DropdownMenuBuilder;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
@@ -76,6 +77,12 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setSaveConsumer(config::setVibrationThreshold)
                 .setTooltip(Text.translatable("tooltip.pishock-zap.config.limits.vibration_threshold"))
                 .setDefaultValue(defaultConfig.getVibrationThreshold())
+                .build());
+        limitsCategory.addEntry(entryBuilder
+                .startIntSlider(Text.translatable("title.pishock-zap.config.limits.max_damage"), config.getMaxDamage(), 0, 20)
+                .setSaveConsumer(config::setMaxDamage)
+                .setTooltip(Text.translatable("tooltip.pishock-zap.config.limits.max_damage"))
+                .setDefaultValue(defaultConfig.getMaxDamage())
                 .build());
         limitsCategory.addEntry(entryBuilder
                 .startIntSlider(Text.translatable("title.pishock-zap.config.limits.vibration_intensity_min"), config.getVibrationIntensityMin(), 1, PISHOCK_MAX_INTENSITY)
@@ -182,16 +189,10 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         return Optional.empty();
     }
 
-    private static @NotNull DropdownBoxEntry<ShockDistribution> createShockDistributionDropdown(ConfigEntryBuilder builder, String key, ShockDistribution def, Consumer<ShockDistribution> saveConsumer) {
-        return builder.startDropdownMenu(Text.translatable("title.pishock-zap.config." + key), DropdownMenuBuilder.TopCellElementBuilder.of(def, name -> {
-                    try {
-                        return ShockDistribution.valueOf(name);
-                    } catch (IllegalArgumentException e) {
-                        return null;
-                    }
-                }, (sd) -> Text.of(sd.name())))
-                .setSelections(Arrays.asList(ShockDistribution.values()))
+    private static @NotNull EnumListEntry<ShockDistribution> createShockDistributionDropdown(ConfigEntryBuilder builder, String key, ShockDistribution def, Consumer<ShockDistribution> saveConsumer) {
+        return builder.startEnumSelector(Text.translatable("title.pishock-zap.config." + key), ShockDistribution.class, def)
                 .setDefaultValue(def)
+                .setEnumNameProvider((value) -> Text.translatable("enum.pishock-zap.config.shock_distribution." + value.name().toLowerCase()))
                 .setSaveConsumer(saveConsumer)
                 .setTooltip(Text.translatable("tooltip.pishock-zap.config." + key))
                 .build();
