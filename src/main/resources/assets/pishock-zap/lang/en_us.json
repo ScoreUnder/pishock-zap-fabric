@@ -59,6 +59,13 @@
   "tooltip.pishock-zap.config.api.api_key": "Your PiShock account API key",
   "tooltip.pishock-zap.config.api.share_codes": "The share codes of the devices you want\nto control with this mod",
 
+  "enum.pishock-zap.config.shock_distribution.first": "First device",
+  "enum.pishock-zap.config.shock_distribution.last": "Last device",
+  "enum.pishock-zap.config.shock_distribution.random": "One random device",
+  "enum.pishock-zap.config.shock_distribution.round_robin": "Each device in turn",
+  "enum.pishock-zap.config.shock_distribution.random_all": "Random devices",
+  "enum.pishock-zap.config.shock_distribution.all": "All devices",
+
   "error.pishock-zap.config.api.share_codes.entry.empty": "Share code cannot be empty",
   "error.pishock-zap.config.api.share_codes.entry.invalid": "Share code appears invalid",
 
