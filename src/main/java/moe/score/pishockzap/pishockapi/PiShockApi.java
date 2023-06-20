@@ -89,7 +89,7 @@ public class PiShockApi {
 
             data.put("Op", op.code);
             data.put("Intensity", intensity);
-            data.put("Duration", transformDuration(duration));
+            data.put("Duration", transformDuration(op, duration));
 
             doApiCallOnThread(data);
         }
@@ -138,13 +138,16 @@ public class PiShockApi {
      * PiShock API duration can be specified one of two ways: as an integer number of seconds,
      * or if greater than 100, as an integer number of milliseconds.
      * However, firmware only goes in 100ms increments, so we give a round multiple of 100ms.
+     * The API does not accept milliseconds for durations greater than 3 seconds for vibration,
+     * or 1.5 seconds for shock.
      *
      * @param duration duration in seconds
      * @return duration in PiShock API format
      */
-    private int transformDuration(float duration) {
-        int rounded = (int) duration * 10;
-        if (rounded % 10 == 0) return rounded / 10;
+    private int transformDuration(OpType type, float duration) {
+        int rounded = (int) (duration * 10.0f);
+        float maxFracDuration = type == OpType.VIBRATE ? 3.0f : 1.5f;
+        if (rounded % 10 == 0 || duration > maxFracDuration) return rounded / 10;
         return rounded * 100;
     }
 
