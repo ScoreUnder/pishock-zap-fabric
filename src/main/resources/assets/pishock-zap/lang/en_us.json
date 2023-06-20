@@ -60,5 +60,12 @@
   "tooltip.pishock-zap.config.api.share_codes": "The share codes of the devices you want\nto control with this mod",
 
   "error.pishock-zap.config.api.share_codes.entry.empty": "Share code cannot be empty",
-  "error.pishock-zap.config.api.share_codes.entry.invalid": "Share code appears invalid"
+  "error.pishock-zap.config.api.share_codes.entry.invalid": "Share code appears invalid",
+
+  "key.category.pishock-zap": "PiShock-Zap",
+
+  "key.pishock-zap.toggle": "Toggle PiShock-Zap enabled",
+
+  "message.pishock-zap.toggle.on": "PiShock-Zap enabled",
+  "message.pishock-zap.toggle.off": "PiShock-Zap disabled"
 }

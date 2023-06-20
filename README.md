@@ -29,6 +29,9 @@ If you are struggling and need to switch it off ASAP, the fastest way is to
 simply exit the game unceremoniously. On Windows, this is Alt+F4. Test it out
 before you use it.
 
+There is also an in-game toggle hotkey which defaults to F12. Equally, configure
+this and check that it is working before you use it.
+
 By default, this mod starts with the actual API calls **disabled**, with the
 expectation that you edit the settings to respect your personal limits and then
 enable it manually.

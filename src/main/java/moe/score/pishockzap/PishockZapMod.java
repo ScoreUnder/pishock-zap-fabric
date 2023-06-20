@@ -5,10 +5,16 @@ import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.pishockapi.PiShockApi;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
+import net.minecraft.text.Style;
+import net.minecraft.text.TranslatableText;
+import org.lwjgl.glfw.GLFW;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -27,6 +33,13 @@ public class PishockZapMod implements ClientModInitializer {
     public static PishockZapMod getInstance() {
         return instance;
     }
+
+    private static final KeyBinding keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        "key.pishock-zap.toggle",
+        InputUtil.Type.KEYSYM,
+        GLFW.GLFW_KEY_F12,
+        "key.category.pishock-zap"
+    ));
 
     private final Logger logger = Logger.getLogger(NAME);
     private final Path configFile = FabricLoader.getInstance().getConfigDir().resolve(NAME.toLowerCase() + ".json");
@@ -124,5 +137,23 @@ public class PishockZapMod implements ClientModInitializer {
         // This entrypoint is suitable for setting up client-specific logic, such as rendering.
         loadConfig();
         zapController.start();
+
+        registerToggleHotkey();
+    }
+
+    private void registerToggleHotkey() {
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            while (keyBinding.wasPressed()) {
+                config.setEnabled(!config.isEnabled());
+                saveConfig();
+
+                var player = client.player;
+                if (player != null) {
+                    Style color = Style.EMPTY.withColor(config.isEnabled() ? 0x00FF00 : 0xFF0000);
+                    String key = "message.pishock-zap.toggle." + (config.isEnabled() ? "on" : "off");
+                    player.sendMessage(new TranslatableText(key).fillStyle(color), false);
+                }
+            }
+        });
     }
 }
