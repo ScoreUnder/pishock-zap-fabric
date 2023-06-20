@@ -44,6 +44,7 @@ limits on some share codes, and may not function correctly on older devices.
 
 - Minecraft 1.18.2
 - Fabric Loader 0.14.21
+- Fabric API
 - Cloth Config
 - Mod Menu (optional but strongly recommended; gives access to the settings
   screen)
