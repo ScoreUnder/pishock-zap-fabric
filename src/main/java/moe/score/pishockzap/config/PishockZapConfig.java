@@ -23,6 +23,8 @@ public class PishockZapConfig {
     private int maxDuration = 10;
     /// The threshold to swap from vibration to shock
     private int vibrationThreshold = 0;
+    /// The damage value corresponding to the most intense shock
+    private int maxDamage = 20;
     /// The minimum intensity of a vibration
     private int vibrationIntensityMin = 20;
     /// The maximum intensity of a vibration

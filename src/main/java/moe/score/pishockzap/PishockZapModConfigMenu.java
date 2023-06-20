@@ -80,6 +80,12 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setDefaultValue(defaultConfig.getVibrationThreshold())
                 .build());
         limitsCategory.addEntry(entryBuilder
+                .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.max_damage"), config.getMaxDamage(), 0, 20)
+                .setSaveConsumer(config::setMaxDamage)
+                .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.max_damage"))
+                .setDefaultValue(defaultConfig.getMaxDamage())
+                .build());
+        limitsCategory.addEntry(entryBuilder
                 .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.vibration_intensity_min"), config.getVibrationIntensityMin(), 1, PISHOCK_MAX_INTENSITY)
                 .setSaveConsumer(config::setVibrationIntensityMin)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.vibration_intensity_min"))
