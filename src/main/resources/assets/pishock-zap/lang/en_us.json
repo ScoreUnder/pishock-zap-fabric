@@ -1,4 +1,8 @@
 {
+  "modmenu.nameTranslation.pishock-zap": "PiShock-Zap",
+  "modmenu.descriptionTranslation.pishock-zap": "Connect PiShock devices to Minecraft! Like hardcore mode, but with real consequences. Zap yourself when you take damage or die!",
+  "modmenu.summaryTranslation.pishock-zap": "Zap yourself with PiShock when you take damage.",
+
   "title.pishock-zap.config": "PiShock-Zap Config",
 
   "title.pishock-zap.config.general": "General",
