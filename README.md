@@ -42,7 +42,7 @@ limits on some share codes, and may not function correctly on older devices.
 
 ## Requirements
 
-- Minecraft 1.18.2
+- Minecraft 1.20
 - Fabric Loader 0.14.21
 - Fabric API
 - Cloth Config
