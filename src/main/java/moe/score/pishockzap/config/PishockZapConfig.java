@@ -57,6 +57,10 @@ public class PishockZapConfig {
     private String apiKey = "";
     /// PiShock device share codes
     private List<String> shareCodes = List.of();
+    /// PiShock device serial port
+    private String serialPort = "/dev/ttyACM0";
+    /// PiShock device IDs (for serial API)
+    private List<Integer> deviceIds = List.of();
     /// Identifier for on-site logs
     private String logIdentifier = "PiShock-Zap (Minecraft)";
 

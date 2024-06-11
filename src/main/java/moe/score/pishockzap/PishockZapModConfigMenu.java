@@ -5,6 +5,7 @@ import com.terraformersmc.modmenu.api.ModMenuApi;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.gui.entries.EnumListEntry;
+import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import net.minecraft.client.gui.screen.Screen;
@@ -171,6 +172,18 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setSaveConsumer(config::setShareCodes)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.api.share_codes"))
                 .setCellErrorSupplier(PishockZapModConfigMenu::isShareCodeInvalid)
+                // no default
+                .build());
+        apiCategory.addEntry(entryBuilder
+                .startStrField(Translation.of("title.pishock-zap.config.api.serial_port"), config.getSerialPort())
+                .setSaveConsumer(config::setSerialPort)
+                .setTooltip(Translation.of("tooltip.pishock-zap.config.api.serial_port"))
+                .setDefaultValue(defaultConfig.getSerialPort())
+                .build());
+        apiCategory.addEntry(entryBuilder
+                .startIntList(Translation.of("title.pishock-zap.config.api.device_ids"), config.getDeviceIds())
+                .setSaveConsumer(config::setDeviceIds)
+                .setTooltip(Translation.of("tooltip.pishock-zap.config.api.device_ids"))
                 // no default
                 .build());
 

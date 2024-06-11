@@ -43,6 +43,9 @@ dependencies {
 	modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
+
+    // PureJavaComm (serial port library)
+    implementation "com.github.purejavacomm:purejavacomm:1.0.2.RELEASE"
 }
 
 processResources {

@@ -39,15 +39,7 @@ public class PiShockWebApiV1 implements PiShockApi {
     public void performOp(ShockDistribution distribution, OpType op, int intensity, float duration) {
         if (!config.isEnabled()) return;
         if (config.isVibrationOnly()) op = OpType.VIBRATE;
-        if (intensity == 0 || duration == 0.0f) return;
-        if (intensity < 0 || intensity > PiShockUtils.PISHOCK_MAX_INTENSITY) {
-            logger.warning("PiShock intensity out of range: " + intensity);
-            return;
-        }
-        if (duration < 0.0f || duration > PiShockUtils.PISHOCK_MAX_DURATION) {
-            logger.warning("PiShock duration out of range: " + duration);
-            return;
-        }
+        if (!PiShockUtils.shockParamsAreValid(intensity, duration)) return;
         if (config.getApiKey().isBlank()) {
             logger.warning("No PiShock API key configured");
             return;

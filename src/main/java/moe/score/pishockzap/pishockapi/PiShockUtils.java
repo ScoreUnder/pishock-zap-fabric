@@ -4,10 +4,29 @@ import moe.score.pishockzap.config.ShockDistribution;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
+import java.util.logging.Logger;
 
 public class PiShockUtils {
     public static final int PISHOCK_MAX_DURATION = 15;
     public static final int PISHOCK_MAX_INTENSITY = 100;
+
+    private static final Logger logger = Logger.getLogger(PiShockUtils.class.getName());
+
+    private PiShockUtils() {
+    }
+
+    public static boolean shockParamsAreValid(int intensity, float duration) {
+        if (intensity == 0 || duration == 0.0f) return false;
+        if (intensity < 0 || intensity > PISHOCK_MAX_INTENSITY) {
+            logger.warning("PiShock intensity out of range: " + intensity);
+            return false;
+        }
+        if (duration < 0.0f || duration > PISHOCK_MAX_DURATION) {
+            logger.warning("PiShock duration out of range: " + duration);
+            return false;
+        }
+        return true;
+    }
 
     public static class ShockDistributor {
         private int roundRobinIndex = 0;
