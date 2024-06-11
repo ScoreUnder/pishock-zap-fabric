@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
-import org.jetbrains.annotations.NotNull;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -12,9 +11,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 
 public class PiShockWebApiV1 implements PiShockApi {
@@ -30,13 +27,13 @@ public class PiShockWebApiV1 implements PiShockApi {
 
     private final PishockZapConfig config;
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
-    private final Random random = new Random();
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private int roundRobinIndex = 0;
+    private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
+    private final Executor executor;
     private final Gson gson = new Gson();
 
-    public PiShockWebApiV1(PishockZapConfig config) {
+    public PiShockWebApiV1(PishockZapConfig config, Executor executor) {
         this.config = config;
+        this.executor = executor;
     }
 
     public void performOp(ShockDistribution distribution, OpType op, int intensity, float duration) {
@@ -73,7 +70,7 @@ public class PiShockWebApiV1 implements PiShockApi {
             return;
         }
 
-        boolean[] shocks = pickShockers(distribution, shockers.length);
+        boolean[] shocks = distributor.pickShockers(distribution, shockers.length);
 
         for (int i = 0; i < shocks.length; i++) {
             if (!shocks[i]) continue;
@@ -87,66 +84,31 @@ public class PiShockWebApiV1 implements PiShockApi {
 
             data.put("Op", op.code);
             data.put("Intensity", intensity);
-            data.put("Duration", transformDuration(op, duration));
+            data.put("Duration", transformDuration(duration));
 
             doApiCallOnThread(data);
         }
-    }
-
-    /** Pick from a list of shockers by distribution.
-     *
-     * @param distribution distribution to use
-     * @param length number of shockers to pick from
-     * @return a boolean array of length {@code length} with {@code true} for each shocker to shock
-     */
-    private boolean @NotNull [] pickShockers(ShockDistribution distribution, int length) {
-        boolean[] shocks = new boolean[length];
-        int randomIndex = random.nextInt(length);
-        if (roundRobinIndex >= length) roundRobinIndex = 0;
-
-        for (int i = 0; i < length; i++) {
-            shocks[i] = switch (distribution) {
-                case ALL -> true;
-                case ROUND_ROBIN -> i == roundRobinIndex;
-                case RANDOM -> i == randomIndex;
-                case RANDOM_ALL -> random.nextBoolean();
-                case FIRST -> i == 0;
-                case LAST -> i == shocks.length - 1;
-            };
-        }
-
-        roundRobinIndex++;
-
-        if (distribution == ShockDistribution.RANDOM_ALL) {
-            boolean hasShock = false;
-            for (boolean shock : shocks) {
-                if (shock) {
-                    hasShock = true;
-                    break;
-                }
-            }
-            // If no shocks were selected, select a random one
-            if (!hasShock) shocks[randomIndex] = true;
-        }
-        return shocks;
     }
 
     /** Transform a floating-point duration in seconds to a PiShock API duration.
      * <p>
      * PiShock API duration can be specified one of two ways: as an integer number of seconds,
      * or if greater than 100, as an integer number of milliseconds.
-     * However, firmware only goes in 100ms increments, so we give a round multiple of 100ms.
-     * The API does not accept milliseconds for durations greater than 3 seconds for vibration,
-     * or 1.5 seconds for shock.
+     * <p>
+     * Since the firmware natively uses milliseconds now, and the API now fully supports longer
+     * (>1.5s) durations when specified as milliseconds, we will always use milliseconds.
      *
      * @param duration duration in seconds
      * @return duration in PiShock API format
      */
-    private int transformDuration(OpType type, float duration) {
-        int rounded = (int) (duration * 10.0f);
-        float maxFracDuration = type == OpType.VIBRATE ? 3.0f : 1.5f;
-        if (rounded % 10 == 0 || duration > maxFracDuration) return rounded / 10;
-        return rounded * 100;
+    private int transformDuration(float duration) {
+        float durationMs = duration * 1000.0f;
+        if (durationMs <= 100) {
+            // The API can't handle durations less than 100ms
+            // (those are treated as amounts of seconds, which could be disastrous)
+            return 0;
+        }
+        return Math.round(durationMs);
     }
 
     /** Perform a PiShock API call on a separate thread.
@@ -182,9 +144,5 @@ public class PiShockWebApiV1 implements PiShockApi {
                 e.printStackTrace();
             }
         });
-    }
-
-    public void teardown() {
-        executor.shutdown();
     }
 }

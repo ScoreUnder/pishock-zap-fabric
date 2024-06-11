@@ -35,7 +35,6 @@ public class ZapController {
 
     public void stop() {
         this.thread.interrupt();
-        this.api.teardown();
     }
 
     private void run() {

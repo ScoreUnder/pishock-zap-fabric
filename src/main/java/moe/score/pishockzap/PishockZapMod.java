@@ -22,6 +22,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 import static moe.score.pishockzap.ZapController.MAX_DAMAGE;
@@ -45,7 +47,8 @@ public class PishockZapMod implements ClientModInitializer {
     private final Path configFile = FabricLoader.getInstance().getConfigDir().resolve(NAME.toLowerCase() + ".json");
     private final PishockZapConfig config = new PishockZapConfig();
     private final PlayerHpWatcher playerHpWatcher = new PlayerHpWatcher();
-    private final ZapController zapController = new ZapController(new PiShockWebApiV1(config), config);
+    private final ExecutorService apiExecutor = Executors.newSingleThreadExecutor();
+    private final ZapController zapController = new ZapController(new PiShockWebApiV1(config, apiExecutor), config);
 
     public PishockZapConfig getConfig() {
         return config;
