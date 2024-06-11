@@ -127,8 +127,9 @@ public class PiShockWebApiV1 implements PiShockApi {
                 }
 
                 // Test if successful (not reported in status code)
-                // "Operation Succeeded." is the success message
-                if (!response.contains("Succe")) {
+                // "Operation Succeeded." is the success message for v1 firmware
+                // "Operation Attempted." is the success message for v3 firmware
+                if (!response.contains("Operation Succeeded") && !response.contains("Operation Attempted")) {
                     logger.warning("PiShock API call failed; response: " + response);
                 }
             } catch (Exception e) {
