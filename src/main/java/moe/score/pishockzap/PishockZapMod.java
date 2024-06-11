@@ -3,7 +3,7 @@ package moe.score.pishockzap;
 import com.google.gson.Gson;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
-import moe.score.pishockzap.pishockapi.PiShockApi;
+import moe.score.pishockzap.pishockapi.PiShockWebApiV1;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -45,7 +45,7 @@ public class PishockZapMod implements ClientModInitializer {
     private final Path configFile = FabricLoader.getInstance().getConfigDir().resolve(NAME.toLowerCase() + ".json");
     private final PishockZapConfig config = new PishockZapConfig();
     private final PlayerHpWatcher playerHpWatcher = new PlayerHpWatcher();
-    private final ZapController zapController = new ZapController(new PiShockApi(config), config);
+    private final ZapController zapController = new ZapController(new PiShockWebApiV1(config), config);
 
     public PishockZapConfig getConfig() {
         return config;
