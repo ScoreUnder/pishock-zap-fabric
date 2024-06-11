@@ -1,8 +1,10 @@
 package moe.score.pishockzap;
 
 import com.google.gson.Gson;
+import lombok.Getter;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
+import moe.score.pishockzap.pishockapi.PiShockSerialApi;
 import moe.score.pishockzap.pishockapi.PiShockWebApiV1;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -22,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
@@ -30,11 +33,8 @@ import static moe.score.pishockzap.ZapController.MAX_DAMAGE;
 
 public class PishockZapMod implements ClientModInitializer {
     public static final String NAME = "PiShock-Zap";
+    @Getter
     private static PishockZapMod instance = null;
-
-    public static PishockZapMod getInstance() {
-        return instance;
-    }
 
     private static final KeyBinding keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
         "key.pishock-zap.toggle",
@@ -45,14 +45,11 @@ public class PishockZapMod implements ClientModInitializer {
 
     private final Logger logger = Logger.getLogger(NAME);
     private final Path configFile = FabricLoader.getInstance().getConfigDir().resolve(NAME.toLowerCase() + ".json");
+    @Getter
     private final PishockZapConfig config = new PishockZapConfig();
     private final PlayerHpWatcher playerHpWatcher = new PlayerHpWatcher();
     private final ExecutorService apiExecutor = Executors.newSingleThreadExecutor();
     private final ZapController zapController = new ZapController(new PiShockWebApiV1(config, apiExecutor), config);
-
-    public PishockZapConfig getConfig() {
-        return config;
-    }
 
     public void saveConfig() {
         Map<String, Object> configMap = new HashMap<>();
@@ -64,6 +61,24 @@ public class PishockZapMod implements ClientModInitializer {
         } catch (IOException e) {
             logger.warning("Failed to save config file, exception details follow");
             e.printStackTrace();
+        }
+
+        applyConfigChanges();
+    }
+
+    private void applyConfigChanges() {
+        // Things that can't be just pulled out of the config object on the fly
+        // (because we're too classy to "require restart" for everything)
+        // Also getting observers on these properties is a bit of a pain
+
+        // PiShock API type
+        // (And serial API port, if we're using the serial API)
+        boolean useLocalApi = config.isLocalEnabled();
+        if (useLocalApi && (zapController.getApi() instanceof PiShockWebApiV1
+            || (zapController.getApi() instanceof PiShockSerialApi piShockSerialApi && !Objects.equals(piShockSerialApi.getPortName(), config.getSerialPort())))) {
+            zapController.setApi(new PiShockSerialApi(config, apiExecutor, config.getSerialPort()));
+        } else if (!useLocalApi && zapController.getApi() instanceof PiShockSerialApi) {
+            zapController.setApi(new PiShockWebApiV1(config, apiExecutor));
         }
     }
 
@@ -86,6 +101,8 @@ public class PishockZapMod implements ClientModInitializer {
         }
 
         config.setFromConfig(configMap);
+
+        applyConfigChanges();
     }
 
     public void onPlayerHpChange() {

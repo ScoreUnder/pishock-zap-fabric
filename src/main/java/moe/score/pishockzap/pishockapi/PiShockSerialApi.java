@@ -1,6 +1,7 @@
 package moe.score.pishockzap.pishockapi;
 
 import com.google.gson.Gson;
+import lombok.Getter;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
@@ -20,6 +21,7 @@ public class PiShockSerialApi implements PiShockApi {
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     private final PishockZapConfig config;
     private final Executor executor;
+    @Getter
     private final String portName;
     private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
     private final Gson gson = new Gson();

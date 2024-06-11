@@ -1,5 +1,7 @@
 package moe.score.pishockzap;
 
+import lombok.Getter;
+import lombok.Setter;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.pishockapi.OpType;
@@ -18,7 +20,9 @@ public class ZapController {
     static final int MAX_DAMAGE = 20;
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     private final BlockingQueue<QueuedShock> queue = new LinkedBlockingQueue<>();
-    private final PiShockApi api;
+    @Getter
+    @Setter
+    private PiShockApi api;
     private final Thread thread;
     private final PishockZapConfig config;
 

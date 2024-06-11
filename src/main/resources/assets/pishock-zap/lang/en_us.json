@@ -36,8 +36,11 @@
   "title.pishock-zap.config.api.username": "Username",
   "title.pishock-zap.config.api.api_key": "API key",
   "title.pishock-zap.config.api.share_codes": "Share codes",
-  "title.pishock-zap.config.api.serial_port": "Serial port (local API only)",
-  "title.pishock-zap.config.api.device_ids": "Shocker IDs (local API only)",
+
+  "title.pishock-zap.config.api.local": "Local Serial API (Advanced)",
+  "title.pishock-zap.config.api.local.enabled": "Use local serial API",
+  "title.pishock-zap.config.api.serial_port": "Serial port",
+  "title.pishock-zap.config.api.device_ids": "Shocker IDs",
 
   "tooltip.pishock-zap.config.general.enabled": "Enable/disable the mod",
   "tooltip.pishock-zap.config.general.vibration_only": "Only vibrate the device, don't shock, even on death.\nThis can be used to test the mod or simply\nprovide a less intense experience.\nFor example, if you want to check your share codes work.",
@@ -66,6 +69,8 @@
   "tooltip.pishock-zap.config.api.username": "Your PiShock account username",
   "tooltip.pishock-zap.config.api.api_key": "Your PiShock account API key",
   "tooltip.pishock-zap.config.api.share_codes": "The share codes of the devices you want\nto control with this mod",
+
+  "tooltip.pishock-zap.config.api.local.enabled": "Use a device locally connected via USB.\nThe alternative is to use the web API.",
   "tooltip.pishock-zap.config.api.serial_port": "The path or name of the serial port to use\nfor local serial API communication\nFor example, COM3 or /dev/ttyUSB0",
   "tooltip.pishock-zap.config.api.device_ids": "The IDs of the shockers to drive via local serial API",
 

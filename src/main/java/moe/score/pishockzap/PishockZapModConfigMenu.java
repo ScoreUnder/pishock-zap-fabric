@@ -2,9 +2,10 @@ package moe.score.pishockzap;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
+import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
-import me.shedaniel.clothconfig2.gui.entries.EnumListEntry;
+import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
@@ -174,18 +175,29 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setCellErrorSupplier(PishockZapModConfigMenu::isShareCodeInvalid)
                 // no default
                 .build());
-        apiCategory.addEntry(entryBuilder
+
+        SubCategoryBuilder localApiCategory = entryBuilder
+            .startSubCategory(Translation.of("title.pishock-zap.config.api.local"));
+
+        localApiCategory.add(entryBuilder.
+                startBooleanToggle(Translation.of("title.pishock-zap.config.api.local.enabled"), config.isLocalEnabled())
+                .setSaveConsumer(config::setLocalEnabled)
+                .setTooltip(Translation.of("tooltip.pishock-zap.config.api.local.enabled"))
+                .setDefaultValue(defaultConfig.isLocalEnabled())
+                .build());
+        localApiCategory.add(entryBuilder
                 .startStrField(Translation.of("title.pishock-zap.config.api.serial_port"), config.getSerialPort())
                 .setSaveConsumer(config::setSerialPort)
                 .setTooltip(Translation.of("tooltip.pishock-zap.config.api.serial_port"))
                 .setDefaultValue(defaultConfig.getSerialPort())
                 .build());
-        apiCategory.addEntry(entryBuilder
+        localApiCategory.add(entryBuilder
                 .startIntList(Translation.of("title.pishock-zap.config.api.device_ids"), config.getDeviceIds())
                 .setSaveConsumer(config::setDeviceIds)
                 .setTooltip(Translation.of("tooltip.pishock-zap.config.api.device_ids"))
                 // no default
                 .build());
+        apiCategory.addEntry(localApiCategory.build());
 
         configBuilder.setSavingRunnable(mod::saveConfig);
 
@@ -200,12 +212,12 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         return Optional.empty();
     }
 
-    private static @NotNull EnumListEntry<ShockDistribution> createShockDistributionDropdown(ConfigEntryBuilder builder, String key, ShockDistribution def, Consumer<ShockDistribution> saveConsumer) {
-        return builder.startEnumSelector(new TranslatableText("title.pishock-zap.config." + key), ShockDistribution.class, def)
+    private static @NotNull AbstractConfigListEntry<ShockDistribution> createShockDistributionDropdown(ConfigEntryBuilder builder, String key, ShockDistribution def, Consumer<ShockDistribution> saveConsumer) {
+        return builder.startEnumSelector(Translation.of("title.pishock-zap.config." + key), ShockDistribution.class, def)
                 .setDefaultValue(def)
-                .setEnumNameProvider((value) -> new TranslatableText("enum.pishock-zap.config.shock_distribution." + value.name().toLowerCase()))
+                .setEnumNameProvider((value) -> Translation.of("enum.pishock-zap.config.shock_distribution." + value.name().toLowerCase()))
                 .setSaveConsumer(saveConsumer)
-                .setTooltip(new TranslatableText("tooltip.pishock-zap.config." + key))
+                .setTooltip(Translation.of("tooltip.pishock-zap.config." + key))
                 .build();
     }
 

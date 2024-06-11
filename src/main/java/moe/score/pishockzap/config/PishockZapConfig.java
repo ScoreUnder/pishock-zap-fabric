@@ -60,6 +60,9 @@ public class PishockZapConfig {
     private List<String> shareCodes = List.of();
     /// PiShock device serial port
     private String serialPort = "/dev/ttyACM0";
+
+    /// Whether to use the local serial API or the web API
+    private boolean localEnabled = false;
     /// PiShock device IDs (for serial API)
     private List<Integer> deviceIds = List.of();
     /// Identifier for on-site logs
