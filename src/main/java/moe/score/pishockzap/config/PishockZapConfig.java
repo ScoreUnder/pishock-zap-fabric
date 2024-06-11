@@ -5,6 +5,7 @@ import lombok.Data;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Data
 public class PishockZapConfig {
@@ -64,6 +65,10 @@ public class PishockZapConfig {
     /// Identifier for on-site logs
     private String logIdentifier = "PiShock-Zap (Minecraft)";
 
+    private boolean fieldIsListOfInteger(Field field) {
+        return field.getName().equals("deviceIds");
+    }
+
     private void setSingleConfigField(Field field, Object value) {
         try {
             Class<?> type = field.getType();
@@ -71,6 +76,9 @@ public class PishockZapConfig {
                 value = ShockDistribution.valueOf((String)value);
             } else if (type.isAssignableFrom(Integer.class) || type.isAssignableFrom(int.class) && value instanceof Double) {
                 value = ((Double) value).intValue();
+            } else if (type.isAssignableFrom(List.class) && fieldIsListOfInteger(field)) {
+                // noinspection unchecked -- gets checked pretty damn quickly
+                value = ((List<Number>) value).stream().map(Number::intValue).collect(Collectors.toList());
             }
             field.set(this, value);
         } catch (IllegalAccessException e) {
