@@ -58,7 +58,7 @@ public class ZapController {
 
                 // Waiting for shock to complete and then waiting for debounce time, so not a busy-wait per se
                 //noinspection BusyWait
-                Thread.sleep(config.getDebounceTime() * 1000L + (long) (shock.duration * 1000.0f));
+                Thread.sleep((long) (config.getDebounceTime() * 1000.0f) + (long) (shock.duration * 1000.0f));
             } catch (InterruptedException e) {
                 return;
             }

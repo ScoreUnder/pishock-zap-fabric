@@ -6,6 +6,7 @@ import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
+import moe.score.pishockzap.compat.FloatSliderBuilder;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
@@ -60,17 +61,17 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .build());
 
         var limitsCategory = configBuilder.getOrCreateCategory(new TranslatableText("title.pishock-zap.config.limits"));
-        limitsCategory.addEntry(entryBuilder
-                .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.duration"), config.getDuration(), 1, PISHOCK_MAX_DURATION)
+        limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.duration"), config.getDuration(), 0.1f, PISHOCK_MAX_DURATION)
                 .setSaveConsumer(config::setDuration)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.duration"))
                 .setDefaultValue(defaultConfig.getDuration())
+                .setTextGetter((value) -> Text.of(String.format("%.3fs", value)))
                 .build());
-        limitsCategory.addEntry(entryBuilder
-                .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.max_duration"), config.getMaxDuration(), 1, PISHOCK_MAX_DURATION)
+        limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.max_duration"), config.getMaxDuration(), 0.1f, PISHOCK_MAX_DURATION)
                 .setSaveConsumer(config::setMaxDuration)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.max_duration"))
                 .setDefaultValue(defaultConfig.getMaxDuration())
+                .setTextGetter((value) -> Text.of(String.format("%.3fs", value)))
                 .build());
         limitsCategory.addEntry(entryBuilder
                 .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.vibration_threshold"), config.getVibrationThreshold(), 0, 20)
@@ -114,18 +115,17 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.shock_intensity_death"))
                 .setDefaultValue(defaultConfig.getShockIntensityDeath())
                 .build());
-        limitsCategory.addEntry(entryBuilder
-                .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.shock_duration_death"), config.getShockDurationDeath(), 1, PISHOCK_MAX_DURATION)
+        limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.shock_duration_death"), config.getShockDurationDeath(), 0.1f, PISHOCK_MAX_DURATION)
                 .setSaveConsumer(config::setShockDurationDeath)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.shock_duration_death"))
                 .setDefaultValue(defaultConfig.getShockDurationDeath())
+                .setTextGetter((value) -> Text.of(String.format("%.3fs", value)))
                 .build());
         limitsCategory.addEntry(createShockDistributionDropdown(entryBuilder, "limits.shock_distribution", config.getShockDistribution(), config::setShockDistribution));
         limitsCategory.addEntry(createShockDistributionDropdown(entryBuilder, "limits.shock_distribution_death", config.getShockDistributionDeath(), config::setShockDistributionDeath));
 
         var debounceCategory = configBuilder.getOrCreateCategory(new TranslatableText("title.pishock-zap.config.debounce"));
-        debounceCategory.addEntry(entryBuilder
-                .startIntSlider(new TranslatableText("title.pishock-zap.config.debounce.debounce_time"), config.getDebounceTime(), 1, 60)
+        debounceCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.debounce.debounce_time"), config.getDebounceTime(), 0.1f, 60.0f)
                 .setSaveConsumer(config::setDebounceTime)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.debounce.debounce_time"))
                 .setDefaultValue(defaultConfig.getDebounceTime())
@@ -219,6 +219,16 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setSaveConsumer(saveConsumer)
                 .setTooltip(Translation.of("tooltip.pishock-zap.config." + key))
                 .build();
+    }
+
+    private static FloatSliderBuilder createFloatSlider(
+        ConfigEntryBuilder entryBuilder,
+        Text fieldNameKey,
+        float value,
+        float min,
+        float max
+    ) {
+        return new FloatSliderBuilder(entryBuilder.getResetButtonKey(), fieldNameKey, value, min, max);
     }
 
     @Override

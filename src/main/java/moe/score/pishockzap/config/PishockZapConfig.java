@@ -19,9 +19,9 @@ public class PishockZapConfig {
     private boolean shockOnHealth = false;
 
     /// The duration per shock/vibration
-    private int duration = 1;
+    private float duration = 1.0f;
     /// The maximum duration per shock/vibration, if it varies e.g. based on debouncing
-    private int maxDuration = 10;
+    private float maxDuration = 10.0f;
     /// The threshold to swap from vibration to shock
     private int vibrationThreshold = 0;
     /// The damage value corresponding to the most intense shock
@@ -37,14 +37,14 @@ public class PishockZapConfig {
     /// The intensity of a shock when the player dies
     private int shockIntensityDeath = 75;
     /// The duration of a shock when the player dies
-    private int shockDurationDeath = 5;
+    private float shockDurationDeath = 5.0f;
     /// The distribution of shocks when the player takes damage
     private ShockDistribution shockDistribution = ShockDistribution.ROUND_ROBIN;
     /// The distribution of shocks when the player dies
     private ShockDistribution shockDistributionDeath = ShockDistribution.ALL;
 
     /// Debounce time between shock/vibrate requests (seconds)
-    private int debounceTime = 1;
+    private float debounceTime = 1.0f;
     /// Whether to accumulate duration for multiple requests within the debounce time
     private boolean accumulateDuration = true;
     /// Whether to accumulate intensity for multiple requests within the debounce time
@@ -77,8 +77,10 @@ public class PishockZapConfig {
             Class<?> type = field.getType();
             if (type.isAssignableFrom(ShockDistribution.class)) {
                 value = ShockDistribution.valueOf((String)value);
-            } else if (type.isAssignableFrom(Integer.class) || type.isAssignableFrom(int.class) && value instanceof Double) {
-                value = ((Double) value).intValue();
+            } else if ((type.isAssignableFrom(Integer.class) || type.isAssignableFrom(int.class)) && value instanceof Number) {
+                value = ((Number) value).intValue();
+            } else if ((type.isAssignableFrom(Float.class) || type.isAssignableFrom(float.class)) && value instanceof Number) {
+                value = ((Number) value).floatValue();
             } else if (type.isAssignableFrom(List.class) && fieldIsListOfInteger(field)) {
                 // noinspection unchecked -- gets checked pretty damn quickly
                 value = ((List<Number>) value).stream().map(Number::intValue).collect(Collectors.toList());
