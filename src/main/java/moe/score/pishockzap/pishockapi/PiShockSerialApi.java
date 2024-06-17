@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 public class PiShockSerialApi implements PiShockApi {
     public static final int PISHOCK_SERIAL_BAUD_RATE = 115200;
@@ -108,5 +109,9 @@ public class PiShockSerialApi implements PiShockApi {
                 }
             }
         });
+    }
+
+    public static Iterable<String> getSerialPorts() {
+        return Stream.of(SerialPort.getCommPorts()).map(SerialPort::getSystemPortName)::iterator;
     }
 }

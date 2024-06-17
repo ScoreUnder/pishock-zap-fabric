@@ -10,6 +10,7 @@ import moe.score.pishockzap.compat.FloatSliderBuilder;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
+import moe.score.pishockzap.pishockapi.PiShockSerialApi;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static moe.score.pishockzap.pishockapi.PiShockUtils.PISHOCK_MAX_DURATION;
 import static moe.score.pishockzap.pishockapi.PiShockUtils.PISHOCK_MAX_INTENSITY;
@@ -186,7 +188,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setDefaultValue(defaultConfig.isLocalEnabled())
                 .build());
         localApiCategory.add(entryBuilder
-                .startStrField(Translation.of("title.pishock-zap.config.api.serial_port"), config.getSerialPort())
+                .startDropdownMenu(Translation.of("title.pishock-zap.config.api.serial_port"), config.getSerialPort(), Function.identity(), Text::of)
+                .setSelections(PiShockSerialApi.getSerialPorts())
                 .setSaveConsumer(config::setSerialPort)
                 .setTooltip(Translation.of("tooltip.pishock-zap.config.api.serial_port"))
                 .setDefaultValue(defaultConfig.getSerialPort())
