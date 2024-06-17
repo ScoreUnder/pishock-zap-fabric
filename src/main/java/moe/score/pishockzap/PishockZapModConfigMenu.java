@@ -61,7 +61,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setDefaultValue(defaultConfig.isShockOnHealth())
                 .build());
 
-        var limitsCategory = configBuilder.getOrCreateCategory(new TranslatableText("title.pishock-zap.config.limits"));
+        var limitsCategory = configBuilder.getOrCreateCategory(Translation.of("title.pishock-zap.config.limits"));
         limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.duration"), config.getDuration(), 0.1f, PISHOCK_MAX_DURATION)
                 .setSaveConsumer(config::setDuration)
                 .setTooltip(Text.translatable("tooltip.pishock-zap.config.limits.duration"))
@@ -125,7 +125,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         limitsCategory.addEntry(createShockDistributionDropdown(entryBuilder, "limits.shock_distribution", config.getShockDistribution(), config::setShockDistribution));
         limitsCategory.addEntry(createShockDistributionDropdown(entryBuilder, "limits.shock_distribution_death", config.getShockDistributionDeath(), config::setShockDistributionDeath));
 
-        var debounceCategory = configBuilder.getOrCreateCategory(new TranslatableText("title.pishock-zap.config.debounce"));
+        var debounceCategory = configBuilder.getOrCreateCategory(Translation.of("title.pishock-zap.config.debounce"));
         debounceCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.debounce.debounce_time"), config.getDebounceTime(), 0.1f, 60.0f)
                 .setSaveConsumer(config::setDebounceTime)
                 .setTooltip(Text.translatable("tooltip.pishock-zap.config.debounce.debounce_time"))

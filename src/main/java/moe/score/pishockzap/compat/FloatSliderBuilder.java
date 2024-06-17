@@ -43,7 +43,7 @@ public class FloatSliderBuilder extends AbstractSliderFieldBuilder<Float, Intege
             entry.setErrorSupplier(() -> this.errorSupplier.apply(entry.getValue() / FLOAT_SCALE));
         }
 
-        return this.finishBuilding(entry);
+        return entry;
     }
 
     @Nullable
