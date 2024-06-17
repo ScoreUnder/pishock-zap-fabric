@@ -1,4 +1,8 @@
 {
+  "modmenu.nameTranslation.pishock-zap": "PiShock-Zap",
+  "modmenu.descriptionTranslation.pishock-zap": "Connect PiShock devices to Minecraft! Like hardcore mode, but with real consequences. Zap yourself when you take damage or die!",
+  "modmenu.summaryTranslation.pishock-zap": "Zap yourself with PiShock when you take damage.",
+
   "title.pishock-zap.config": "PiShock-Zap Config",
 
   "title.pishock-zap.config.general": "General",
@@ -33,6 +37,11 @@
   "title.pishock-zap.config.api.api_key": "API key",
   "title.pishock-zap.config.api.share_codes": "Share codes",
 
+  "title.pishock-zap.config.api.local": "Local Serial API (Advanced)",
+  "title.pishock-zap.config.api.local.enabled": "Use local serial API",
+  "title.pishock-zap.config.api.serial_port": "Serial port",
+  "title.pishock-zap.config.api.device_ids": "Shocker IDs",
+
   "tooltip.pishock-zap.config.general.enabled": "Enable/disable the mod",
   "tooltip.pishock-zap.config.general.vibration_only": "Only vibrate the device, don't shock, even on death.\nThis can be used to test the mod or simply\nprovide a less intense experience.\nFor example, if you want to check your share codes work.",
   "tooltip.pishock-zap.config.general.shock_on_death": "Shock the user on death with a\nconfigurable intensity and duration.\nIf disabled, normal damage shocks will still occur.",
@@ -60,6 +69,10 @@
   "tooltip.pishock-zap.config.api.username": "Your PiShock account username",
   "tooltip.pishock-zap.config.api.api_key": "Your PiShock account API key",
   "tooltip.pishock-zap.config.api.share_codes": "The share codes of the devices you want\nto control with this mod",
+
+  "tooltip.pishock-zap.config.api.local.enabled": "Use a device locally connected via USB.\nThe alternative is to use the web API.",
+  "tooltip.pishock-zap.config.api.serial_port": "The path or name of the serial port to use\nfor local serial API communication\nFor example, COM3 or /dev/ttyUSB0",
+  "tooltip.pishock-zap.config.api.device_ids": "The IDs of the shockers to drive via local serial API",
 
   "enum.pishock-zap.config.shock_distribution.first": "First device",
   "enum.pishock-zap.config.shock_distribution.last": "Last device",

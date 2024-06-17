@@ -5,6 +5,7 @@ import lombok.Data;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Data
 public class PishockZapConfig {
@@ -18,9 +19,9 @@ public class PishockZapConfig {
     private boolean shockOnHealth = false;
 
     /// The duration per shock/vibration
-    private int duration = 1;
+    private float duration = 1.0f;
     /// The maximum duration per shock/vibration, if it varies e.g. based on debouncing
-    private int maxDuration = 10;
+    private float maxDuration = 10.0f;
     /// The threshold to swap from vibration to shock
     private int vibrationThreshold = 0;
     /// The damage value corresponding to the most intense shock
@@ -36,14 +37,14 @@ public class PishockZapConfig {
     /// The intensity of a shock when the player dies
     private int shockIntensityDeath = 75;
     /// The duration of a shock when the player dies
-    private int shockDurationDeath = 5;
+    private float shockDurationDeath = 5.0f;
     /// The distribution of shocks when the player takes damage
     private ShockDistribution shockDistribution = ShockDistribution.ROUND_ROBIN;
     /// The distribution of shocks when the player dies
     private ShockDistribution shockDistributionDeath = ShockDistribution.ALL;
 
     /// Debounce time between shock/vibrate requests (seconds)
-    private int debounceTime = 1;
+    private float debounceTime = 1.0f;
     /// Whether to accumulate duration for multiple requests within the debounce time
     private boolean accumulateDuration = true;
     /// Whether to accumulate intensity for multiple requests within the debounce time
@@ -57,16 +58,32 @@ public class PishockZapConfig {
     private String apiKey = "";
     /// PiShock device share codes
     private List<String> shareCodes = List.of();
+    /// PiShock device serial port
+    private String serialPort = "/dev/ttyACM0";
+
+    /// Whether to use the local serial API or the web API
+    private boolean localEnabled = false;
+    /// PiShock device IDs (for serial API)
+    private List<Integer> deviceIds = List.of();
     /// Identifier for on-site logs
     private String logIdentifier = "PiShock-Zap (Minecraft)";
+
+    private boolean fieldIsListOfInteger(Field field) {
+        return field.getName().equals("deviceIds");
+    }
 
     private void setSingleConfigField(Field field, Object value) {
         try {
             Class<?> type = field.getType();
             if (type.isAssignableFrom(ShockDistribution.class)) {
                 value = ShockDistribution.valueOf((String)value);
-            } else if (type.isAssignableFrom(Integer.class) || type.isAssignableFrom(int.class) && value instanceof Double) {
-                value = ((Double) value).intValue();
+            } else if ((type.isAssignableFrom(Integer.class) || type.isAssignableFrom(int.class)) && value instanceof Number) {
+                value = ((Number) value).intValue();
+            } else if ((type.isAssignableFrom(Float.class) || type.isAssignableFrom(float.class)) && value instanceof Number) {
+                value = ((Number) value).floatValue();
+            } else if (type.isAssignableFrom(List.class) && fieldIsListOfInteger(field)) {
+                // noinspection unchecked -- gets checked pretty damn quickly
+                value = ((List<Number>) value).stream().map(Number::intValue).collect(Collectors.toList());
             }
             field.set(this, value);
         } catch (IllegalAccessException e) {
