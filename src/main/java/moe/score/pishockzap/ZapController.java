@@ -21,7 +21,6 @@ public class ZapController {
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     private final BlockingQueue<QueuedShock> queue = new LinkedBlockingQueue<>();
     @Getter
-    @Setter
     private PiShockApi api;
     private final Thread thread;
     private final PishockZapConfig config;
@@ -39,6 +38,11 @@ public class ZapController {
 
     public void stop() {
         this.thread.interrupt();
+    }
+
+    public void setApi(PiShockApi api) {
+        this.api.close();
+        this.api = api;
     }
 
     private void run() {
