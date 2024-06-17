@@ -1,11 +1,11 @@
 package moe.score.pishockzap.pishockapi;
 
+import com.fazecast.jSerialComm.SerialPort;
 import com.google.gson.Gson;
 import lombok.Getter;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
-import purejavacomm.*;
 
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -17,7 +17,6 @@ import java.util.logging.Logger;
 
 public class PiShockSerialApi implements PiShockApi {
     public static final int PISHOCK_SERIAL_BAUD_RATE = 115200;
-    public static final int SERIAL_CONNECT_TIMEOUT = 2000;
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     private final PishockZapConfig config;
     private final Executor executor;
@@ -25,7 +24,7 @@ public class PiShockSerialApi implements PiShockApi {
     private final String portName;
     private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
     private final Gson gson = new Gson();
-    private CommPort commPort;
+    private SerialPort commPort;
     private Writer jsonWriter = null;
 
     public PiShockSerialApi(PishockZapConfig config, Executor executor, String portName) {
@@ -87,8 +86,11 @@ public class PiShockSerialApi implements PiShockApi {
         executor.execute(() -> {
             try {
                 if (commPort == null) {
-                    commPort = CommPortIdentifier.getPortIdentifier(portName).open(PiShockSerialApi.class.getName(), SERIAL_CONNECT_TIMEOUT);
-                    ((SerialPort) commPort).setSerialPortParams(PISHOCK_SERIAL_BAUD_RATE, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+                    commPort = SerialPort.getCommPort(portName);
+                    commPort.setBaudRate(PISHOCK_SERIAL_BAUD_RATE);
+                    commPort.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
+                    commPort.openPort();
+
                     jsonWriter = new OutputStreamWriter(commPort.getOutputStream());
                 }
                 jsonWriter.write(gson.toJson(data));
@@ -102,7 +104,7 @@ public class PiShockSerialApi implements PiShockApi {
                 if (commPort != null) {
                     this.commPort = null;
                     this.jsonWriter = null;
-                    commPort.close();
+                    commPort.closePort();
                 }
             }
         });

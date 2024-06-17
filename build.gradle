@@ -44,8 +44,9 @@ dependencies {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
 
-    // PureJavaComm (serial port library)
-    implementation "com.github.purejavacomm:purejavacomm:1.0.2.RELEASE"
+	// JSerialComm (for serial communication)
+	implementation "com.fazecast:jSerialComm:[2.0.0,3.0.0)"
+	include "com.fazecast:jSerialComm:[2.0.0,3.0.0)"
 }
 
 processResources {
