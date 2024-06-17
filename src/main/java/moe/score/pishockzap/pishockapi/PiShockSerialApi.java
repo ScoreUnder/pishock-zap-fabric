@@ -111,6 +111,14 @@ public class PiShockSerialApi implements PiShockApi {
         });
     }
 
+    @Override
+    public void close() {
+        if (commPort != null) {
+            commPort.closePort();
+            commPort = null;
+        }
+    }
+
     public static Iterable<String> getSerialPorts() {
         return Stream.of(SerialPort.getCommPorts()).map(SerialPort::getSystemPortName)::iterator;
     }
