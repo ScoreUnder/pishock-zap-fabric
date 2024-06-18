@@ -42,8 +42,8 @@ limits on some share codes, and may not function correctly on older devices.
 
 ## Requirements
 
-- Minecraft 1.20
-- Fabric Loader 0.14.21
+- Minecraft 1.21
+- Fabric Loader 0.15.11
 - Fabric API
 - Cloth Config
 - Mod Menu (optional but strongly recommended; gives access to the settings
