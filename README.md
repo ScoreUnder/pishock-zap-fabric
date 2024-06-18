@@ -36,10 +36,6 @@ By default, this mod starts with the actual API calls **disabled**, with the
 expectation that you edit the settings to respect your personal limits and then
 enable it manually.
 
-Duration accumulation without separate queueing of different intensities will
-cause fractional durations to be sent, which may be incompatible with the
-limits on some share codes, and may not function correctly on older devices.
-
 ## Requirements
 
 - Minecraft 1.21
