@@ -6,6 +6,7 @@ import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.pishockapi.PiShockSerialApi;
 import moe.score.pishockzap.pishockapi.PiShockWebApiV1;
+import moe.score.pishockzap.shockcalculation.ZapController;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -29,7 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
-import static moe.score.pishockzap.ZapController.MAX_DAMAGE;
+import static moe.score.pishockzap.shockcalculation.ShockQueue.MAX_DAMAGE;
 
 public class PishockZapMod implements ClientModInitializer {
     public static final String NAME = "PiShock-Zap";
