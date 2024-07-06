@@ -16,12 +16,15 @@ damage, and has a comprehensive set of options to configure that experience.
 
 ## Notable features
 
+- Works in multiplayer, even on non-modded servers
 - Vibration/shock threshold
 - Vibration-only mode
-- More careful limit respecting than the original
+- Careful limit respecting with multiple layers of failsafe
 - Multiple share code support
-- Duration/intensity accumulation during backoff period
-- Probably still has bugs, user beware
+- Millisecond-precise duration settings
+- Queues and combines damage events that occur in quick succession
+- Low-latency usage via local serial API (advanced users only; requires PiShock
+  to be connected directly to the computer running Minecraft)
 
 ## Before you use
 
@@ -38,9 +41,141 @@ enable it manually.
 
 ## Requirements
 
-- Minecraft 1.18.2
+- Minecraft 1.18.2 (see the [Releases page][releases] or other branches for
+  other versions)
 - Fabric Loader 0.14.21
 - Fabric API
 - Cloth Config
 - Mod Menu (optional but strongly recommended; gives access to the settings
   screen)
+
+## Installation
+
+### Prism Launcher
+
+This approach is recommended for users who are not familiar with modding.
+
+1. Download the latest release from the [releases page][releases]. Make sure you
+   get the one corresponding to the version of Minecraft you are using. (The
+   number after the `+` in the version name is the version of Minecraft it
+   supports.)
+2. Download and install [Prism Launcher].
+3. Open Prism Launcher and click "Add Instance".
+4. Create a new custom instance
+  * Choose Minecraft 1.18.2.
+  * Choose either Fabric or Quilt as the mod loader, at the latest version.
+  * Click OK.
+5. Right-click your newly-created instance and click "Edit".
+6. Go to the "Mods" tab and click "Add file".
+  * Choose the JAR file you downloaded in step 1.
+7. Click "Download mods" and select the following mods: (these should all be
+   close to the top of the list)
+  * Fabric API
+  * Cloth Config API
+  * Mod Menu
+8. Click "Review and Confirm" and then "OK".
+9. Click "Launch" to start the game. You can launch the game in future just by
+   double-clicking the instance in Prism Launcher.
+
+### Manual
+
+1. Prepare a Minecraft instance modded with Fabric or Quilt.
+2. Download the latest release from the [releases page][releases].
+3. Put the downloaded JAR file in your `.minecraft/mods` folder.
+4. Download any missing required mods (see the Requirements section).
+5. Start the game.
+
+## Alternatives
+
+There are several other mods that do similar things to PiShock-Zap. I will
+compare them and then note some more specific quirks of each.
+
+## Big comparison table
+
+| Feature                        | PiShock-Zap            | [PiShockForMc]         | [Shockcraft]       | [Minecraft Shock Collar] | Raith's PiShock mod | [The original Forge mod][original-forge-mod] |
+|--------------------------------|------------------------|------------------------|--------------------|--------------------------|---------------------|----------------------------------------------|
+| Minecraft versions             | 1.18.2, 1.20.x, 1.21.x | 1.19.x, 1.20.x, 1.21.x | 1.19.3, 1.19.4     | Wide range               | 1.19.x, 1.20.x      | 1.18.2                                       |
+| Author                         | [ScoreUnder]           | [ojaha065]             | [yanchan09]        | [Hepno]                  | [Raith]             | [DrasticLp]                                  |
+| Mod loader                     | Fabric                 | Forge                  | Fabric             | Bukkit                   | Forge               | Forge                                        |
+| Client-side                    | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :x:                      | :question:          | :white_check_mark:                           |
+| Singleplayer                   | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :x:                      | :question:          | :white_check_mark:                           |
+| Multiplayer                    | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :white_check_mark:       | :question:          | :white_check_mark:                           |
+| Works on vanilla servers       | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :x:                      | :question:          | :x:                                          |
+| Low-latency local serial API   | :white_check_mark:     | :x:                    | :x:                | :x:                      | :question:          | :x:                                          |
+| Multiple share codes           | :white_check_mark:     | :x:                    | :x:                | :x:                      | :question:          | :x:                                          |
+| Vibration support              | :white_check_mark:     | :white_check_mark:     | :x:                | :x:                      | :question:          | :x:                                          |
+| Vibration/shock threshold      | :white_check_mark:     | :x:                    | :x:                | :x:                      | :question:          | :x:                                          |
+| API connectivity checks        | :x:                    | :white_check_mark:     | :x:                | :x:                      | :question:          | :x:                                          |
+| Vibration test button          | :x:                    | :white_check_mark:     | :x:                | :x:                      | :question:          | :x:                                          |
+| In-game quick toggle           | Via hotkey             | :x:                    | Via command        | :x:                      | :question:          | :x:                                          |
+| Damage curves                  | :white_check_mark:     | :white_check_mark:     | :x:                | :x:                      | :question:          | :white_check_mark:                           |
+| Queued/combined damage events  | :white_check_mark:     | :white_check_mark:     | :x:                | :x:                      | :question:          | :x:                                          |
+| Separate shock-on-death config | :white_check_mark:     | :white_check_mark:     | :x:                | :x:                      | :question:          | :white_check_mark:                           |
+| Millisecond-precise duration   | :white_check_mark:     | :x:                    | :x:                | :white_check_mark:       | :question:          | :x:                                          |
+| Configuration method           | In-game settings       | In-game settings       | Slash commands     | Configuration file       | :question:          | In-game settings                             |
+| Configurability                | Control-freak          | Simple                 | Basic              | Basic                    | :question:          | Simple                                       |
+| Known performance issues       | :ok:                   | :ok:                   | :ok:               | :warning:                | :question:          | :warning:                                    |
+| Known limit-exceeding bugs     | :ok:                   | :ok:                   | :ok:               | :ok:                     | :question:          | :warning: :bangbang:                         |
+| Limit-respecting failsafes     | Multi-level            | Some                   | N/A                | N/A                      | :question:          | :x:                                          |
+| Source code available          | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :white_check_mark:       | :question:          | :x:                                          |
+
+### [PiShockForMc]
+
+It has a hardcoded duration of 0.6 seconds for all shocks except the shock on
+death.
+It uses a different method of damage detection, which may result in slightly
+different behaviour in edge cases. I am not sure if it is more or less reliable
+than PiShock-Zap.
+
+### [Shockcraft]
+
+This uses a slightly different method of damage detection, but also different
+from PiShockForMc. Again, I am not sure which method is more reliable.
+
+### [Minecraft Shock Collar]
+
+You will need to have control over the server to use this mod. It may cause
+performance issues on the server side due to blocking HTTP requests being made
+on the main thread.
+
+It zaps the configured person when *any* player gets damaged, while most other
+mods zap the configured person when the local player gets damaged. Because of
+how it is implemented, it can only be configured to zap one person at a time per
+server.
+
+It is much simpler than PiShock-Zap, which makes it a better starting point for
+new developers to understand Minecraft and PiShock integration, or to modify it
+to their needs.
+
+It supports millisecond-precise duration settings, but only on a technicality;
+the duration is meant to be in seconds, but if you configure a duration higher
+than 100, it will be interpreted by the PiShock API as milliseconds instead.
+
+### Raith's PiShock mod
+
+The website is no longer available, and as such I cannot compare or link to it.
+
+### [The original Forge mod][original-forge-mod]
+
+**Not recommended** due to known bugs and no clear path to updates.
+
+This was originally distributed as a jar file on the PiShock discord, but has
+since disappeared. I had a copy lying around and have mirrored it.
+
+It can be used on multiplayer servers, but only if the server has the mod
+installed. It may cause small client-side stutters when the player is damaged
+due to performing blocking HTTP requests on the main thread.
+
+
+[releases]: https://github.com/ScoreUnder/pishock-zap-fabric/releases
+[Prism Launcher]: https://prismlauncher.org/
+[Minecraft Shock Collar]: https://github.com/Hepno/MinecraftShockCollar
+[original-forge-mod]: https://score.moe/a/ps/pishock-1.1.1.jar
+[DrasticLp]: https://github.com/DrasticLp
+[Shockcraft]: https://codeberg.org/yanchan09/shockcraft
+[yanchan09]: https://codeberg.org/yanchan09
+[PiShockForMc]: https://github.com/ojaha065/PiShockForMC
+[ojaha065]: https://github.com/ojaha065
+[Hepno]: https://github.com/Hepno
+[ScoreUnder]: https://github.com/ScoreUnder
+[Raith]: https://github.com/RaithSphere
