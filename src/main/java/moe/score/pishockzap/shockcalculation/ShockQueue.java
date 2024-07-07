@@ -91,7 +91,7 @@ public class ShockQueue {
         }
 
         if (separateDeathShock) {
-            type = OpType.SHOCK;
+            type = config.isVibrationOnly() ? OpType.VIBRATE : OpType.SHOCK;
             intensity = config.getShockIntensityDeath();
             duration = config.getShockDurationDeath();
 
