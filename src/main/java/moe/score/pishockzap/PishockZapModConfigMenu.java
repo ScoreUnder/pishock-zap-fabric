@@ -50,12 +50,6 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setDefaultValue(defaultConfig.isVibrationOnly())
                 .build());
         generalCategory.addEntry(entryBuilder
-                .startBooleanToggle(new TranslatableText("title.pishock-zap.config.general.shock_on_death"), config.isShockOnDeath())
-                .setSaveConsumer(config::setShockOnDeath)
-                .setTooltip(new TranslatableText("tooltip.pishock-zap.config.general.shock_on_death"))
-                .setDefaultValue(defaultConfig.isShockOnDeath())
-                .build());
-        generalCategory.addEntry(entryBuilder
                 .startBooleanToggle(new TranslatableText("title.pishock-zap.config.general.shock_on_health"), config.isShockOnHealth())
                 .setSaveConsumer(config::setShockOnHealth)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.general.shock_on_health"))
@@ -121,21 +115,34 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setTextGetter((value) -> Translation.of("label.pishock-zap.config.intensity").append(String.format("%d%%", value)))
                 .setDefaultValue(defaultConfig.getShockIntensityMax())
                 .build());
-        limitsCategory.addEntry(entryBuilder
+        limitsCategory.addEntry(createShockDistributionDropdown(entryBuilder, "limits.shock_distribution", config.getShockDistribution(), config::setShockDistribution));
+
+        var shockOnDeathCategory = entryBuilder
+                .startSubCategory(Translation.of("title.pishock-zap.config.limits.shock_on_death_category"));
+
+        shockOnDeathCategory.add(entryBuilder
+                .startBooleanToggle(Translation.of("title.pishock-zap.config.general.shock_on_death"), config.isShockOnDeath())
+                .setSaveConsumer(config::setShockOnDeath)
+                .setTooltip(Translation.of("tooltip.pishock-zap.config.general.shock_on_death"))
+                .setDefaultValue(defaultConfig.isShockOnDeath())
+                .build());
+        shockOnDeathCategory.add(entryBuilder
                 .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.shock_intensity_death"), config.getShockIntensityDeath(), 1, PISHOCK_MAX_INTENSITY)
                 .setSaveConsumer(config::setShockIntensityDeath)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.shock_intensity_death"))
                 .setTextGetter((value) -> Translation.of("label.pishock-zap.config.intensity").append(String.format("%d%%", value)))
                 .setDefaultValue(defaultConfig.getShockIntensityDeath())
                 .build());
-        limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.shock_duration_death"), config.getShockDurationDeath(), 0.1f, PISHOCK_MAX_DURATION)
+        shockOnDeathCategory.add(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.shock_duration_death"), config.getShockDurationDeath(), 0.1f, PISHOCK_MAX_DURATION)
                 .setSaveConsumer(config::setShockDurationDeath)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.shock_duration_death"))
                 .setDefaultValue(defaultConfig.getShockDurationDeath())
                 .setTextGetter((value) -> Text.of(String.format("%.3fs", value)))
                 .build());
-        limitsCategory.addEntry(createShockDistributionDropdown(entryBuilder, "limits.shock_distribution", config.getShockDistribution(), config::setShockDistribution));
-        limitsCategory.addEntry(createShockDistributionDropdown(entryBuilder, "limits.shock_distribution_death", config.getShockDistributionDeath(), config::setShockDistributionDeath));
+        shockOnDeathCategory.add(createShockDistributionDropdown(entryBuilder, "limits.shock_distribution_death", config.getShockDistributionDeath(), config::setShockDistributionDeath));
+
+        shockOnDeathCategory.setExpanded(true);
+        limitsCategory.addEntry(shockOnDeathCategory.build());
 
         var debounceCategory = configBuilder.getOrCreateCategory(new TranslatableText("title.pishock-zap.config.debounce"));
         debounceCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.debounce.debounce_time"), config.getDebounceTime(), 0.1f, 60.0f)

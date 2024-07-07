@@ -8,7 +8,7 @@
   "title.pishock-zap.config.general": "General",
   "title.pishock-zap.config.general.enabled": "Enabled",
   "title.pishock-zap.config.general.vibration_only": "Vibration only (no shocks)",
-  "title.pishock-zap.config.general.shock_on_death": "Shock on death",
+  "title.pishock-zap.config.general.shock_on_death": "Enable shock on death",
   "title.pishock-zap.config.general.shock_on_health": "Shock by remaining health",
 
   "title.pishock-zap.config.limits": "Limits",
@@ -25,6 +25,7 @@
   "title.pishock-zap.config.limits.shock_duration_death": "Shock duration on death",
   "title.pishock-zap.config.limits.shock_distribution": "Shock distribution on damage",
   "title.pishock-zap.config.limits.shock_distribution_death": "Shock distribution on death",
+  "title.pishock-zap.config.limits.shock_on_death_category": "Shock on death",
 
   "title.pishock-zap.config.debounce": "Backoff",
   "title.pishock-zap.config.debounce.debounce_time": "Backoff period",
