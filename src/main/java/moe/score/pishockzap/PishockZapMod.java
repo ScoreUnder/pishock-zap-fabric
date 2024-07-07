@@ -30,9 +30,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
-import static moe.score.pishockzap.shockcalculation.ShockQueue.MAX_DAMAGE;
-
 public class PishockZapMod implements ClientModInitializer {
+    public static final int MAX_DAMAGE = 20;
     public static final String NAME = "PiShock-Zap";
     @Getter
     private static PishockZapMod instance = null;

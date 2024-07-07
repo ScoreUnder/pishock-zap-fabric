@@ -1,5 +1,6 @@
 package moe.score.pishockzap.shockcalculation;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
@@ -13,7 +14,7 @@ import java.util.logging.Logger;
 
 @RequiredArgsConstructor
 public class ShockQueue {
-    public static final int MAX_DAMAGE = 20;
+    private static final float HALF_HEART_DAMAGE = 0.05f;
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     private final BlockingQueue<QueuedShock> queue = new LinkedBlockingQueue<>();
     private final PishockZapConfig config;
@@ -51,7 +52,7 @@ public class ShockQueue {
         }
 
         float duration;
-        int damageEquivalent;
+        float damageEquivalent;
 
         if (config.isAccumulateDuration()) {
             duration = shock.duration * shock.damageEquivalent + nextShock.duration * nextShock.damageEquivalent;
@@ -65,7 +66,7 @@ public class ShockQueue {
 
         if (config.isAccumulateIntensity() && !config.isQueueDifferent() && !config.isShockOnHealth()) {
             damageEquivalent = shock.damageEquivalent + nextShock.damageEquivalent;
-            if (damageEquivalent < 0 || damageEquivalent > MAX_DAMAGE) {
+            if (damageEquivalent < 0.0f || damageEquivalent > 1.0f) {
                 return false;
             }
         } else {
@@ -84,10 +85,10 @@ public class ShockQueue {
         int intensity;
         float duration;
 
-        if (shock.damageEquivalent > MAX_DAMAGE) {
+        if (shock.damageEquivalent > 1.0f) {
             // Should never happen, but safety first
             logger.warning("Damage equivalent is greater than max damage, clamping to max damage");
-            shock.damageEquivalent = MAX_DAMAGE;
+            shock.damageEquivalent = 1.0f;
         }
 
         if (separateDeathShock) {
@@ -98,20 +99,24 @@ public class ShockQueue {
             // No sanity checks here, because we know the values are valid
             // and the user may want them to be out of the normal range
         } else {
-            int vibrationThreshold = config.getVibrationThreshold();
-            if (config.isVibrationOnly()) vibrationThreshold = MAX_DAMAGE;
+            float vibrationThreshold = getVibrationThreshold();
+            if (config.isVibrationOnly()) vibrationThreshold = 1.0f;
             if (shock.damageEquivalent > vibrationThreshold) {
                 type = OpType.SHOCK;
+                // This bodge exists so that the minimum intensity corresponds to a half-heart of damage instead of 0 damage.
+                // To accomplish this, we subtract an extra half-heart of damage from the damage equivalent and range.
+                // That might not play so nice mathematically when the player's max HP is not 20. But it's still good enough.
+                // TODO: Maybe make it configurable?
                 intensity = transformIntensityIntoRange(
-                    shock.damageEquivalent - vibrationThreshold - 1,
-                    config.getMaxDamage() - vibrationThreshold - 1,
+                    shock.damageEquivalent - vibrationThreshold - HALF_HEART_DAMAGE,
+                    getMaxDamage() - vibrationThreshold - HALF_HEART_DAMAGE,
                     config.getShockIntensityMin(),
                     config.getShockIntensityMax());
             } else {
                 type = OpType.VIBRATE;
                 intensity = transformIntensityIntoRange(
-                    shock.damageEquivalent - 1,
-                    Math.min(vibrationThreshold, config.getMaxDamage()) - 1,
+                    shock.damageEquivalent - HALF_HEART_DAMAGE,
+                    Math.min(vibrationThreshold, getMaxDamage()) - HALF_HEART_DAMAGE,
                     config.getVibrationIntensityMin(),
                     config.getVibrationIntensityMax());
             }
@@ -122,6 +127,14 @@ public class ShockQueue {
         }
 
         return new CalculatedShock(shock.distribution, type, intensity, duration);
+    }
+
+    private float getVibrationThreshold() {
+        return config.getVibrationThreshold() * HALF_HEART_DAMAGE;
+    }
+
+    private float getMaxDamage() {
+        return config.getMaxDamage() * HALF_HEART_DAMAGE;
     }
 
     private float sanityCheckDuration(float duration) {
@@ -152,28 +165,26 @@ public class ShockQueue {
         return intensity;
     }
 
-    private int transformIntensityIntoRange(int damageEquivalent, int damageRange, int intensityMin, int intensityMax) {
+    private int transformIntensityIntoRange(float damageEquivalent, float damageRange, int intensityMin, int intensityMax) {
         if (damageRange <= 0) return intensityMax;
         if (damageEquivalent <= 0) return intensityMin;
         if (damageEquivalent >= damageRange) return intensityMax;
-        return Math.round((damageEquivalent / (float) damageRange) * (intensityMax - intensityMin) + intensityMin);
+        return Math.round((damageEquivalent / damageRange) * (intensityMax - intensityMin) + intensityMin);
     }
 
     public void queueShock(ShockDistribution distribution, boolean isDeath, int damageEquivalent) {
+        queue.add(new QueuedShock(distribution, isDeath, damageEquivalent * HALF_HEART_DAMAGE, config.getDuration()));
+    }
+
+    public void queueShock(ShockDistribution distribution, boolean isDeath, float damageEquivalent) {
         queue.add(new QueuedShock(distribution, isDeath, damageEquivalent, config.getDuration()));
     }
 
+    @AllArgsConstructor
     private static final class QueuedShock {
         private final ShockDistribution distribution;
         private final boolean isDeath;
-        private int damageEquivalent;
+        private float damageEquivalent;
         private float duration;
-
-        public QueuedShock(ShockDistribution distribution, boolean isDeath, int damageEquivalent, float duration) {
-            this.distribution = distribution;
-            this.isDeath = isDeath;
-            this.damageEquivalent = damageEquivalent;
-            this.duration = duration;
-        }
     }
 }
