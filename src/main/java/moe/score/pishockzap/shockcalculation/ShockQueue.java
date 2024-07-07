@@ -110,7 +110,7 @@ public class ShockQueue {
             } else {
                 type = OpType.VIBRATE;
                 intensity = transformIntensityIntoRange(
-                    shock.damageEquivalent,
+                    shock.damageEquivalent - 1,
                     Math.min(vibrationThreshold, config.getMaxDamage()) - 1,
                     config.getVibrationIntensityMin(),
                     config.getVibrationIntensityMax());
