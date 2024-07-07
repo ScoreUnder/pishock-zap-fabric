@@ -80,7 +80,7 @@ class ShockQueueTest {
     @MethodSource("vibrationArguments")
     void vibrationReturnsExpectedValue(int damage, int expectedIntensity) throws InterruptedException {
         var queue = new ShockQueue(makeTestConfig());
-        queue.queueShock(ShockDistribution.ALL, false, damage);
+        queue.queueShock(ShockDistribution.ALL, false, damage * ShockQueue.HALF_HEART_DAMAGE);
 
         assertFalse(queue.isEmpty());
 
@@ -98,7 +98,7 @@ class ShockQueueTest {
     @MethodSource("shockArguments")
     void shockReturnsExpectedValue(int damage, int expectedIntensity) throws InterruptedException {
         var queue = new ShockQueue(makeTestConfig());
-        queue.queueShock(ShockDistribution.ALL, false, damage);
+        queue.queueShock(ShockDistribution.ALL, false, damage * ShockQueue.HALF_HEART_DAMAGE);
 
         assertFalse(queue.isEmpty());
 
@@ -115,7 +115,7 @@ class ShockQueueTest {
     @Test
     void deathShockReturnsExpectedValue() throws InterruptedException {
         var queue = new ShockQueue(makeTestConfig());
-        queue.queueShock(ShockDistribution.ALL, true, 1);
+        queue.queueShock(ShockDistribution.ALL, true, 1 * ShockQueue.HALF_HEART_DAMAGE);
 
         assertFalse(queue.isEmpty());
 
@@ -135,7 +135,7 @@ class ShockQueueTest {
         config.setMaxDamage(7);
         var queue = new ShockQueue(config);
 
-        queue.queueShock(ShockDistribution.ALL, false, 6);
+        queue.queueShock(ShockDistribution.ALL, false, 6 * ShockQueue.HALF_HEART_DAMAGE);
 
         assertFalse(queue.isEmpty());
 
@@ -153,7 +153,7 @@ class ShockQueueTest {
     void differentShockDistributionIsRespectedOnDamage() throws InterruptedException {
         var queue = new ShockQueue(makeTestConfig());
 
-        queue.queueShock(ShockDistribution.RANDOM, false, 6);
+        queue.queueShock(ShockDistribution.RANDOM, false, 6 * ShockQueue.HALF_HEART_DAMAGE);
 
         assertFalse(queue.isEmpty());
 
@@ -171,7 +171,7 @@ class ShockQueueTest {
     void differentShockDistributionIsRespectedOnDeath() throws InterruptedException {
         var queue = new ShockQueue(makeTestConfig());
 
-        queue.queueShock(ShockDistribution.RANDOM, true, 1);
+        queue.queueShock(ShockDistribution.RANDOM, true, 1 * ShockQueue.HALF_HEART_DAMAGE);
 
         assertFalse(queue.isEmpty());
 
@@ -198,8 +198,8 @@ class ShockQueueTest {
         @Test
         void twoDifferentVibrationsAreNotCombined() throws InterruptedException {
             var queue = makeQueue();
-            queue.queueShock(ShockDistribution.ALL, false, 1);
-            queue.queueShock(ShockDistribution.ALL, false, 2);
+            queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
+            queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
             assertFalse(queue.isEmpty());
 
@@ -226,8 +226,8 @@ class ShockQueueTest {
         @Test
         void twoDifferentShocksAreNotCombined() throws InterruptedException {
             var queue = makeQueue();
-            queue.queueShock(ShockDistribution.ALL, false, 5);
-            queue.queueShock(ShockDistribution.ALL, false, 6);
+            queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
+            queue.queueShock(ShockDistribution.ALL, false, 6 * ShockQueue.HALF_HEART_DAMAGE);
 
             assertFalse(queue.isEmpty());
 
@@ -254,8 +254,8 @@ class ShockQueueTest {
         @Test
         void vibrationAndShockAreNotCombined() throws InterruptedException {
             var queue = makeQueue();
-            queue.queueShock(ShockDistribution.ALL, false, 2);
-            queue.queueShock(ShockDistribution.ALL, false, 5);
+            queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+            queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
 
             assertFalse(queue.isEmpty());
 
@@ -282,8 +282,8 @@ class ShockQueueTest {
         @Test
         void vibrationAndDeathShockAreNotCombined() throws InterruptedException {
             var queue = makeQueue();
-            queue.queueShock(ShockDistribution.ALL, false, 2);
-            queue.queueShock(ShockDistribution.ALL, true, 1);
+            queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+            queue.queueShock(ShockDistribution.ALL, true, 1 * ShockQueue.HALF_HEART_DAMAGE);
 
             assertFalse(queue.isEmpty());
 
@@ -310,8 +310,8 @@ class ShockQueueTest {
         @Test
         void shockAndDeathShockAreNotCombined() throws InterruptedException {
             var queue = makeQueue();
-            queue.queueShock(ShockDistribution.ALL, false, 5);
-            queue.queueShock(ShockDistribution.ALL, true, 1);
+            queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
+            queue.queueShock(ShockDistribution.ALL, true, 1 * ShockQueue.HALF_HEART_DAMAGE);
 
             assertFalse(queue.isEmpty());
 
@@ -338,8 +338,8 @@ class ShockQueueTest {
         @Test
         void twoDeathShocksAreNotCombined() throws InterruptedException {
             var queue = makeQueue();
-            queue.queueShock(ShockDistribution.ALL, true, 1);
-            queue.queueShock(ShockDistribution.ALL, true, 1);
+            queue.queueShock(ShockDistribution.ALL, true, 1 * ShockQueue.HALF_HEART_DAMAGE);
+            queue.queueShock(ShockDistribution.ALL, true, 1 * ShockQueue.HALF_HEART_DAMAGE);
 
             assertFalse(queue.isEmpty());
 
@@ -380,7 +380,7 @@ class ShockQueueTest {
             @ValueSource(booleans = {true, false})
             void oneVibrationIsUnchanged(boolean withAccumulateIntensity) throws InterruptedException {
                 var queue = makeQueue(withAccumulateIntensity);
-                queue.queueShock(ShockDistribution.ALL, false, 2);
+                queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                 assertFalse(queue.isEmpty());
 
@@ -398,8 +398,8 @@ class ShockQueueTest {
             @ValueSource(booleans = {true, false})
             void twoSameVibrationsAreCombined(boolean withAccumulateIntensity) throws InterruptedException {
                 var queue = makeQueue(withAccumulateIntensity);
-                queue.queueShock(ShockDistribution.ALL, false, 2);
-                queue.queueShock(ShockDistribution.ALL, false, 2);
+                queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                 assertFalse(queue.isEmpty());
 
@@ -417,8 +417,8 @@ class ShockQueueTest {
             @ValueSource(booleans = {true, false})
             void twoSameShocksAreCombined(boolean withAccumulateIntensity) throws InterruptedException {
                 var queue = makeQueue(withAccumulateIntensity);
-                queue.queueShock(ShockDistribution.ALL, false, 5);
-                queue.queueShock(ShockDistribution.ALL, false, 5);
+                queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
+                queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
 
                 assertFalse(queue.isEmpty());
 
@@ -450,7 +450,7 @@ class ShockQueueTest {
             @ValueSource(booleans = {true, false})
             void oneVibrationIsUnchanged(boolean withAccumulateIntensity) throws InterruptedException {
                 var queue = makeQueue(withAccumulateIntensity);
-                queue.queueShock(ShockDistribution.ALL, false, 2);
+                queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                 assertFalse(queue.isEmpty());
 
@@ -468,8 +468,8 @@ class ShockQueueTest {
             @ValueSource(booleans = {true, false})
             void twoSameVibrationsAreCombined(boolean withAccumulateIntensity) throws InterruptedException {
                 var queue = makeQueue(withAccumulateIntensity);
-                queue.queueShock(ShockDistribution.ALL, false, 2);
-                queue.queueShock(ShockDistribution.ALL, false, 2);
+                queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                 assertFalse(queue.isEmpty());
 
@@ -487,8 +487,8 @@ class ShockQueueTest {
             @ValueSource(booleans = {true, false})
             void twoSameShocksAreCombined(boolean withAccumulateIntensity) throws InterruptedException {
                 var queue = makeQueue(withAccumulateIntensity);
-                queue.queueShock(ShockDistribution.ALL, false, 5);
-                queue.queueShock(ShockDistribution.ALL, false, 5);
+                queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
+                queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
 
                 assertFalse(queue.isEmpty());
 
@@ -517,8 +517,8 @@ class ShockQueueTest {
         @Test
         void vibrationAndDeathShockAreNotCombined() throws InterruptedException {
             var queue = makeQueue();
-            queue.queueShock(ShockDistribution.ALL, false, 2);
-            queue.queueShock(ShockDistribution.ALL, true, 1);
+            queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+            queue.queueShock(ShockDistribution.ALL, true, 1 * ShockQueue.HALF_HEART_DAMAGE);
 
             assertFalse(queue.isEmpty());
 
@@ -545,8 +545,8 @@ class ShockQueueTest {
         @Test
         void shockAndDeathShockAreNotCombined() throws InterruptedException {
             var queue = makeQueue();
-            queue.queueShock(ShockDistribution.ALL, false, 5);
-            queue.queueShock(ShockDistribution.ALL, true, 1);
+            queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
+            queue.queueShock(ShockDistribution.ALL, true, 1 * ShockQueue.HALF_HEART_DAMAGE);
 
             assertFalse(queue.isEmpty());
 
@@ -573,8 +573,8 @@ class ShockQueueTest {
         @Test
         void twoDeathShocksAreNotCombined() throws InterruptedException {
             var queue = makeQueue();
-            queue.queueShock(ShockDistribution.ALL, true, 1);
-            queue.queueShock(ShockDistribution.ALL, true, 1);
+            queue.queueShock(ShockDistribution.ALL, true, 1 * ShockQueue.HALF_HEART_DAMAGE);
+            queue.queueShock(ShockDistribution.ALL, true, 1 * ShockQueue.HALF_HEART_DAMAGE);
 
             assertFalse(queue.isEmpty());
 
@@ -615,7 +615,7 @@ class ShockQueueTest {
                 @Test
                 void oneVibrationIsUnchanged() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -632,8 +632,8 @@ class ShockQueueTest {
                 @Test
                 void twoDifferentVibrationsAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 1);
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
+                    queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -650,8 +650,8 @@ class ShockQueueTest {
                 @Test
                 void twoSameVibrationsAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -668,8 +668,8 @@ class ShockQueueTest {
                 @Test
                 void twoDifferentShocksAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
-                    queue.queueShock(ShockDistribution.ALL, false, 6);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 6 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -686,8 +686,8 @@ class ShockQueueTest {
                 @Test
                 void twoSameShocksAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -704,8 +704,8 @@ class ShockQueueTest {
                 @Test
                 void vibrationAndShockAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -722,9 +722,9 @@ class ShockQueueTest {
                 @Test
                 void threeVibrationsAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 1);
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 1);
+                    queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -754,7 +754,7 @@ class ShockQueueTest {
                 @Test
                 void oneVibrationIsUnchanged() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -771,8 +771,8 @@ class ShockQueueTest {
                 @Test
                 void twoDifferentVibrationsAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 1);
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
+                    queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -789,8 +789,8 @@ class ShockQueueTest {
                 @Test
                 void twoSameVibrationsAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -807,8 +807,8 @@ class ShockQueueTest {
                 @Test
                 void twoVibrationsCombineToShock() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 4);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 4 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -825,8 +825,8 @@ class ShockQueueTest {
                 @Test
                 void twoDifferentShocksAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
-                    queue.queueShock(ShockDistribution.ALL, false, 6);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 6 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -843,8 +843,8 @@ class ShockQueueTest {
                 @Test
                 void twoSameShocksAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -861,8 +861,8 @@ class ShockQueueTest {
                 @Test
                 void vibrationAndShockAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -879,9 +879,9 @@ class ShockQueueTest {
                 @Test
                 void threeVibrationsAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 1);
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 1);
+                    queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -898,9 +898,9 @@ class ShockQueueTest {
                 @Test
                 void threeVibrationsCombineToShock() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 1);
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 3);
+                    queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 3 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -933,7 +933,7 @@ class ShockQueueTest {
                 @Test
                 void oneVibrationIsUnchanged() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -950,8 +950,8 @@ class ShockQueueTest {
                 @Test
                 void twoDifferentVibrationsAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 1);
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
+                    queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -968,8 +968,8 @@ class ShockQueueTest {
                 @Test
                 void twoSameVibrationsAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -986,8 +986,8 @@ class ShockQueueTest {
                 @Test
                 void twoDifferentShocksAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
-                    queue.queueShock(ShockDistribution.ALL, false, 6);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 6 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -1004,8 +1004,8 @@ class ShockQueueTest {
                 @Test
                 void twoSameShocksAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -1022,8 +1022,8 @@ class ShockQueueTest {
                 @Test
                 void vibrationAndShockAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -1040,9 +1040,9 @@ class ShockQueueTest {
                 @Test
                 void threeVibrationsAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 1);
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 1);
+                    queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -1062,7 +1062,7 @@ class ShockQueueTest {
                     var queue = makeQueue();
 
                     for (int i = 0; i < numShocks; i++) {
-                        queue.queueShock(ShockDistribution.ALL, false, 1);
+                        queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
                     }
 
                     assertFalse(queue.isEmpty());
@@ -1093,7 +1093,7 @@ class ShockQueueTest {
                 @Test
                 void oneVibrationIsUnchanged() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -1110,8 +1110,8 @@ class ShockQueueTest {
                 @Test
                 void twoDifferentVibrationsAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 1);
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
+                    queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -1128,8 +1128,8 @@ class ShockQueueTest {
                 @Test
                 void twoSameVibrationsAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -1146,8 +1146,8 @@ class ShockQueueTest {
                 @Test
                 void twoVibrationsCombineToShock() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 4);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 4 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -1164,8 +1164,8 @@ class ShockQueueTest {
                 @Test
                 void twoDifferentShocksAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
-                    queue.queueShock(ShockDistribution.ALL, false, 6);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 6 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -1182,8 +1182,8 @@ class ShockQueueTest {
                 @Test
                 void twoSameShocksAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -1200,8 +1200,8 @@ class ShockQueueTest {
                 @Test
                 void vibrationAndShockAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 5);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 5 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -1218,9 +1218,9 @@ class ShockQueueTest {
                 @Test
                 void threeVibrationsAreCombined() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 1);
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 1);
+                    queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -1237,9 +1237,9 @@ class ShockQueueTest {
                 @Test
                 void threeVibrationsCombineToShock() throws InterruptedException {
                     var queue = makeQueue();
-                    queue.queueShock(ShockDistribution.ALL, false, 1);
-                    queue.queueShock(ShockDistribution.ALL, false, 2);
-                    queue.queueShock(ShockDistribution.ALL, false, 3);
+                    queue.queueShock(ShockDistribution.ALL, false, 1 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
+                    queue.queueShock(ShockDistribution.ALL, false, 3 * ShockQueue.HALF_HEART_DAMAGE);
 
                     assertFalse(queue.isEmpty());
 
@@ -1285,7 +1285,7 @@ class ShockQueueTest {
         @Test
         void vibrationIsSmallerRange() throws InterruptedException {
             var queue = makeQueue();
-            queue.queueShock(ShockDistribution.ALL, false, 2);
+            queue.queueShock(ShockDistribution.ALL, false, 2 * ShockQueue.HALF_HEART_DAMAGE);
 
             assertFalse(queue.isEmpty());
 
@@ -1303,7 +1303,7 @@ class ShockQueueTest {
         @MethodSource("shockArguments")
         void shocksAreNowVibrations(int damage, int expectedIntensity) throws InterruptedException {
             var queue = makeQueue();
-            queue.queueShock(ShockDistribution.ALL, false, damage);
+            queue.queueShock(ShockDistribution.ALL, false, damage * ShockQueue.HALF_HEART_DAMAGE);
 
             assertFalse(queue.isEmpty());
 
@@ -1320,7 +1320,7 @@ class ShockQueueTest {
         @Test
         void deathShockIsVibration() throws InterruptedException {
             var queue = makeQueue();
-            queue.queueShock(ShockDistribution.ALL, true, 1);
+            queue.queueShock(ShockDistribution.ALL, true, 1 * ShockQueue.HALF_HEART_DAMAGE);
 
             assertFalse(queue.isEmpty());
 

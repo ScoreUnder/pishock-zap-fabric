@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 @RequiredArgsConstructor
 public class ShockQueue {
-    private static final float HALF_HEART_DAMAGE = 0.05f;
+    public static final float HALF_HEART_DAMAGE = 0.05f;
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     private final BlockingQueue<QueuedShock> queue = new LinkedBlockingQueue<>();
     private final PishockZapConfig config;
@@ -170,10 +170,6 @@ public class ShockQueue {
         if (damageEquivalent <= 0) return intensityMin;
         if (damageEquivalent >= damageRange) return intensityMax;
         return Math.round((damageEquivalent / damageRange) * (intensityMax - intensityMin) + intensityMin);
-    }
-
-    public void queueShock(ShockDistribution distribution, boolean isDeath, int damageEquivalent) {
-        queue.add(new QueuedShock(distribution, isDeath, damageEquivalent * HALF_HEART_DAMAGE, config.getDuration()));
     }
 
     public void queueShock(ShockDistribution distribution, boolean isDeath, float damageEquivalent) {

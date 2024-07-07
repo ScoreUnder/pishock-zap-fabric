@@ -60,6 +60,6 @@ public class ZapController {
 
     public void queueShock(ShockDistribution distribution, boolean isDeath, int damageEquivalent) {
         logger.info("Queueing shock: " + distribution + ", " + isDeath + ", " + damageEquivalent);
-        shockQueue.queueShock(distribution, isDeath, damageEquivalent);
+        shockQueue.queueShock(distribution, isDeath, damageEquivalent * ShockQueue.HALF_HEART_DAMAGE);
     }
 }
