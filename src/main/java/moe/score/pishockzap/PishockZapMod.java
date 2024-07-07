@@ -2,11 +2,11 @@ package moe.score.pishockzap;
 
 import com.google.gson.Gson;
 import lombok.Getter;
+import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.pishockapi.PiShockSerialApi;
 import moe.score.pishockzap.pishockapi.PiShockWebApiV1;
-import moe.score.pishockzap.shockcalculation.ShockQueue;
 import moe.score.pishockzap.shockcalculation.ZapController;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -17,7 +17,6 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Style;
-import net.minecraft.text.TranslatableText;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.BufferedWriter;
@@ -167,7 +166,7 @@ public class PishockZapMod implements ClientModInitializer {
                 if (player != null) {
                     Style color = Style.EMPTY.withColor(config.isEnabled() ? 0x00FF00 : 0xFF0000);
                     String key = "message.pishock-zap.toggle." + (config.isEnabled() ? "on" : "off");
-                    player.sendMessage(new TranslatableText(key).fillStyle(color), false);
+                    player.sendMessage(Translation.of(key).fillStyle(color), false);
                 }
             }
         });
