@@ -58,8 +58,8 @@
   "tooltip.pishock-zap.config.limits.vibration_intensity_max": "The maximum intensity of the vibration\non damage (when just at threshold)",
   "tooltip.pishock-zap.config.limits.shock_intensity_min": "The minimum intensity of shocks on damage\n(when just above threshold)",
   "tooltip.pishock-zap.config.limits.shock_intensity_max": "The maximum intensity of shocks on damage\ni.e. when the player takes 20 hearts of damage\nand \"Shock on death\" is disabled,\nor the highest it can accumulate to via backoff",
-  "tooltip.pishock-zap.config.limits.shock_intensity_death": "The intensity of shocks on death",
-  "tooltip.pishock-zap.config.limits.shock_duration_death": "The duration of shocks on death",
+  "tooltip.pishock-zap.config.limits.shock_intensity_death": "The intensity of shocks on death.\nThis can be above your usual maximum.",
+  "tooltip.pishock-zap.config.limits.shock_duration_death": "The duration of shocks on death\nThis can be above your usual maximum.",
   "tooltip.pishock-zap.config.limits.shock_distribution": "Which devices to activate on damage",
   "tooltip.pishock-zap.config.limits.shock_distribution_death": "Which devices to activate on death",
 
@@ -77,8 +77,10 @@
   "tooltip.pishock-zap.config.api.serial_port": "The path or name of the serial port to use\nfor local serial API communication\nFor example, COM3 or /dev/ttyUSB0",
   "tooltip.pishock-zap.config.api.device_ids": "The IDs of the shockers to drive via local serial API",
 
-  "label.pishock-zap.config.hp": "Damage: ",
-  "label.pishock-zap.config.intensity": "Intensity:  ",
+  "label.pishock-zap.config.hp": "\u2764 ",
+  "label.pishock-zap.config.intensity": "\u26A1 ",
+  "label.pishock-zap.config.vibration_intensity": "\u2637 ",
+  "label.pishock-zap.config.duration": "\u23F3 ",
 
   "enum.pishock-zap.config.shock_distribution.first": "First device",
   "enum.pishock-zap.config.shock_distribution.last": "Last device",

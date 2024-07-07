@@ -61,13 +61,13 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setSaveConsumer(config::setDuration)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.duration"))
                 .setDefaultValue(defaultConfig.getDuration())
-                .setTextGetter((value) -> Text.of(String.format("%.3fs", value)))
+                .setTextGetter((value) -> Translation.of("label.pishock-zap.config.duration").append(String.format("%.3fs", value)))
                 .build());
         limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.max_duration"), config.getMaxDuration(), 0.1f, PISHOCK_MAX_DURATION)
                 .setSaveConsumer(config::setMaxDuration)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.max_duration"))
                 .setDefaultValue(defaultConfig.getMaxDuration())
-                .setTextGetter((value) -> Text.of(String.format("%.3fs", value)))
+                .setTextGetter((value) -> Translation.of("label.pishock-zap.config.duration").append(String.format("%.3fs", value)))
                 .build());
         limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.vibration_threshold"), config.getVibrationThreshold(), 0.0f, 1.0f, 100.0f)
                 .setSaveConsumer(config::setVibrationThreshold)
@@ -91,14 +91,14 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.vibration_intensity_min"), config.getVibrationIntensityMin(), 1, PISHOCK_MAX_INTENSITY)
                 .setSaveConsumer(config::setVibrationIntensityMin)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.vibration_intensity_min"))
-                .setTextGetter((value) -> Translation.of("label.pishock-zap.config.intensity").append(String.format("%d%%", value)))
+                .setTextGetter((value) -> Translation.of("label.pishock-zap.config.vibration_intensity").append(String.format("%d%%", value)))
                 .setDefaultValue(defaultConfig.getVibrationIntensityMin())
                 .build());
         limitsCategory.addEntry(entryBuilder
                 .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.vibration_intensity_max"), config.getVibrationIntensityMax(), 1, PISHOCK_MAX_INTENSITY)
                 .setSaveConsumer(config::setVibrationIntensityMax)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.vibration_intensity_max"))
-                .setTextGetter((value) -> Translation.of("label.pishock-zap.config.intensity").append(String.format("%d%%", value)))
+                .setTextGetter((value) -> Translation.of("label.pishock-zap.config.vibration_intensity").append(String.format("%d%%", value)))
                 .setDefaultValue(defaultConfig.getVibrationIntensityMax())
                 .build());
         limitsCategory.addEntry(entryBuilder
@@ -137,7 +137,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setSaveConsumer(config::setShockDurationDeath)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.shock_duration_death"))
                 .setDefaultValue(defaultConfig.getShockDurationDeath())
-                .setTextGetter((value) -> Text.of(String.format("%.3fs", value)))
+                .setTextGetter((value) -> Translation.of("label.pishock-zap.config.duration").append(String.format("%.3fs", value)))
                 .build());
         shockOnDeathCategory.add(createShockDistributionDropdown(entryBuilder, "limits.shock_distribution_death", config.getShockDistributionDeath(), config::setShockDistributionDeath));
 
