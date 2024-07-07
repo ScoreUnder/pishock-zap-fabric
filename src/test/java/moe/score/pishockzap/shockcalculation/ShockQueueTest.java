@@ -19,7 +19,7 @@ class ShockQueueTest {
         var config = new PishockZapConfig();
 
         config.setDuration(1.0f);
-        config.setMaxDuration(10.0f);
+        config.setMaxDuration(4.5f);
 
         // Vibration intensity
         // Expected results:
@@ -996,6 +996,27 @@ class ShockQueueTest {
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(40, calculated.intensity());
                     assertEquals(2.0f, calculated.duration());
+
+                    assertTrue(queue.isEmpty());
+                }
+
+                @ParameterizedTest
+                @ValueSource(ints = {5, 6, 7})
+                void maxDurationIsNotExceeded(int numShocks) throws InterruptedException {
+                    var queue = makeQueue();
+
+                    for (int i = 0; i < numShocks; i++) {
+                        queue.queueShock(ShockDistribution.ALL, false, 1);
+                    }
+
+                    assertFalse(queue.isEmpty());
+
+                    var calculated = queue.takeAndMergeShocks();
+
+                    assertEquals(ShockDistribution.ALL, calculated.distribution());
+                    assertEquals(OpType.VIBRATE, calculated.type());
+                    assertEquals(20, calculated.intensity());
+                    assertEquals(4.5f, calculated.duration());
 
                     assertTrue(queue.isEmpty());
                 }
