@@ -57,65 +57,79 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .build());
 
         var limitsCategory = configBuilder.getOrCreateCategory(new TranslatableText("title.pishock-zap.config.limits"));
-        limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.duration"), config.getDuration(), 0.1f, PISHOCK_MAX_DURATION)
+
+        var shockLimitsCategory = entryBuilder
+                .startSubCategory(Translation.of("title.pishock-zap.config.limits.shock_limits"));
+
+        shockLimitsCategory.add(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.duration"), config.getDuration(), 0.1f, PISHOCK_MAX_DURATION)
                 .setSaveConsumer(config::setDuration)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.duration"))
                 .setDefaultValue(defaultConfig.getDuration())
                 .setTextGetter((value) -> Translation.of("label.pishock-zap.config.duration").append(String.format("%.3fs", value)))
                 .build());
-        limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.max_duration"), config.getMaxDuration(), 0.1f, PISHOCK_MAX_DURATION)
+        shockLimitsCategory.add(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.max_duration"), config.getMaxDuration(), 0.1f, PISHOCK_MAX_DURATION)
                 .setSaveConsumer(config::setMaxDuration)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.max_duration"))
                 .setDefaultValue(defaultConfig.getMaxDuration())
                 .setTextGetter((value) -> Translation.of("label.pishock-zap.config.duration").append(String.format("%.3fs", value)))
                 .build());
-        limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.vibration_threshold"), config.getVibrationThreshold(), 0.0f, 1.0f, 100.0f)
-                .setSaveConsumer(config::setVibrationThreshold)
-                .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.vibration_threshold"))
-                .setTextGetter((value) -> Translation.of("label.pishock-zap.config.hp").append(String.format("%.0f%%", value * 100.0f)))
-                .setDefaultValue(defaultConfig.getVibrationThreshold())
-                .build());
-        limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.min_damage"), config.getMinDamage(), 0.0f, 1.0f, 100.0f)
-                .setSaveConsumer(config::setMinDamage)
-                .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.min_damage"))
-                .setTextGetter((value) -> Translation.of("label.pishock-zap.config.hp").append(String.format("%.0f%%", value * 100.0f)))
-                .setDefaultValue(defaultConfig.getMinDamage())
-                .build());
-        limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.max_damage"), config.getMaxDamage(), 0.0f, 1.0f, 100.0f)
-                .setSaveConsumer(config::setMaxDamage)
-                .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.max_damage"))
-                .setTextGetter((value) -> Translation.of("label.pishock-zap.config.hp").append(String.format("%.0f%%", value * 100.0f)))
-                .setDefaultValue(defaultConfig.getMaxDamage())
-                .build());
-        limitsCategory.addEntry(entryBuilder
+        shockLimitsCategory.add(entryBuilder
                 .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.vibration_intensity_min"), config.getVibrationIntensityMin(), 1, PISHOCK_MAX_INTENSITY)
                 .setSaveConsumer(config::setVibrationIntensityMin)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.vibration_intensity_min"))
                 .setTextGetter((value) -> Translation.of("label.pishock-zap.config.vibration_intensity").append(String.format("%d%%", value)))
                 .setDefaultValue(defaultConfig.getVibrationIntensityMin())
                 .build());
-        limitsCategory.addEntry(entryBuilder
+        shockLimitsCategory.add(entryBuilder
                 .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.vibration_intensity_max"), config.getVibrationIntensityMax(), 1, PISHOCK_MAX_INTENSITY)
                 .setSaveConsumer(config::setVibrationIntensityMax)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.vibration_intensity_max"))
                 .setTextGetter((value) -> Translation.of("label.pishock-zap.config.vibration_intensity").append(String.format("%d%%", value)))
                 .setDefaultValue(defaultConfig.getVibrationIntensityMax())
                 .build());
-        limitsCategory.addEntry(entryBuilder
+        shockLimitsCategory.add(entryBuilder
                 .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.shock_intensity_min"), config.getShockIntensityMin(), 1, PISHOCK_MAX_INTENSITY)
                 .setSaveConsumer(config::setShockIntensityMin)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.shock_intensity_min"))
                 .setTextGetter((value) -> Translation.of("label.pishock-zap.config.intensity").append(String.format("%d%%", value)))
                 .setDefaultValue(defaultConfig.getShockIntensityMin())
                 .build());
-        limitsCategory.addEntry(entryBuilder
+        shockLimitsCategory.add(entryBuilder
                 .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.shock_intensity_max"), config.getShockIntensityMax(), 1, PISHOCK_MAX_INTENSITY)
                 .setSaveConsumer(config::setShockIntensityMax)
                 .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.shock_intensity_max"))
                 .setTextGetter((value) -> Translation.of("label.pishock-zap.config.intensity").append(String.format("%d%%", value)))
                 .setDefaultValue(defaultConfig.getShockIntensityMax())
                 .build());
-        limitsCategory.addEntry(createShockDistributionDropdown(entryBuilder, "limits.shock_distribution", config.getShockDistribution(), config::setShockDistribution));
+        shockLimitsCategory.add(createShockDistributionDropdown(entryBuilder, "limits.shock_distribution", config.getShockDistribution(), config::setShockDistribution));
+
+        shockLimitsCategory.setExpanded(true);
+        limitsCategory.addEntry(shockLimitsCategory.build());
+
+        var damageThresholdsCategory = entryBuilder
+                .startSubCategory(Translation.of("title.pishock-zap.config.limits.damage_thresholds"));
+
+        damageThresholdsCategory.add(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.vibration_threshold"), config.getVibrationThreshold(), 0.0f, 1.0f, 100.0f)
+            .setSaveConsumer(config::setVibrationThreshold)
+            .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.vibration_threshold"))
+            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.hp").append(String.format("%.0f%%", value * 100.0f)))
+            .setDefaultValue(defaultConfig.getVibrationThreshold())
+            .build());
+        damageThresholdsCategory.add(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.min_damage"), config.getMinDamage(), 0.0f, 1.0f, 100.0f)
+            .setSaveConsumer(config::setMinDamage)
+            .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.min_damage"))
+            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.hp").append(String.format("%.0f%%", value * 100.0f)))
+            .setDefaultValue(defaultConfig.getMinDamage())
+            .build());
+        damageThresholdsCategory.add(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.max_damage"), config.getMaxDamage(), 0.0f, 1.0f, 100.0f)
+            .setSaveConsumer(config::setMaxDamage)
+            .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.max_damage"))
+            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.hp").append(String.format("%.0f%%", value * 100.0f)))
+            .setDefaultValue(defaultConfig.getMaxDamage())
+            .build());
+
+        damageThresholdsCategory.setExpanded(true);
+        limitsCategory.addEntry(damageThresholdsCategory.build());
 
         var shockOnDeathCategory = entryBuilder
                 .startSubCategory(Translation.of("title.pishock-zap.config.limits.shock_on_death_category"));

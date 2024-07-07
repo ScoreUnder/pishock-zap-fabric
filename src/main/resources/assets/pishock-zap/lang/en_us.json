@@ -25,6 +25,9 @@
   "title.pishock-zap.config.limits.shock_duration_death": "Shock duration on death",
   "title.pishock-zap.config.limits.shock_distribution": "Shock distribution on damage",
   "title.pishock-zap.config.limits.shock_distribution_death": "Shock distribution on death",
+
+  "title.pishock-zap.config.limits.shock_limits": "Vibration and shock settings",
+  "title.pishock-zap.config.limits.damage_thresholds": "Damage thresholds",
   "title.pishock-zap.config.limits.shock_on_death_category": "Shock on death",
 
   "title.pishock-zap.config.debounce": "Backoff",
