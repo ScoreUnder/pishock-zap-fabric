@@ -3,12 +3,16 @@ package moe.score.pishockzap.config;
 import lombok.Data;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Data
 public class PishockZapConfig {
+    private static final String CONFIG_VERSION_KEY = "CONFIG_VERSION_DO_NOT_EDIT";
+    private static final int CONFIG_VERSION = 1;
+
     /// Whether the mod is enabled at all
     private boolean enabled = false;
     /// Whether shocks should be sent as vibrations instead
@@ -23,9 +27,11 @@ public class PishockZapConfig {
     /// The maximum duration per shock/vibration, if it varies e.g. based on debouncing
     private float maxDuration = 10.0f;
     /// The threshold to swap from vibration to shock
-    private int vibrationThreshold = 0;
+    private float vibrationThreshold = 0.0f;
+    /// The damage value corresponding to the least intense shock/vibration
+    private float minDamage = 0.05f;
     /// The damage value corresponding to the most intense shock
-    private int maxDamage = 20;
+    private float maxDamage = 1.0f;
     /// The minimum intensity of a vibration
     private int vibrationIntensityMin = 20;
     /// The maximum intensity of a vibration
@@ -93,7 +99,33 @@ public class PishockZapConfig {
         }
     }
 
+    private Map<String, Object> performConfigMigrations(Map<String, Object> config) {
+        int configVersion = (int) config.getOrDefault(CONFIG_VERSION_KEY, 0);
+
+        if (configVersion == CONFIG_VERSION) {
+            return config;
+        }
+
+        config = new HashMap<>(config);
+
+        if (configVersion < 1) {
+            // Migrate from integer damage equivalent to float damage equivalent
+            if (config.get("vibrationThreshold") instanceof Number vibrationThresholdInt) {
+                config.put("vibrationThreshold", vibrationThresholdInt.floatValue() * 0.05f);
+            }
+            if (config.get("maxDamage") instanceof Number maxDamageInt) {
+                config.put("maxDamage", maxDamageInt.floatValue() * 0.05f);
+            }
+        }
+
+        config.put(CONFIG_VERSION_KEY, CONFIG_VERSION);
+
+        return config;
+    }
+
     public void setFromConfig(Map<String, Object> config) {
+        config = performConfigMigrations(config);
+
         for (Field field : getClass().getDeclaredFields()) {
             Object value = config.get(field.getName());
             if (value != null) {
@@ -114,5 +146,7 @@ public class PishockZapConfig {
                 e.printStackTrace();
             }
         }
+
+        config.put(CONFIG_VERSION_KEY, CONFIG_VERSION);
     }
 }

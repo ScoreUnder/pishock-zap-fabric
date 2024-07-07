@@ -75,16 +75,22 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setDefaultValue(defaultConfig.getMaxDuration())
                 .setTextGetter((value) -> Text.of(String.format("%.3fs", value)))
                 .build());
-        limitsCategory.addEntry(entryBuilder
-                .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.vibration_threshold"), config.getVibrationThreshold(), 0, 20)
+        limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.vibration_threshold"), config.getVibrationThreshold(), 0.0f, 1.0f, 100.0f)
                 .setSaveConsumer(config::setVibrationThreshold)
-                .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.vibration_threshold"))
+                .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.vibration_threshold"))
+                .setTextGetter((value) -> Translation.of("label.pishock-zap.config.hp").append(String.format("%.0f%%", value * 100.0f)))
                 .setDefaultValue(defaultConfig.getVibrationThreshold())
                 .build());
-        limitsCategory.addEntry(entryBuilder
-                .startIntSlider(new TranslatableText("title.pishock-zap.config.limits.max_damage"), config.getMaxDamage(), 0, 20)
+        limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.min_damage"), config.getMinDamage(), 0.0f, 1.0f, 100.0f)
+                .setSaveConsumer(config::setMinDamage)
+                .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.min_damage"))
+                .setTextGetter((value) -> Translation.of("label.pishock-zap.config.hp").append(String.format("%.0f%%", value * 100.0f)))
+                .setDefaultValue(defaultConfig.getMinDamage())
+                .build());
+        limitsCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.max_damage"), config.getMaxDamage(), 0.0f, 1.0f, 100.0f)
                 .setSaveConsumer(config::setMaxDamage)
-                .setTooltip(new TranslatableText("tooltip.pishock-zap.config.limits.max_damage"))
+                .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.max_damage"))
+                .setTextGetter((value) -> Translation.of("label.pishock-zap.config.hp").append(String.format("%.0f%%", value * 100.0f)))
                 .setDefaultValue(defaultConfig.getMaxDamage())
                 .build());
         limitsCategory.addEntry(entryBuilder
@@ -238,6 +244,17 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         float max
     ) {
         return new FloatSliderBuilder(entryBuilder.getResetButtonKey(), fieldNameKey, value, min, max);
+    }
+
+    private static FloatSliderBuilder createFloatSlider(
+        ConfigEntryBuilder entryBuilder,
+        Text fieldNameKey,
+        float value,
+        float min,
+        float max,
+        float floatScale
+    ) {
+        return new FloatSliderBuilder(entryBuilder.getResetButtonKey(), fieldNameKey, value, min, max, floatScale);
     }
 
     @Override

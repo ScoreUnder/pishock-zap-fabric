@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 
 @RequiredArgsConstructor
 public class ShockQueue {
-    public static final float HALF_HEART_DAMAGE = 0.05f;
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     private final BlockingQueue<QueuedShock> queue = new LinkedBlockingQueue<>();
     private final PishockZapConfig config;
@@ -99,24 +98,24 @@ public class ShockQueue {
             // No sanity checks here, because we know the values are valid
             // and the user may want them to be out of the normal range
         } else {
-            float vibrationThreshold = getVibrationThreshold();
+            float vibrationThreshold = config.getVibrationThreshold();
+            float minDamage = config.getMinDamage();
             if (config.isVibrationOnly()) vibrationThreshold = 1.0f;
             if (shock.damageEquivalent > vibrationThreshold) {
                 type = OpType.SHOCK;
                 // This bodge exists so that the minimum intensity corresponds to a half-heart of damage instead of 0 damage.
                 // To accomplish this, we subtract an extra half-heart of damage from the damage equivalent and range.
                 // That might not play so nice mathematically when the player's max HP is not 20. But it's still good enough.
-                // TODO: Maybe make it configurable?
                 intensity = transformIntensityIntoRange(
-                    shock.damageEquivalent - vibrationThreshold - HALF_HEART_DAMAGE,
-                    getMaxDamage() - vibrationThreshold - HALF_HEART_DAMAGE,
+                    shock.damageEquivalent - vibrationThreshold - minDamage,
+                    config.getMaxDamage() - vibrationThreshold - minDamage,
                     config.getShockIntensityMin(),
                     config.getShockIntensityMax());
             } else {
                 type = OpType.VIBRATE;
                 intensity = transformIntensityIntoRange(
-                    shock.damageEquivalent - HALF_HEART_DAMAGE,
-                    Math.min(vibrationThreshold, getMaxDamage()) - HALF_HEART_DAMAGE,
+                    shock.damageEquivalent - minDamage,
+                    Math.min(vibrationThreshold, config.getMaxDamage()) - minDamage,
                     config.getVibrationIntensityMin(),
                     config.getVibrationIntensityMax());
             }
@@ -127,14 +126,6 @@ public class ShockQueue {
         }
 
         return new CalculatedShock(shock.distribution, type, intensity, duration);
-    }
-
-    private float getVibrationThreshold() {
-        return config.getVibrationThreshold() * HALF_HEART_DAMAGE;
-    }
-
-    private float getMaxDamage() {
-        return config.getMaxDamage() * HALF_HEART_DAMAGE;
     }
 
     private float sanityCheckDuration(float duration) {
