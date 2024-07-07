@@ -89,7 +89,7 @@ class ShockQueueTest {
         assertEquals(ShockDistribution.ALL, calculated.distribution());
         assertEquals(OpType.VIBRATE, calculated.type());
         assertEquals(expectedIntensity, calculated.intensity());
-        assertEquals(1.0f, calculated.duration());
+        assertEquals(1.0f, calculated.duration(), 0.001f);
 
         assertTrue(queue.isEmpty());
     }
@@ -107,7 +107,7 @@ class ShockQueueTest {
         assertEquals(ShockDistribution.ALL, calculated.distribution());
         assertEquals(OpType.SHOCK, calculated.type());
         assertEquals(expectedIntensity, calculated.intensity());
-        assertEquals(1.0f, calculated.duration());
+        assertEquals(1.0f, calculated.duration(), 0.001f);
 
         assertTrue(queue.isEmpty());
     }
@@ -124,7 +124,7 @@ class ShockQueueTest {
         assertEquals(ShockDistribution.ALL, calculated.distribution());
         assertEquals(OpType.SHOCK, calculated.type());
         assertEquals(95, calculated.intensity());
-        assertEquals(2.0f, calculated.duration());
+        assertEquals(2.0f, calculated.duration(), 0.001f);
 
         assertTrue(queue.isEmpty());
     }
@@ -144,7 +144,7 @@ class ShockQueueTest {
         assertEquals(ShockDistribution.ALL, calculated.distribution());
         assertEquals(OpType.SHOCK, calculated.type());
         assertEquals(45, calculated.intensity());
-        assertEquals(1.0f, calculated.duration());
+        assertEquals(1.0f, calculated.duration(), 0.001f);
 
         assertTrue(queue.isEmpty());
     }
@@ -162,7 +162,7 @@ class ShockQueueTest {
         assertEquals(ShockDistribution.RANDOM, calculated.distribution());
         assertEquals(OpType.SHOCK, calculated.type());
         assertEquals(30, calculated.intensity());
-        assertEquals(1.0f, calculated.duration());
+        assertEquals(1.0f, calculated.duration(), 0.001f);
 
         assertTrue(queue.isEmpty());
     }
@@ -180,7 +180,7 @@ class ShockQueueTest {
         assertEquals(ShockDistribution.RANDOM, calculated.distribution());
         assertEquals(OpType.SHOCK, calculated.type());
         assertEquals(95, calculated.intensity());
-        assertEquals(2.0f, calculated.duration());
+        assertEquals(2.0f, calculated.duration(), 0.001f);
 
         assertTrue(queue.isEmpty());
     }
@@ -208,7 +208,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.VIBRATE, calculated.type());
             assertEquals(20, calculated.intensity());
-            assertEquals(1.0f, calculated.duration());
+            assertEquals(1.0f, calculated.duration(), 0.001f);
 
             // Should still have the other vibration waiting
             assertFalse(queue.isEmpty());
@@ -218,7 +218,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.VIBRATE, calculated.type());
             assertEquals(40, calculated.intensity());
-            assertEquals(1.0f, calculated.duration());
+            assertEquals(1.0f, calculated.duration(), 0.001f);
 
             assertTrue(queue.isEmpty());
         }
@@ -236,7 +236,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.SHOCK, calculated.type());
             assertEquals(20, calculated.intensity());
-            assertEquals(1.0f, calculated.duration());
+            assertEquals(1.0f, calculated.duration(), 0.001f);
 
             // Should still have the other shock waiting
             assertFalse(queue.isEmpty());
@@ -246,7 +246,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.SHOCK, calculated.type());
             assertEquals(30, calculated.intensity());
-            assertEquals(1.0f, calculated.duration());
+            assertEquals(1.0f, calculated.duration(), 0.001f);
 
             assertTrue(queue.isEmpty());
         }
@@ -264,7 +264,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.VIBRATE, calculated.type());
             assertEquals(40, calculated.intensity());
-            assertEquals(1.0f, calculated.duration());
+            assertEquals(1.0f, calculated.duration(), 0.001f);
 
             // Should still have the other shock waiting
             assertFalse(queue.isEmpty());
@@ -274,7 +274,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.SHOCK, calculated.type());
             assertEquals(20, calculated.intensity());
-            assertEquals(1.0f, calculated.duration());
+            assertEquals(1.0f, calculated.duration(), 0.001f);
 
             assertTrue(queue.isEmpty());
         }
@@ -292,7 +292,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.VIBRATE, calculated.type());
             assertEquals(40, calculated.intensity());
-            assertEquals(1.0f, calculated.duration());
+            assertEquals(1.0f, calculated.duration(), 0.001f);
 
             // Should still have the other shock waiting
             assertFalse(queue.isEmpty());
@@ -302,7 +302,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.SHOCK, calculated.type());
             assertEquals(95, calculated.intensity());
-            assertEquals(2.0f, calculated.duration());
+            assertEquals(2.0f, calculated.duration(), 0.001f);
 
             assertTrue(queue.isEmpty());
         }
@@ -320,7 +320,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.SHOCK, calculated.type());
             assertEquals(20, calculated.intensity());
-            assertEquals(1.0f, calculated.duration());
+            assertEquals(1.0f, calculated.duration(), 0.001f);
 
             // Should still have the other shock waiting
             assertFalse(queue.isEmpty());
@@ -330,7 +330,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.SHOCK, calculated.type());
             assertEquals(95, calculated.intensity());
-            assertEquals(2.0f, calculated.duration());
+            assertEquals(2.0f, calculated.duration(), 0.001f);
 
             assertTrue(queue.isEmpty());
         }
@@ -348,7 +348,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.SHOCK, calculated.type());
             assertEquals(95, calculated.intensity());
-            assertEquals(2.0f, calculated.duration());
+            assertEquals(2.0f, calculated.duration(), 0.001f);
 
             // Should still have the other shock waiting
             assertFalse(queue.isEmpty());
@@ -358,7 +358,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.SHOCK, calculated.type());
             assertEquals(95, calculated.intensity());
-            assertEquals(2.0f, calculated.duration());
+            assertEquals(2.0f, calculated.duration(), 0.001f);
 
             assertTrue(queue.isEmpty());
         }
@@ -389,7 +389,7 @@ class ShockQueueTest {
                 assertEquals(ShockDistribution.ALL, calculated.distribution());
                 assertEquals(OpType.VIBRATE, calculated.type());
                 assertEquals(40, calculated.intensity());
-                assertEquals(1.0f, calculated.duration());
+                assertEquals(1.0f, calculated.duration(), 0.001f);
 
                 assertTrue(queue.isEmpty());
             }
@@ -408,7 +408,7 @@ class ShockQueueTest {
                 assertEquals(ShockDistribution.ALL, calculated.distribution());
                 assertEquals(OpType.VIBRATE, calculated.type());
                 assertEquals(40, calculated.intensity());
-                assertEquals(1.0f, calculated.duration());
+                assertEquals(1.0f, calculated.duration(), 0.001f);
 
                 assertTrue(queue.isEmpty());
             }
@@ -427,7 +427,7 @@ class ShockQueueTest {
                 assertEquals(ShockDistribution.ALL, calculated.distribution());
                 assertEquals(OpType.SHOCK, calculated.type());
                 assertEquals(20, calculated.intensity());
-                assertEquals(1.0f, calculated.duration());
+                assertEquals(1.0f, calculated.duration(), 0.001f);
 
                 assertTrue(queue.isEmpty());
             }
@@ -459,7 +459,7 @@ class ShockQueueTest {
                 assertEquals(ShockDistribution.ALL, calculated.distribution());
                 assertEquals(OpType.VIBRATE, calculated.type());
                 assertEquals(40, calculated.intensity());
-                assertEquals(1.0f, calculated.duration());
+                assertEquals(1.0f, calculated.duration(), 0.001f);
 
                 assertTrue(queue.isEmpty());
             }
@@ -478,7 +478,7 @@ class ShockQueueTest {
                 assertEquals(ShockDistribution.ALL, calculated.distribution());
                 assertEquals(OpType.VIBRATE, calculated.type());
                 assertEquals(40, calculated.intensity());
-                assertEquals(2.0f, calculated.duration());
+                assertEquals(2.0f, calculated.duration(), 0.001f);
 
                 assertTrue(queue.isEmpty());
             }
@@ -497,7 +497,7 @@ class ShockQueueTest {
                 assertEquals(ShockDistribution.ALL, calculated.distribution());
                 assertEquals(OpType.SHOCK, calculated.type());
                 assertEquals(20, calculated.intensity());
-                assertEquals(2.0f, calculated.duration());
+                assertEquals(2.0f, calculated.duration(), 0.001f);
 
                 assertTrue(queue.isEmpty());
             }
@@ -527,7 +527,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.VIBRATE, calculated.type());
             assertEquals(40, calculated.intensity());
-            assertEquals(1.0f, calculated.duration());
+            assertEquals(1.0f, calculated.duration(), 0.001f);
 
             // Should still have the other shock waiting
             assertFalse(queue.isEmpty());
@@ -537,7 +537,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.SHOCK, calculated.type());
             assertEquals(95, calculated.intensity());
-            assertEquals(2.0f, calculated.duration());
+            assertEquals(2.0f, calculated.duration(), 0.001f);
 
             assertTrue(queue.isEmpty());
         }
@@ -555,7 +555,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.SHOCK, calculated.type());
             assertEquals(20, calculated.intensity());
-            assertEquals(1.0f, calculated.duration());
+            assertEquals(1.0f, calculated.duration(), 0.001f);
 
             // Should still have the other shock waiting
             assertFalse(queue.isEmpty());
@@ -565,7 +565,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.SHOCK, calculated.type());
             assertEquals(95, calculated.intensity());
-            assertEquals(2.0f, calculated.duration());
+            assertEquals(2.0f, calculated.duration(), 0.001f);
 
             assertTrue(queue.isEmpty());
         }
@@ -583,7 +583,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.SHOCK, calculated.type());
             assertEquals(95, calculated.intensity());
-            assertEquals(2.0f, calculated.duration());
+            assertEquals(2.0f, calculated.duration(), 0.001f);
 
             // Should still have the other shock waiting
             assertFalse(queue.isEmpty());
@@ -593,7 +593,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.SHOCK, calculated.type());
             assertEquals(95, calculated.intensity());
-            assertEquals(2.0f, calculated.duration());
+            assertEquals(2.0f, calculated.duration(), 0.001f);
 
             assertTrue(queue.isEmpty());
         }
@@ -624,7 +624,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(40, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -642,7 +642,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(40, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -660,7 +660,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(40, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -678,7 +678,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(30, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -696,7 +696,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(20, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -714,7 +714,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(20, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -733,7 +733,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(40, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -763,7 +763,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(40, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -781,7 +781,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(60, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -799,7 +799,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(80, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -817,7 +817,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(30, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -835,7 +835,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(70, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -853,7 +853,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(70, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -871,7 +871,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(40, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -890,7 +890,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(80, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -909,7 +909,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(30, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -942,7 +942,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(40, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -960,7 +960,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(40, calculated.intensity());
-                    assertEquals(1.5f, calculated.duration());
+                    assertEquals(1.5f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -978,7 +978,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(40, calculated.intensity());
-                    assertEquals(2.0f, calculated.duration());
+                    assertEquals(2.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -996,7 +996,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(30, calculated.intensity());
-                    assertEquals(11f / 6f, calculated.duration());
+                    assertEquals(11f / 6f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -1014,7 +1014,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(20, calculated.intensity());
-                    assertEquals(2.0f, calculated.duration());
+                    assertEquals(2.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -1032,7 +1032,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(20, calculated.intensity());
-                    assertEquals(1.4f, calculated.duration());
+                    assertEquals(1.4f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -1051,7 +1051,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(40, calculated.intensity());
-                    assertEquals(2.0f, calculated.duration());
+                    assertEquals(2.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -1072,7 +1072,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(20, calculated.intensity());
-                    assertEquals(4.5f, calculated.duration());
+                    assertEquals(4.5f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -1102,7 +1102,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(40, calculated.intensity());
-                    assertEquals(1.0f, calculated.duration());
+                    assertEquals(1.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -1120,7 +1120,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(60, calculated.intensity());
-                    assertEquals(1.5f, calculated.duration());
+                    assertEquals(1.5f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -1138,7 +1138,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(80, calculated.intensity());
-                    assertEquals(2.0f, calculated.duration());
+                    assertEquals(2.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -1156,7 +1156,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(30, calculated.intensity());
-                    assertEquals(1.5f, calculated.duration());
+                    assertEquals(1.5f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -1174,7 +1174,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(70, calculated.intensity());
-                    assertEquals(11f / 6f, calculated.duration());
+                    assertEquals(11f / 6f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -1192,7 +1192,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(70, calculated.intensity());
-                    assertEquals(2.0f, calculated.duration());
+                    assertEquals(2.0f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -1210,7 +1210,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(40, calculated.intensity());
-                    assertEquals(1.4f, calculated.duration());
+                    assertEquals(1.4f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -1229,7 +1229,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.VIBRATE, calculated.type());
                     assertEquals(80, calculated.intensity());
-                    assertEquals(11f / 6f, calculated.duration());
+                    assertEquals(11f / 6f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -1248,7 +1248,7 @@ class ShockQueueTest {
                     assertEquals(ShockDistribution.ALL, calculated.distribution());
                     assertEquals(OpType.SHOCK, calculated.type());
                     assertEquals(30, calculated.intensity());
-                    assertEquals(2.5f, calculated.duration());
+                    assertEquals(2.5f, calculated.duration(), 0.001f);
 
                     assertTrue(queue.isEmpty());
                 }
@@ -1294,7 +1294,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.VIBRATE, calculated.type());
             assertEquals(27, calculated.intensity());
-            assertEquals(1.0f, calculated.duration());
+            assertEquals(1.0f, calculated.duration(), 0.001f);
 
             assertTrue(queue.isEmpty());
         }
@@ -1312,7 +1312,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.VIBRATE, calculated.type());
             assertEquals(expectedIntensity, calculated.intensity());
-            assertEquals(1.0f, calculated.duration());
+            assertEquals(1.0f, calculated.duration(), 0.001f);
 
             assertTrue(queue.isEmpty());
         }
@@ -1329,7 +1329,7 @@ class ShockQueueTest {
             assertEquals(ShockDistribution.ALL, calculated.distribution());
             assertEquals(OpType.VIBRATE, calculated.type());
             assertEquals(95, calculated.intensity());
-            assertEquals(2.0f, calculated.duration());
+            assertEquals(2.0f, calculated.duration(), 0.001f);
 
             assertTrue(queue.isEmpty());
         }
