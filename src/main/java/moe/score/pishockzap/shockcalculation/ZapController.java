@@ -9,8 +9,9 @@ import moe.score.pishockzap.pishockapi.PiShockApi;
 import java.util.logging.Logger;
 
 /**
- * Takes in a stream of incoming damage events and processes them according to the
- * limits and backoff settings in the configuration, then sends them to the PiShock API.
+ * Takes in a stream of incoming damage events and users the ShockQueue to
+ * process them according to the limits and backoff settings in the
+ * configuration, then sends them to the PiShock API.
  */
 public class ZapController {
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
