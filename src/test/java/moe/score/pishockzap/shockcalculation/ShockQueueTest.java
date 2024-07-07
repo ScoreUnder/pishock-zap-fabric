@@ -129,6 +129,62 @@ class ShockQueueTest {
         assertTrue(queue.isEmpty());
     }
 
+    @Test
+    void differentMaxDamageGivesDifferentShock() throws InterruptedException {
+        var config = makeTestConfig();
+        config.setMaxDamage(7);
+        var queue = new ShockQueue(config);
+
+        queue.queueShock(ShockDistribution.ALL, false, 6);
+
+        assertFalse(queue.isEmpty());
+
+        var calculated = queue.takeAndMergeShocks();
+
+        assertEquals(ShockDistribution.ALL, calculated.distribution());
+        assertEquals(OpType.SHOCK, calculated.type());
+        assertEquals(45, calculated.intensity());
+        assertEquals(1.0f, calculated.duration());
+
+        assertTrue(queue.isEmpty());
+    }
+
+    @Test
+    void differentShockDistributionIsRespectedOnDamage() throws InterruptedException {
+        var queue = new ShockQueue(makeTestConfig());
+
+        queue.queueShock(ShockDistribution.RANDOM, false, 6);
+
+        assertFalse(queue.isEmpty());
+
+        var calculated = queue.takeAndMergeShocks();
+
+        assertEquals(ShockDistribution.RANDOM, calculated.distribution());
+        assertEquals(OpType.SHOCK, calculated.type());
+        assertEquals(30, calculated.intensity());
+        assertEquals(1.0f, calculated.duration());
+
+        assertTrue(queue.isEmpty());
+    }
+
+    @Test
+    void differentShockDistributionIsRespectedOnDeath() throws InterruptedException {
+        var queue = new ShockQueue(makeTestConfig());
+
+        queue.queueShock(ShockDistribution.RANDOM, true, 1);
+
+        assertFalse(queue.isEmpty());
+
+        var calculated = queue.takeAndMergeShocks();
+
+        assertEquals(ShockDistribution.RANDOM, calculated.distribution());
+        assertEquals(OpType.SHOCK, calculated.type());
+        assertEquals(95, calculated.intensity());
+        assertEquals(2.0f, calculated.duration());
+
+        assertTrue(queue.isEmpty());
+    }
+
     @Nested
     class QueueDifferentTest {
         static ShockQueue makeQueue() {
