@@ -148,7 +148,7 @@ public class PishockZapMod implements ClientModInitializer {
                 damageEquivalent = MAX_DAMAGE;
             }
             logger.info("Death? " + deathZap + ", damage: " + damage + ", hp: " + hp + ", damage equivalent: " + damageEquivalent);
-            zapController.queueShock(distribution, deathZap, damageEquivalent, config.getDuration());
+            zapController.queueShock(distribution, deathZap, damageEquivalent);
         }
     }
 

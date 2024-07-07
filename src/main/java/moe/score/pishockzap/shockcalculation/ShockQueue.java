@@ -30,6 +30,12 @@ public class ShockQueue {
         return transformShock(shock);
     }
 
+    // Used for test assertions, because they need to know if the queue has been emptied when expected
+    // Under normal circumstances this is not useful due to thread safety issues
+    boolean isEmpty() {
+        return queue.isEmpty();
+    }
+
     private boolean mergeShock(QueuedShock shock, QueuedShock nextShock) {
         if ((nextShock.isDeath || shock.isDeath) && config.isShockOnDeath()) {
             // Can't merge death shocks
@@ -153,8 +159,8 @@ public class ShockQueue {
         return Math.round((damageEquivalent / (float) damageRange) * (intensityMax - intensityMin) + intensityMin);
     }
 
-    public void queueShock(ShockDistribution distribution, boolean isDeath, int damageEquivalent, float duration) {
-        queue.add(new QueuedShock(distribution, isDeath, damageEquivalent, duration));
+    public void queueShock(ShockDistribution distribution, boolean isDeath, int damageEquivalent) {
+        queue.add(new QueuedShock(distribution, isDeath, damageEquivalent, config.getDuration()));
     }
 
     private static final class QueuedShock {

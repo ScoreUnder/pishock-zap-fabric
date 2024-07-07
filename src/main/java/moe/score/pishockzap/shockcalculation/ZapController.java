@@ -4,7 +4,6 @@ import lombok.Getter;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
-import moe.score.pishockzap.pishockapi.OpType;
 import moe.score.pishockzap.pishockapi.PiShockApi;
 
 import java.util.logging.Logger;
@@ -58,8 +57,8 @@ public class ZapController {
         }
     }
 
-    public void queueShock(ShockDistribution distribution, boolean isDeath, int damageEquivalent, float duration) {
-        logger.info("Queueing shock: " + distribution + ", " + isDeath + ", " + damageEquivalent + ", " + duration);
-        shockQueue.queueShock(distribution, isDeath, damageEquivalent, duration);
+    public void queueShock(ShockDistribution distribution, boolean isDeath, int damageEquivalent) {
+        logger.info("Queueing shock: " + distribution + ", " + isDeath + ", " + damageEquivalent);
+        shockQueue.queueShock(distribution, isDeath, damageEquivalent);
     }
 }
