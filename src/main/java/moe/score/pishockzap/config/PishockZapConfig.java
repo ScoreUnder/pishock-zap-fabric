@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 @Data
 public class PishockZapConfig {
-    private static final String CONFIG_VERSION_KEY = "CONFIG_VERSION_DO_NOT_EDIT";
+    static final String CONFIG_VERSION_KEY = "CONFIG_VERSION_DO_NOT_EDIT";
     private static final int CONFIG_VERSION = 1;
 
     /// Whether the mod is enabled at all
