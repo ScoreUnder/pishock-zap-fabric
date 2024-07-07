@@ -6,6 +6,7 @@ import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.pishockapi.PiShockSerialApi;
 import moe.score.pishockzap.pishockapi.PiShockWebApiV1;
+import moe.score.pishockzap.shockcalculation.ShockQueue;
 import moe.score.pishockzap.shockcalculation.ZapController;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -124,7 +125,7 @@ public class PishockZapMod implements ClientModInitializer {
 
         int damage = playerHpWatcher.updatePlayerHpAndGetDamage(player, hp);
 
-        if (hp == maxHealth) {
+        if (hp == maxHealth || maxHealth <= 0) {
             // Player is at full HP, can this really be called damage?
             // (Just in case other mods play with max health, it's not fair to zap the player for that)
             // Note: this return must be after updating player HP in the watcher, otherwise the watcher will
@@ -135,16 +136,11 @@ public class PishockZapMod implements ClientModInitializer {
         if (damage > 0) {
             boolean deathZap = hp == 0;
             ShockDistribution distribution = deathZap && config.isShockOnDeath() ? config.getShockDistributionDeath() : config.getShockDistribution();
-            int damageEquivalent = config.isShockOnHealth() ? maxHealth - hp : damage;
-            if (maxHealth != 20) {
-                // Normalize damage to 20 HP if max health is not 20
-                // This keeps zap intensity consistent based on percentage of max health
-                // And means if you mod yourself to play a super tanky character, you'll get weaker zaps and vice versa
-                damageEquivalent = Math.round(damageEquivalent * MAX_DAMAGE / (float) maxHealth);
-            }
-            if (damageEquivalent > MAX_DAMAGE) {
-                logger.warning("Damage equivalent " + damageEquivalent + " exceeds max damage " + MAX_DAMAGE + ", capping");
-                damageEquivalent = MAX_DAMAGE;
+            float damageEquivalent = config.isShockOnHealth() ? maxHealth - hp : damage;
+            damageEquivalent /= maxHealth;
+            if (damageEquivalent > 1.0f) {
+                logger.warning("Damage equivalent " + damageEquivalent + " exceeds 100% damage, capping");
+                damageEquivalent = 1.0f;
             }
             logger.info("Death? " + deathZap + ", damage: " + damage + ", hp: " + hp + ", damage equivalent: " + damageEquivalent);
             zapController.queueShock(distribution, deathZap, damageEquivalent);

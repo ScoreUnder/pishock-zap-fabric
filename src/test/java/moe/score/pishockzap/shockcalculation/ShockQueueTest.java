@@ -56,31 +56,31 @@ class ShockQueueTest {
 
     static Stream<Arguments> vibrationArguments() {
         return Stream.of(
-            Arguments.of(1, 20),
-            Arguments.of(2, 40),
-            Arguments.of(3, 60),
-            Arguments.of(4, 80)
+            Arguments.of(1 * ShockQueue.HALF_HEART_DAMAGE, 20),
+            Arguments.of(2 * ShockQueue.HALF_HEART_DAMAGE, 40),
+            Arguments.of(3 * ShockQueue.HALF_HEART_DAMAGE, 60),
+            Arguments.of(4 * ShockQueue.HALF_HEART_DAMAGE, 80)
         );
     }
 
     static Stream<Arguments> shockArguments() {
         return Stream.of(
-            Arguments.of(5, 20),
-            Arguments.of(6, 30),
-            Arguments.of(7, 40),
-            Arguments.of(8, 50),
-            Arguments.of(9, 60),
-            Arguments.of(10, 70),
-            Arguments.of(11, 70),
-            Arguments.of(471, 70)
+            Arguments.of(5 * ShockQueue.HALF_HEART_DAMAGE, 20),
+            Arguments.of(6 * ShockQueue.HALF_HEART_DAMAGE, 30),
+            Arguments.of(7 * ShockQueue.HALF_HEART_DAMAGE, 40),
+            Arguments.of(8 * ShockQueue.HALF_HEART_DAMAGE, 50),
+            Arguments.of(9 * ShockQueue.HALF_HEART_DAMAGE, 60),
+            Arguments.of(10 * ShockQueue.HALF_HEART_DAMAGE, 70),
+            Arguments.of(11 * ShockQueue.HALF_HEART_DAMAGE, 70),
+            Arguments.of(471 * ShockQueue.HALF_HEART_DAMAGE, 70)
         );
     }
 
     @ParameterizedTest
     @MethodSource("vibrationArguments")
-    void vibrationReturnsExpectedValue(int damage, int expectedIntensity) throws InterruptedException {
+    void vibrationReturnsExpectedValue(float damage, int expectedIntensity) throws InterruptedException {
         var queue = new ShockQueue(makeTestConfig());
-        queue.queueShock(ShockDistribution.ALL, false, damage * ShockQueue.HALF_HEART_DAMAGE);
+        queue.queueShock(ShockDistribution.ALL, false, damage);
 
         assertFalse(queue.isEmpty());
 
@@ -96,9 +96,9 @@ class ShockQueueTest {
 
     @ParameterizedTest
     @MethodSource("shockArguments")
-    void shockReturnsExpectedValue(int damage, int expectedIntensity) throws InterruptedException {
+    void shockReturnsExpectedValue(float damage, int expectedIntensity) throws InterruptedException {
         var queue = new ShockQueue(makeTestConfig());
-        queue.queueShock(ShockDistribution.ALL, false, damage * ShockQueue.HALF_HEART_DAMAGE);
+        queue.queueShock(ShockDistribution.ALL, false, damage);
 
         assertFalse(queue.isEmpty());
 
@@ -1270,15 +1270,15 @@ class ShockQueueTest {
         public static Stream<Arguments> shockArguments() {
             // Damage which would normally trigger a shock, but now triggers a vibration
             return Stream.of(
-                Arguments.of(4, 40),
-                Arguments.of(5, 47),
-                Arguments.of(6, 53),
-                Arguments.of(7, 60),
-                Arguments.of(8, 67),
-                Arguments.of(9, 73),
-                Arguments.of(10, 80),
-                Arguments.of(11, 80),
-                Arguments.of(471, 80)
+                Arguments.of(4 * ShockQueue.HALF_HEART_DAMAGE, 40),
+                Arguments.of(5 * ShockQueue.HALF_HEART_DAMAGE, 47),
+                Arguments.of(6 * ShockQueue.HALF_HEART_DAMAGE, 53),
+                Arguments.of(7 * ShockQueue.HALF_HEART_DAMAGE, 60),
+                Arguments.of(8 * ShockQueue.HALF_HEART_DAMAGE, 67),
+                Arguments.of(9 * ShockQueue.HALF_HEART_DAMAGE, 73),
+                Arguments.of(10 * ShockQueue.HALF_HEART_DAMAGE, 80),
+                Arguments.of(11 * ShockQueue.HALF_HEART_DAMAGE, 80),
+                Arguments.of(471 * ShockQueue.HALF_HEART_DAMAGE, 80)
             );
         }
 
@@ -1301,9 +1301,9 @@ class ShockQueueTest {
 
         @ParameterizedTest
         @MethodSource("shockArguments")
-        void shocksAreNowVibrations(int damage, int expectedIntensity) throws InterruptedException {
+        void shocksAreNowVibrations(float damage, int expectedIntensity) throws InterruptedException {
             var queue = makeQueue();
-            queue.queueShock(ShockDistribution.ALL, false, damage * ShockQueue.HALF_HEART_DAMAGE);
+            queue.queueShock(ShockDistribution.ALL, false, damage);
 
             assertFalse(queue.isEmpty());
 
