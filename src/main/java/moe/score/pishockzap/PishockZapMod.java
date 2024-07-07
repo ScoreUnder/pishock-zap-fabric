@@ -2,10 +2,12 @@ package moe.score.pishockzap;
 
 import com.google.gson.Gson;
 import lombok.Getter;
+import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.pishockapi.PiShockSerialApi;
 import moe.score.pishockzap.pishockapi.PiShockWebApiV1;
+import moe.score.pishockzap.shockcalculation.ZapController;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -15,7 +17,6 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Style;
-import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.BufferedWriter;
@@ -29,9 +30,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
-import static moe.score.pishockzap.ZapController.MAX_DAMAGE;
-
 public class PishockZapMod implements ClientModInitializer {
+    public static final int MAX_DAMAGE = 20;
     public static final String NAME = "PiShock-Zap";
     @Getter
     private static PishockZapMod instance = null;
@@ -124,7 +124,7 @@ public class PishockZapMod implements ClientModInitializer {
 
         int damage = playerHpWatcher.updatePlayerHpAndGetDamage(player, hp);
 
-        if (hp == maxHealth) {
+        if (hp == maxHealth || maxHealth <= 0) {
             // Player is at full HP, can this really be called damage?
             // (Just in case other mods play with max health, it's not fair to zap the player for that)
             // Note: this return must be after updating player HP in the watcher, otherwise the watcher will
@@ -135,19 +135,14 @@ public class PishockZapMod implements ClientModInitializer {
         if (damage > 0) {
             boolean deathZap = hp == 0;
             ShockDistribution distribution = deathZap && config.isShockOnDeath() ? config.getShockDistributionDeath() : config.getShockDistribution();
-            int damageEquivalent = config.isShockOnHealth() ? maxHealth - hp : damage;
-            if (maxHealth != 20) {
-                // Normalize damage to 20 HP if max health is not 20
-                // This keeps zap intensity consistent based on percentage of max health
-                // And means if you mod yourself to play a super tanky character, you'll get weaker zaps and vice versa
-                damageEquivalent = Math.round(damageEquivalent * MAX_DAMAGE / (float) maxHealth);
-            }
-            if (damageEquivalent > MAX_DAMAGE) {
-                logger.warning("Damage equivalent " + damageEquivalent + " exceeds max damage " + MAX_DAMAGE + ", capping");
-                damageEquivalent = MAX_DAMAGE;
+            float damageEquivalent = config.isShockOnHealth() ? maxHealth - hp : damage;
+            damageEquivalent /= maxHealth;
+            if (damageEquivalent > 1.0f) {
+                logger.warning("Damage equivalent " + damageEquivalent + " exceeds 100% damage, capping");
+                damageEquivalent = 1.0f;
             }
             logger.info("Death? " + deathZap + ", damage: " + damage + ", hp: " + hp + ", damage equivalent: " + damageEquivalent);
-            zapController.queueShock(distribution, deathZap, damageEquivalent, config.getDuration());
+            zapController.queueShock(distribution, deathZap, damageEquivalent);
         }
     }
 
@@ -171,7 +166,7 @@ public class PishockZapMod implements ClientModInitializer {
                 if (player != null) {
                     Style color = Style.EMPTY.withColor(config.isEnabled() ? 0x00FF00 : 0xFF0000);
                     String key = "message.pishock-zap.toggle." + (config.isEnabled() ? "on" : "off");
-                    player.sendMessage(Text.translatable(key).fillStyle(color), false);
+                    player.sendMessage(Translation.of(key).fillStyle(color), false);
                 }
             }
         });

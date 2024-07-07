@@ -1,72 +1,39 @@
-package moe.score.pishockzap;
+package moe.score.pishockzap.shockcalculation;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.pishockapi.OpType;
-import moe.score.pishockzap.pishockapi.PiShockApi;
 import moe.score.pishockzap.pishockapi.PiShockUtils;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
-/**
- * Takes in a stream of incoming damage events and processes them according to the
- * limits and backoff settings in the configuration, then sends them to the PiShock API.
- */
-public class ZapController {
-    static final int MAX_DAMAGE = 20;
+@RequiredArgsConstructor
+public class ShockQueue {
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     private final BlockingQueue<QueuedShock> queue = new LinkedBlockingQueue<>();
-    @Getter
-    private PiShockApi api;
-    private final Thread thread;
     private final PishockZapConfig config;
 
-    public ZapController(PiShockApi api, PishockZapConfig config) {
-        this.api = api;
-        this.thread = new Thread(this::run);
-        this.config = config;
-    }
+    public CalculatedShock takeAndMergeShocks() throws InterruptedException {
+        QueuedShock shock = queue.take();
+        QueuedShock nextShock;
 
-    public void start() {
-        this.thread.setDaemon(true);
-        this.thread.start();
-    }
-
-    public void stop() {
-        this.thread.interrupt();
-    }
-
-    public void setApi(PiShockApi api) {
-        this.api.close();
-        this.api = api;
-    }
-
-    private void run() {
-        while (true) {
-            try {
-                QueuedShock shock = queue.take();
-                QueuedShock nextShock;
-
-                while ((nextShock = queue.peek()) != null) {
-                    if (!mergeShock(shock, nextShock)) break;
-                    queue.remove();  // should always have one because we just peeked earlier
-                }
-
-                var shockData = transformShock(shock);
-                logger.info("Performing shock: " + shockData);
-                api.performOp(shockData.distribution, shockData.type, shockData.intensity, shockData.duration);
-
-                // Waiting for shock to complete and then waiting for debounce time, so not a busy-wait per se
-                //noinspection BusyWait
-                Thread.sleep((long) (config.getDebounceTime() * 1000.0f) + (long) (shock.duration * 1000.0f));
-            } catch (InterruptedException e) {
-                return;
-            }
+        while ((nextShock = queue.peek()) != null) {
+            if (!mergeShock(shock, nextShock)) break;
+            queue.remove();  // should always have one because we just peeked earlier
         }
+
+        return transformShock(shock);
+    }
+
+    // Used for test assertions, because they need to know if the queue has been emptied when expected
+    // Under normal circumstances this is not useful due to thread safety issues
+    boolean isEmpty() {
+        return queue.isEmpty();
     }
 
     private boolean mergeShock(QueuedShock shock, QueuedShock nextShock) {
@@ -84,7 +51,7 @@ public class ZapController {
         }
 
         float duration;
-        int damageEquivalent;
+        float damageEquivalent;
 
         if (config.isAccumulateDuration()) {
             duration = shock.duration * shock.damageEquivalent + nextShock.duration * nextShock.damageEquivalent;
@@ -98,7 +65,7 @@ public class ZapController {
 
         if (config.isAccumulateIntensity() && !config.isQueueDifferent() && !config.isShockOnHealth()) {
             damageEquivalent = shock.damageEquivalent + nextShock.damageEquivalent;
-            if (damageEquivalent < 0 || damageEquivalent > MAX_DAMAGE) {
+            if (damageEquivalent < 0.0f || damageEquivalent > 1.0f) {
                 return false;
             }
         } else {
@@ -111,40 +78,44 @@ public class ZapController {
         return true;
     }
 
-    private FinalShock transformShock(QueuedShock shock) {
+    private CalculatedShock transformShock(QueuedShock shock) {
         boolean separateDeathShock = config.isShockOnDeath() && shock.isDeath;
         OpType type;
         int intensity;
         float duration;
 
-        if (shock.damageEquivalent > MAX_DAMAGE) {
+        if (shock.damageEquivalent > 1.0f) {
             // Should never happen, but safety first
             logger.warning("Damage equivalent is greater than max damage, clamping to max damage");
-            shock.damageEquivalent = MAX_DAMAGE;
+            shock.damageEquivalent = 1.0f;
         }
 
         if (separateDeathShock) {
-            type = OpType.SHOCK;
+            type = config.isVibrationOnly() ? OpType.VIBRATE : OpType.SHOCK;
             intensity = config.getShockIntensityDeath();
             duration = config.getShockDurationDeath();
 
             // No sanity checks here, because we know the values are valid
             // and the user may want them to be out of the normal range
         } else {
-            int vibrationThreshold = config.getVibrationThreshold();
-            if (config.isVibrationOnly()) vibrationThreshold = MAX_DAMAGE;
+            float vibrationThreshold = config.getVibrationThreshold();
+            float minDamage = config.getMinDamage();
+            if (config.isVibrationOnly()) vibrationThreshold = 1.0f;
             if (shock.damageEquivalent > vibrationThreshold) {
                 type = OpType.SHOCK;
+                // This bodge exists so that the minimum intensity corresponds to a half-heart of damage instead of 0 damage.
+                // To accomplish this, we subtract an extra half-heart of damage from the damage equivalent and range.
+                // That might not play so nice mathematically when the player's max HP is not 20. But it's still good enough.
                 intensity = transformIntensityIntoRange(
-                    shock.damageEquivalent - vibrationThreshold - 1,
-                    config.getMaxDamage() - vibrationThreshold - 1,
+                    shock.damageEquivalent - vibrationThreshold - minDamage,
+                    config.getMaxDamage() - vibrationThreshold - minDamage,
                     config.getShockIntensityMin(),
                     config.getShockIntensityMax());
             } else {
                 type = OpType.VIBRATE;
                 intensity = transformIntensityIntoRange(
-                    shock.damageEquivalent,
-                    Math.min(vibrationThreshold, config.getMaxDamage()) - 1,
+                    shock.damageEquivalent - minDamage,
+                    Math.min(vibrationThreshold, config.getMaxDamage()) - minDamage,
                     config.getVibrationIntensityMin(),
                     config.getVibrationIntensityMax());
             }
@@ -154,7 +125,7 @@ public class ZapController {
             duration = sanityCheckDuration(duration);
         }
 
-        return new FinalShock(shock.distribution, type, intensity, duration);
+        return new CalculatedShock(shock.distribution, type, intensity, duration);
     }
 
     private float sanityCheckDuration(float duration) {
@@ -185,32 +156,22 @@ public class ZapController {
         return intensity;
     }
 
-    private int transformIntensityIntoRange(int damageEquivalent, int damageRange, int intensityMin, int intensityMax) {
+    private int transformIntensityIntoRange(float damageEquivalent, float damageRange, int intensityMin, int intensityMax) {
         if (damageRange <= 0) return intensityMax;
         if (damageEquivalent <= 0) return intensityMin;
         if (damageEquivalent >= damageRange) return intensityMax;
-        return Math.round((damageEquivalent / (float) damageRange) * (intensityMax - intensityMin) + intensityMin);
+        return Math.round((damageEquivalent / damageRange) * (intensityMax - intensityMin) + intensityMin);
     }
 
-    public void queueShock(ShockDistribution distribution, boolean isDeath, int damageEquivalent, float duration) {
-        logger.info("Queueing shock: " + distribution + ", " + isDeath + ", " + damageEquivalent + ", " + duration);
-        queue.add(new QueuedShock(distribution, isDeath, damageEquivalent, duration));
+    public void queueShock(ShockDistribution distribution, boolean isDeath, float damageEquivalent) {
+        queue.add(new QueuedShock(distribution, isDeath, damageEquivalent, config.getDuration()));
     }
 
+    @AllArgsConstructor
     private static final class QueuedShock {
         private final ShockDistribution distribution;
         private final boolean isDeath;
-        private int damageEquivalent;
+        private float damageEquivalent;
         private float duration;
-
-        public QueuedShock(ShockDistribution distribution, boolean isDeath, int damageEquivalent, float duration) {
-            this.distribution = distribution;
-            this.isDeath = isDeath;
-            this.damageEquivalent = damageEquivalent;
-            this.duration = duration;
-        }
-    }
-
-    private record FinalShock(ShockDistribution distribution, OpType type, int intensity, float duration) {
     }
 }

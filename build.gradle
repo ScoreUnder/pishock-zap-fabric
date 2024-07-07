@@ -4,7 +4,7 @@ plugins {
 	id "io.freefair.lombok" version "8.6"
 }
 
-version = project.mod_version
+version = "${project.mod_version}+${project.minecraft_version}"
 group = project.maven_group
 
 base {
@@ -47,6 +47,11 @@ dependencies {
 	// JSerialComm (for serial communication)
 	implementation "com.fazecast:jSerialComm:[2.0.0,3.0.0)"
 	include "com.fazecast:jSerialComm:[2.0.0,3.0.0)"
+
+    // JUnit 5
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.1"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.1"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:5.8.1"
 }
 
 processResources {
@@ -75,6 +80,10 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.archivesBaseName}"}
 	}
+}
+
+test {
+    useJUnitPlatform()
 }
 
 // configure the maven publication
