@@ -74,6 +74,9 @@
   "tooltip.pishock-zap.config.api.serial_port": "The path or name of the serial port to use\nfor local serial API communication\nFor example, COM3 or /dev/ttyUSB0",
   "tooltip.pishock-zap.config.api.device_ids": "The IDs of the shockers to drive via local serial API",
 
+  "label.pishock-zap.config.hp": "Damage: ",
+  "label.pishock-zap.config.intensity": "Intensity:  ",
+
   "enum.pishock-zap.config.shock_distribution.first": "First device",
   "enum.pishock-zap.config.shock_distribution.last": "Last device",
   "enum.pishock-zap.config.shock_distribution.random": "One random device",
