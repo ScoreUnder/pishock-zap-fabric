@@ -50,8 +50,9 @@ class ShockQueueTest {
         config.setShockDurationDeath(2.0f);
         config.setShockIntensityDeath(95);
 
-        config.setVibrationThreshold(4);
-        config.setMaxDamage(10);
+        config.setVibrationThreshold(4 * HALF_HEART_DAMAGE);
+        config.setMinDamage(1 * HALF_HEART_DAMAGE);
+        config.setMaxDamage(10 * HALF_HEART_DAMAGE);
 
         return config;
     }
@@ -134,7 +135,7 @@ class ShockQueueTest {
     @Test
     void differentMaxDamageGivesDifferentShock() throws InterruptedException {
         var config = makeTestConfig();
-        config.setMaxDamage(7);
+        config.setMaxDamage(7 * HALF_HEART_DAMAGE);
         var queue = new ShockQueue(config);
 
         queue.queueShock(ShockDistribution.ALL, false, 6 * HALF_HEART_DAMAGE);
