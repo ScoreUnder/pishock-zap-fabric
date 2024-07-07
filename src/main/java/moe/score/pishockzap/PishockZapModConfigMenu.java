@@ -207,6 +207,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setSaveConsumer(config::setShareCodes)
                 .setTooltip(Translation.of("tooltip.pishock-zap.config.api.share_codes"))
                 .setCellErrorSupplier(PishockZapModConfigMenu::isShareCodeInvalid)
+                .setExpanded(true)
                 // no default
                 .build());
 
@@ -230,6 +231,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .startIntList(Translation.of("title.pishock-zap.config.api.device_ids"), config.getDeviceIds())
                 .setSaveConsumer(config::setDeviceIds)
                 .setTooltip(Translation.of("tooltip.pishock-zap.config.api.device_ids"))
+                .setExpanded(true)
                 // no default
                 .build());
         apiCategory.addEntry(localApiCategory.build());
