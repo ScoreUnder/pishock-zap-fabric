@@ -1178,4 +1178,83 @@ class ShockQueueTest {
             }
         }
     }
+
+    @Nested
+    class VibrationOnlyTest {
+        static ShockQueue makeQueue() {
+            var config = makeTestConfig();
+
+            config.setQueueDifferent(false);
+            config.setVibrationOnly(true);
+
+            return new ShockQueue(config);
+        }
+
+        public static Stream<Arguments> shockArguments() {
+            // Damage which would normally trigger a shock, but now triggers a vibration
+            return Stream.of(
+                Arguments.of(4, 40),
+                Arguments.of(5, 47),
+                Arguments.of(6, 53),
+                Arguments.of(7, 60),
+                Arguments.of(8, 67),
+                Arguments.of(9, 73),
+                Arguments.of(10, 80),
+                Arguments.of(11, 80),
+                Arguments.of(471, 80)
+            );
+        }
+
+        @Test
+        void vibrationIsSmallerRange() throws InterruptedException {
+            var queue = makeQueue();
+            queue.queueShock(ShockDistribution.ALL, false, 2);
+
+            assertFalse(queue.isEmpty());
+
+            var calculated = queue.takeAndMergeShocks();
+
+            assertEquals(ShockDistribution.ALL, calculated.distribution());
+            assertEquals(OpType.VIBRATE, calculated.type());
+            assertEquals(27, calculated.intensity());
+            assertEquals(1.0f, calculated.duration());
+
+            assertTrue(queue.isEmpty());
+        }
+
+        @ParameterizedTest
+        @MethodSource("shockArguments")
+        void shocksAreNowVibrations(int damage, int expectedIntensity) throws InterruptedException {
+            var queue = makeQueue();
+            queue.queueShock(ShockDistribution.ALL, false, damage);
+
+            assertFalse(queue.isEmpty());
+
+            var calculated = queue.takeAndMergeShocks();
+
+            assertEquals(ShockDistribution.ALL, calculated.distribution());
+            assertEquals(OpType.VIBRATE, calculated.type());
+            assertEquals(expectedIntensity, calculated.intensity());
+            assertEquals(1.0f, calculated.duration());
+
+            assertTrue(queue.isEmpty());
+        }
+
+        @Test
+        void deathShockIsVibration() throws InterruptedException {
+            var queue = makeQueue();
+            queue.queueShock(ShockDistribution.ALL, true, 1);
+
+            assertFalse(queue.isEmpty());
+
+            var calculated = queue.takeAndMergeShocks();
+
+            assertEquals(ShockDistribution.ALL, calculated.distribution());
+            assertEquals(OpType.VIBRATE, calculated.type());
+            assertEquals(95, calculated.intensity());
+            assertEquals(2.0f, calculated.duration());
+
+            assertTrue(queue.isEmpty());
+        }
+    }
 }
