@@ -35,7 +35,7 @@ class PishockZapConfigTest {
 
         oldConfigData.put("vibrationThreshold", 0.5f);
         oldConfigData.put("maxDamage", 0.75f);
-        oldConfigData.put(CONFIG_VERSION_KEY, 1);
+        oldConfigData.put(CONFIG_VERSION_KEY, 1.0);
 
         var config = new PishockZapConfig();
         config.setFromConfig(oldConfigData);

@@ -3,6 +3,7 @@ package moe.score.pishockzap.config;
 import lombok.Data;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,14 +64,14 @@ public class PishockZapConfig {
     /// PiShock account API key
     private String apiKey = "";
     /// PiShock device share codes
-    private List<String> shareCodes = List.of();
+    private List<String> shareCodes = List.of("BADC0DE0000");
     /// PiShock device serial port
     private String serialPort = "/dev/ttyACM0";
 
     /// Whether to use the local serial API or the web API
     private boolean localEnabled = false;
     /// PiShock device IDs (for serial API)
-    private List<Integer> deviceIds = List.of();
+    private List<Integer> deviceIds = List.of(12345);
     /// Identifier for on-site logs
     private String logIdentifier = "PiShock-Zap (Minecraft)";
 
@@ -100,7 +101,12 @@ public class PishockZapConfig {
     }
 
     private Map<String, Object> performConfigMigrations(Map<String, Object> config) {
-        int configVersion = (int) config.getOrDefault(CONFIG_VERSION_KEY, 0);
+        int configVersion;
+        if (!(config.get(CONFIG_VERSION_KEY) instanceof Number configVersionNumber)) {
+            configVersion = 0;
+        } else {
+            configVersion = configVersionNumber.intValue();
+        }
 
         if (configVersion == CONFIG_VERSION) {
             return config;
@@ -127,6 +133,11 @@ public class PishockZapConfig {
         config = performConfigMigrations(config);
 
         for (Field field : getClass().getDeclaredFields()) {
+            int modifiers = field.getModifiers();
+            if (field.isSynthetic() || Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers)) {
+                continue;
+            }
+
             Object value = config.get(field.getName());
             if (value != null) {
                 setSingleConfigField(field, value);
@@ -137,6 +148,11 @@ public class PishockZapConfig {
     public void copyToConfig(Map<String, Object> config) {
         for (Field field : getClass().getDeclaredFields()) {
             try {
+                int modifiers = field.getModifiers();
+                if (field.isSynthetic() || Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers)) {
+                    continue;
+                }
+
                 Object value = field.get(this);
                 if (value instanceof ShockDistribution sv) {
                     value = sv.name();
