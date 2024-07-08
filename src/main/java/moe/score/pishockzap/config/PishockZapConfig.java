@@ -3,6 +3,7 @@ package moe.score.pishockzap.config;
 import lombok.Data;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,6 +133,11 @@ public class PishockZapConfig {
         config = performConfigMigrations(config);
 
         for (Field field : getClass().getDeclaredFields()) {
+            int modifiers = field.getModifiers();
+            if (field.isSynthetic() || Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers)) {
+                continue;
+            }
+
             Object value = config.get(field.getName());
             if (value != null) {
                 setSingleConfigField(field, value);
@@ -142,6 +148,11 @@ public class PishockZapConfig {
     public void copyToConfig(Map<String, Object> config) {
         for (Field field : getClass().getDeclaredFields()) {
             try {
+                int modifiers = field.getModifiers();
+                if (field.isSynthetic() || Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers)) {
+                    continue;
+                }
+
                 Object value = field.get(this);
                 if (value instanceof ShockDistribution sv) {
                     value = sv.name();
