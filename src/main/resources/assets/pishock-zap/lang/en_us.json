@@ -50,6 +50,7 @@
   "description.pishock-zap.config.api.web_v1": "You can find your username and API key on the %1$s. Note that regenerating your API key will disconnect all other PiShock integrations which use it, so if you have one written down then use that. Share codes are available from the %2$s (click the \"share\" button to generate a share code).",
   "description.pishock-zap.config.api.web_v1.api_key_link": "PiShock account page",
   "description.pishock-zap.config.api.web_v1.share_codes_link": "PiShock controller page",
+  "description.pishock-zap.config.api.web_v1.disclaimer": "This mod sends data to the PiShock servers. This data includes your username, API key, share codes, the log identifier, and the duration and intensity of all shock and vibrate operations. This data is sent as required when a shock or vibrate operation is requested. This data is only sent to the PiShock API and is not shared with any other service.",
 
   "description.pishock-zap.config.api.local": "Local Serial API is intended for advanced users only. It requires the PiShock device to be directly connected via USB to the computer running Minecraft. The advantage is that it provides near-instant feedback unlike the Web API which is constrained by network latency.",
   "description.pishock-zap.config.api.local.device_ids": "Shocker IDs are short numeric identifiers available from the %1$s. You can find them by clicking on the settings icon in the bottom-center of each individual controller. This is not the same as your PiShock device ID.",

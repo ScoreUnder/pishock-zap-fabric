@@ -228,6 +228,9 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 // no default
                 .build());
 
+        apiCategory.addEntry(entryBuilder.startTextDescription(
+            Translation.of("description.pishock-zap.config.api.web_v1.disclaimer")).build());
+
         SubCategoryBuilder localApiCategory = entryBuilder
             .startSubCategory(Translation.of("title.pishock-zap.config.api.local"));
 
