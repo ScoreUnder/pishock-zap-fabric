@@ -100,7 +100,7 @@ public class PishockZapConfig {
     }
 
     private Map<String, Object> performConfigMigrations(Map<String, Object> config) {
-        int configVersion = (int) config.getOrDefault(CONFIG_VERSION_KEY, 0);
+        int configVersion = ((Number) config.getOrDefault(CONFIG_VERSION_KEY, 0)).intValue();
 
         if (configVersion == CONFIG_VERSION) {
             return config;
