@@ -16,7 +16,7 @@ public final class Translation {
     }
 
     public static MutableText raw(String text) {
-        return new LiteralText(text);
+        return Text.literal(text);
     }
 
     public static MutableText addLink(MutableText text, String url) {
