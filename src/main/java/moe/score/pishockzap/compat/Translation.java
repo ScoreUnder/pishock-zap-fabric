@@ -15,6 +15,10 @@ public final class Translation {
         return new TranslatableText(key, args);
     }
 
+    public static MutableText raw(String text) {
+        return new LiteralText(text);
+    }
+
     public static MutableText addLink(MutableText text, String url) {
         return addLink(text, url, Text.of(url));
     }

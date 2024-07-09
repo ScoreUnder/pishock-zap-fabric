@@ -7,6 +7,7 @@ import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.pishockapi.PiShockSerialApi;
 import moe.score.pishockzap.pishockapi.PiShockWebApiV1;
+import moe.score.pishockzap.pishockapi.WebHookApi;
 import moe.score.pishockzap.shockcalculation.ZapController;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -83,8 +84,13 @@ public class PishockZapMod implements ClientModInitializer {
                 if (!(zapController.getApi() instanceof PiShockSerialApi piShockSerialApi)
                     || !Objects.equals(piShockSerialApi.getPortName(), config.getSerialPort())) {
                     zapController.setApi(new PiShockSerialApi(config, apiExecutor, config.getSerialPort()));
-                    break;
                 }
+                break;
+            case WEBHOOK:
+                if (!(zapController.getApi() instanceof WebHookApi)) {
+                    zapController.setApi(new WebHookApi(config, apiExecutor));
+                }
+                break;
         }
     }
 

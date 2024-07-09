@@ -76,6 +76,9 @@ public class PishockZapConfig {
     /// PiShock device IDs (for serial API)
     private List<Integer> deviceIds = List.of(12345);
 
+    /// Custom Webhook URL
+    private String customWebhookUrl = "";
+
     private boolean fieldIsListOfInteger(Field field) {
         return field.getName().equals("deviceIds");
     }
