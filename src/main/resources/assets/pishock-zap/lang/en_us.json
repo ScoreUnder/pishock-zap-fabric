@@ -37,13 +37,16 @@
   "title.pishock-zap.config.debounce.queue_different": "Queue different-sized shocks",
 
   "title.pishock-zap.config.api": "API",
+
+  "title.pishock-zap.config.api_type": "API Type",
+
+  "title.pishock-zap.config.api.web_v1": "PiShock Web API",
   "title.pishock-zap.config.api.log_identifier": "Log identifier",
   "title.pishock-zap.config.api.username": "Username",
   "title.pishock-zap.config.api.api_key": "API key",
   "title.pishock-zap.config.api.share_codes": "Share codes",
 
   "title.pishock-zap.config.api.local": "Local Serial API (Advanced)",
-  "title.pishock-zap.config.api.local.enabled": "Use local serial API",
   "title.pishock-zap.config.api.serial_port": "Serial port",
   "title.pishock-zap.config.api.device_ids": "Shocker IDs",
 
@@ -80,12 +83,13 @@
   "tooltip.pishock-zap.config.debounce.accumulate_intensity": "Accumulate the intensity of shocks/vibrations\nIf this is enabled, queued shocks/vibrations will be\ncombined and their intensities added together.\nLimits are of course still respected.\nThis is similar to the effect of taking the damage all at once.\nIf this is disabled, the intensity of the resulting shock/vibration\nwill be the greatest of the queued shocks/vibrations.\nDisabling it is easier on the user :)\nIf shock-on-health is enabled, this will be ignored.",
   "tooltip.pishock-zap.config.debounce.queue_different": "Queue differently-sized shocks/vibrations separately\nIf this is enabled, during backoff, differently-sized\nshocks/vibrations will not accumulate duration with\neach other, and will instead be sent separately.\nDisables intensity accumulation.",
 
+  "tooltip.pishock-zap.config.api_type": "The type of API to use for PiShock communication",
+
   "tooltip.pishock-zap.config.api.log_identifier": "The identifier to display in the PiShock logs",
   "tooltip.pishock-zap.config.api.username": "Your PiShock account username",
   "tooltip.pishock-zap.config.api.api_key": "Your PiShock account API key",
   "tooltip.pishock-zap.config.api.share_codes": "The share codes of the devices you want\nto control with this mod",
 
-  "tooltip.pishock-zap.config.api.local.enabled": "Use a device locally connected via USB.\nThe alternative is to use the web API.",
   "tooltip.pishock-zap.config.api.serial_port": "The path or name of the serial port to use\nfor local serial API communication\nFor example, COM3 or /dev/ttyUSB0",
   "tooltip.pishock-zap.config.api.device_ids": "The IDs of the shockers to drive via local serial API",
 
@@ -101,6 +105,9 @@
   "enum.pishock-zap.config.shock_distribution.round_robin": "Each device in turn",
   "enum.pishock-zap.config.shock_distribution.random_all": "Random devices",
   "enum.pishock-zap.config.shock_distribution.all": "All devices",
+
+  "enum.pishock-zap.config.api_type.web_v1": "PiShock Web",
+  "enum.pishock-zap.config.api_type.serial": "Local Serial",
 
   "error.pishock-zap.config.api.share_codes.entry.empty": "Share code cannot be empty",
   "error.pishock-zap.config.api.share_codes.entry.invalid": "Share code appears invalid",

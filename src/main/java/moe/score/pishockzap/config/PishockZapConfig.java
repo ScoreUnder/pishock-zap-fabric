@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @Data
 public class PishockZapConfig {
     static final String CONFIG_VERSION_KEY = "CONFIG_VERSION_DO_NOT_EDIT";
-    private static final int CONFIG_VERSION = 1;
+    static final int CONFIG_VERSION = 2;
 
     /// Whether the mod is enabled at all
     private boolean enabled = false;
@@ -59,21 +59,22 @@ public class PishockZapConfig {
     /// Whether to queue different-size shocks/vibrations separately
     private boolean queueDifferent = true;
 
+    /// The type of PiShock API to use
+    private PiShockApiType apiType = PiShockApiType.WEB_V1;
+
+    /// Identifier for on-site logs
+    private String logIdentifier = "PiShock-Zap (Minecraft)";
     /// PiShock account username
     private String username = "";
     /// PiShock account API key
     private String apiKey = "";
     /// PiShock device share codes
     private List<String> shareCodes = List.of("BADC0DE0000");
+
     /// PiShock device serial port
     private String serialPort = "/dev/ttyACM0";
-
-    /// Whether to use the local serial API or the web API
-    private boolean localEnabled = false;
     /// PiShock device IDs (for serial API)
     private List<Integer> deviceIds = List.of(12345);
-    /// Identifier for on-site logs
-    private String logIdentifier = "PiShock-Zap (Minecraft)";
 
     private boolean fieldIsListOfInteger(Field field) {
         return field.getName().equals("deviceIds");
@@ -83,7 +84,9 @@ public class PishockZapConfig {
         try {
             Class<?> type = field.getType();
             if (type.isAssignableFrom(ShockDistribution.class)) {
-                value = ShockDistribution.valueOf((String)value);
+                value = ShockDistribution.valueOf((String) value);
+            } else if (type.isAssignableFrom(PiShockApiType.class)) {
+                value = PiShockApiType.valueOf((String) value);
             } else if ((type.isAssignableFrom(Integer.class) || type.isAssignableFrom(int.class)) && value instanceof Number) {
                 value = ((Number) value).intValue();
             } else if ((type.isAssignableFrom(Float.class) || type.isAssignableFrom(float.class)) && value instanceof Number) {
@@ -124,6 +127,13 @@ public class PishockZapConfig {
             }
         }
 
+        if (configVersion < 2) {
+            // Migrate from localEnabled to API type enum
+            if (config.get("localEnabled") instanceof Boolean localEnabled) {
+                config.put("apiType", localEnabled ? PiShockApiType.SERIAL.name() : PiShockApiType.WEB_V1.name());
+            }
+        }
+
         config.put(CONFIG_VERSION_KEY, CONFIG_VERSION);
 
         return config;
@@ -154,8 +164,8 @@ public class PishockZapConfig {
                 }
 
                 Object value = field.get(this);
-                if (value instanceof ShockDistribution sv) {
-                    value = sv.name();
+                if (value instanceof Enum<?> enumVal) {
+                    value = enumVal.name();
                 }
                 config.put(field.getName(), value);
             } catch (IllegalAccessException e) {

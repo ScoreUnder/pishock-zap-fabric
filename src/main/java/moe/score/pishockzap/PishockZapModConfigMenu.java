@@ -8,6 +8,7 @@ import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import moe.score.pishockzap.compat.FloatSliderBuilder;
 import moe.score.pishockzap.compat.Translation;
+import moe.score.pishockzap.config.PiShockApiType;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.pishockapi.PiShockSerialApi;
@@ -187,14 +188,29 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .build());
 
         var apiCategory = configBuilder.getOrCreateCategory(Translation.of("title.pishock-zap.config.api"));
-        apiCategory.addEntry(entryBuilder
+
+        var apiTypeSwitcher = entryBuilder.startEnumSelector(Translation.of("title.pishock-zap.config.api_type"), PiShockApiType.class, config.getApiType())
+            .setDefaultValue(config.getApiType())
+            .setEnumNameProvider((value) -> Translation.of("enum.pishock-zap.config.api_type." + value.name().toLowerCase()))
+            .setSaveConsumer(config::setApiType)
+            .setTooltip(Translation.of("tooltip.pishock-zap.config.api_type"))
+            .build();
+
+        apiCategory.addEntry(apiTypeSwitcher);
+
+        var webV1Category = entryBuilder
+            .startSubCategory(Translation.of("title.pishock-zap.config.api.web_v1"))
+            .setExpanded(true)
+            .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == PiShockApiType.WEB_V1);
+
+        webV1Category.add(entryBuilder
             .startStrField(Translation.of("title.pishock-zap.config.api.log_identifier"), config.getLogIdentifier())
             .setSaveConsumer(config::setLogIdentifier)
             .setTooltip(Translation.of("tooltip.pishock-zap.config.api.log_identifier"))
             .setDefaultValue(defaultConfig.getLogIdentifier())
             .build());
 
-        apiCategory.addEntry(entryBuilder.startTextDescription(
+        webV1Category.add(entryBuilder.startTextDescription(
                 Translation.of("description.pishock-zap.config.api.web_v1",
                     Translation.addLink(
                         Translation.of("description.pishock-zap.config.api.web_v1.api_key_link"),
@@ -207,19 +223,19 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 ))
             .build());
 
-        apiCategory.addEntry(entryBuilder
+        webV1Category.add(entryBuilder
             .startStrField(Translation.of("title.pishock-zap.config.api.username"), config.getUsername())
             .setSaveConsumer(config::setUsername)
             .setTooltip(Translation.of("tooltip.pishock-zap.config.api.username"))
             // no default
             .build());
-        apiCategory.addEntry(entryBuilder
+        webV1Category.add(entryBuilder
             .startStrField(Translation.of("title.pishock-zap.config.api.api_key"), config.getApiKey())
             .setSaveConsumer(config::setApiKey)
             .setTooltip(Translation.of("tooltip.pishock-zap.config.api.api_key"))
             // no default
             .build());
-        apiCategory.addEntry(entryBuilder
+        webV1Category.add(entryBuilder
             .startStrList(Translation.of("title.pishock-zap.config.api.share_codes"), config.getShareCodes())
             .setSaveConsumer(config::setShareCodes)
             .setTooltip(Translation.of("tooltip.pishock-zap.config.api.share_codes"))
@@ -228,21 +244,19 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             // no default
             .build());
 
-        apiCategory.addEntry(entryBuilder.startTextDescription(
+        webV1Category.add(entryBuilder.startTextDescription(
             Translation.of("description.pishock-zap.config.api.web_v1.disclaimer")).build());
 
+        apiCategory.addEntry(webV1Category.build());
+
         SubCategoryBuilder localApiCategory = entryBuilder
-            .startSubCategory(Translation.of("title.pishock-zap.config.api.local"));
+            .startSubCategory(Translation.of("title.pishock-zap.config.api.local"))
+            .setExpanded(true)
+            .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == PiShockApiType.SERIAL);
 
         localApiCategory.add(entryBuilder.startTextDescription(Translation.of("description.pishock-zap.config.api.local"))
             .build());
 
-        localApiCategory.add(entryBuilder.
-            startBooleanToggle(Translation.of("title.pishock-zap.config.api.local.enabled"), config.isLocalEnabled())
-            .setSaveConsumer(config::setLocalEnabled)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.api.local.enabled"))
-            .setDefaultValue(defaultConfig.isLocalEnabled())
-            .build());
         localApiCategory.add(entryBuilder
             .startDropdownMenu(Translation.of("title.pishock-zap.config.api.serial_port"), config.getSerialPort(), Function.identity(), Text::of)
             .setSelections(PiShockSerialApi.getSerialPorts())

@@ -73,12 +73,18 @@ public class PishockZapMod implements ClientModInitializer {
 
         // PiShock API type
         // (And serial API port, if we're using the serial API)
-        boolean useLocalApi = config.isLocalEnabled();
-        if (useLocalApi && (zapController.getApi() instanceof PiShockWebApiV1
-            || (zapController.getApi() instanceof PiShockSerialApi piShockSerialApi && !Objects.equals(piShockSerialApi.getPortName(), config.getSerialPort())))) {
-            zapController.setApi(new PiShockSerialApi(config, apiExecutor, config.getSerialPort()));
-        } else if (!useLocalApi && zapController.getApi() instanceof PiShockSerialApi) {
-            zapController.setApi(new PiShockWebApiV1(config, apiExecutor));
+        switch (config.getApiType()) {
+            case WEB_V1:
+                if (!(zapController.getApi() instanceof PiShockWebApiV1)) {
+                    zapController.setApi(new PiShockWebApiV1(config, apiExecutor));
+                }
+                break;
+            case SERIAL:
+                if (!(zapController.getApi() instanceof PiShockSerialApi piShockSerialApi)
+                    || !Objects.equals(piShockSerialApi.getPortName(), config.getSerialPort())) {
+                    zapController.setApi(new PiShockSerialApi(config, apiExecutor, config.getSerialPort()));
+                    break;
+                }
         }
     }
 
