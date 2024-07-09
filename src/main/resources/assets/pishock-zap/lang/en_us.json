@@ -37,15 +37,22 @@
   "title.pishock-zap.config.debounce.queue_different": "Queue different-sized shocks",
 
   "title.pishock-zap.config.api": "API",
+
+  "title.pishock-zap.config.api_type": "API Type",
+
+  "title.pishock-zap.config.api.web_v1": "PiShock Web API",
   "title.pishock-zap.config.api.log_identifier": "Log identifier",
   "title.pishock-zap.config.api.username": "Username",
   "title.pishock-zap.config.api.api_key": "API key",
   "title.pishock-zap.config.api.share_codes": "Share codes",
 
-  "title.pishock-zap.config.api.local": "Local Serial API (Advanced)",
-  "title.pishock-zap.config.api.local.enabled": "Use local serial API",
+  "title.pishock-zap.config.api.local": "Local Serial API",
   "title.pishock-zap.config.api.serial_port": "Serial port",
   "title.pishock-zap.config.api.device_ids": "Shocker IDs",
+  "title.pishock-zap.config.api.webhook": "Custom Webhook",
+  "title.pishock-zap.config.api.custom_webhook_url": "Webhook URL",
+
+  "description.pishock-zap.config.api_type": "It is recommended to use the %1$s API unless you have a specific reason to use another API type.",
 
   "description.pishock-zap.config.api.web_v1": "You can find your username and API key on the %1$s. Note that regenerating your API key will disconnect all other PiShock integrations which use it, so if you have one written down then use that. Share codes are available from the %2$s (click the \"share\" button to generate a share code).",
   "description.pishock-zap.config.api.web_v1.api_key_link": "PiShock account page",
@@ -55,6 +62,9 @@
   "description.pishock-zap.config.api.local": "Local Serial API is intended for advanced users only. It requires the PiShock device to be directly connected via USB to the computer running Minecraft. The advantage is that it provides near-instant feedback unlike the Web API which is constrained by network latency.",
   "description.pishock-zap.config.api.local.device_ids": "Shocker IDs are short numeric identifiers available from the %1$s. You can find them by clicking on the settings icon in the bottom-center of each individual controller. This is not the same as your PiShock device ID.",
   "description.pishock-zap.config.api.local.device_ids.link": "PiShock controller page",
+
+  "description.pishock-zap.config.api.webhook": "Advanced users only. This calls out to a webhook URL with a JSON payload similar to the below:\n\n%1$s\n\nThis allows you to integrate with your own custom systems.",
+  "description.pishock-zap.config.api.webhook.payload": "{\n  \"operation\": %1$s,\n  \"intensity\": %2$s,\n  \"duration\": %3$s,\n  \"distribution\": %4$s\n}",
 
   "tooltip.pishock-zap.config.general.enabled": "Enable/disable the mod",
   "tooltip.pishock-zap.config.general.vibration_only": "Only vibrate the device, don't shock, even on death.\nThis can be used to test the mod or simply\nprovide a less intense experience.\nFor example, if you want to check your share codes work.",
@@ -80,14 +90,21 @@
   "tooltip.pishock-zap.config.debounce.accumulate_intensity": "Accumulate the intensity of shocks/vibrations\nIf this is enabled, queued shocks/vibrations will be\ncombined and their intensities added together.\nLimits are of course still respected.\nThis is similar to the effect of taking the damage all at once.\nIf this is disabled, the intensity of the resulting shock/vibration\nwill be the greatest of the queued shocks/vibrations.\nDisabling it is easier on the user :)\nIf shock-on-health is enabled, this will be ignored.",
   "tooltip.pishock-zap.config.debounce.queue_different": "Queue differently-sized shocks/vibrations separately\nIf this is enabled, during backoff, differently-sized\nshocks/vibrations will not accumulate duration with\neach other, and will instead be sent separately.\nDisables intensity accumulation.",
 
+  "tooltip.pishock-zap.config.api_type": "The type of API to use for PiShock communication",
+
   "tooltip.pishock-zap.config.api.log_identifier": "The identifier to display in the PiShock logs",
   "tooltip.pishock-zap.config.api.username": "Your PiShock account username",
   "tooltip.pishock-zap.config.api.api_key": "Your PiShock account API key",
   "tooltip.pishock-zap.config.api.share_codes": "The share codes of the devices you want\nto control with this mod",
 
-  "tooltip.pishock-zap.config.api.local.enabled": "Use a device locally connected via USB.\nThe alternative is to use the web API.",
   "tooltip.pishock-zap.config.api.serial_port": "The path or name of the serial port to use\nfor local serial API communication\nFor example, COM3 or /dev/ttyUSB0",
   "tooltip.pishock-zap.config.api.device_ids": "The IDs of the shockers to drive via local serial API",
+
+  "tooltip.pishock-zap.config.api.custom_webhook_url": "The URL of the webhook to send data to",
+  "tooltip.pishock-zap.config.api.webhook.payload.operation": "The operation to perform.\nOne of: %1$s",
+  "tooltip.pishock-zap.config.api.webhook.payload.intensity": "The intensity of the operation.\nAn integer between 0 and 100",
+  "tooltip.pishock-zap.config.api.webhook.payload.duration": "The duration of the operation.\nA number in seconds",
+  "tooltip.pishock-zap.config.api.webhook.payload.distribution": "The shock distribution of the operation.\nOne of: %1$s",
 
   "label.pishock-zap.config.hp": "\u2764 %1$s%%",
   "label.pishock-zap.config.intensity": "\u26A1 %1$s%%",
@@ -102,8 +119,15 @@
   "enum.pishock-zap.config.shock_distribution.random_all": "Random devices",
   "enum.pishock-zap.config.shock_distribution.all": "All devices",
 
+  "enum.pishock-zap.config.api_type.web_v1": "PiShock Web",
+  "enum.pishock-zap.config.api_type.serial": "Local Serial",
+  "enum.pishock-zap.config.api_type.webhook": "Custom Webhook",
+
   "error.pishock-zap.config.api.share_codes.entry.empty": "Share code cannot be empty",
   "error.pishock-zap.config.api.share_codes.entry.invalid": "Share code appears invalid",
+
+  "error.pishock-zap.config.api.custom_webhook_url.empty": "Webhook URL cannot be empty",
+  "error.pishock-zap.config.api.custom_webhook_url.invalid": "Webhook URL appears invalid",
 
   "key.category.pishock-zap": "PiShock-Zap",
 

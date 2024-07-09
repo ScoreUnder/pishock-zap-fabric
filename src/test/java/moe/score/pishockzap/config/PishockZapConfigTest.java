@@ -1,9 +1,14 @@
 package moe.score.pishockzap.config;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.HashMap;
+import java.util.stream.Stream;
 
+import static moe.score.pishockzap.config.PishockZapConfig.CONFIG_VERSION;
 import static moe.score.pishockzap.config.PishockZapConfig.CONFIG_VERSION_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -26,7 +31,7 @@ class PishockZapConfigTest {
 
         assertEquals(0.4f, (Float) newConfigData.get("vibrationThreshold"), 0.0001f);
         assertEquals(0.8f, (Float) newConfigData.get("maxDamage"), 0.0001f);
-        assertEquals(1, newConfigData.get(CONFIG_VERSION_KEY));
+        assertEquals(CONFIG_VERSION, newConfigData.get(CONFIG_VERSION_KEY));
     }
 
     @Test
@@ -48,6 +53,53 @@ class PishockZapConfigTest {
 
         assertEquals(0.5f, (Float) newConfigData.get("vibrationThreshold"), 0.0001f);
         assertEquals(0.75f, (Float) newConfigData.get("maxDamage"), 0.0001f);
-        assertEquals(1, newConfigData.get(CONFIG_VERSION_KEY));
+        assertEquals(CONFIG_VERSION, newConfigData.get(CONFIG_VERSION_KEY));
+    }
+
+    static Stream<Arguments> provideV1LocalSerialConfigData() {
+        return Stream.of(
+            Arguments.of(true, PiShockApiType.SERIAL),
+            Arguments.of(false, PiShockApiType.WEB_V1)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideV1LocalSerialConfigData")
+    void v1ConfigLocalIsMigrated(boolean localEnabled, PiShockApiType expectedApiType) {
+        var oldConfigData = new HashMap<String, Object>();
+
+        oldConfigData.put("localEnabled", localEnabled);
+        oldConfigData.put(CONFIG_VERSION_KEY, 1.0);
+
+        var config = new PishockZapConfig();
+        config.setFromConfig(oldConfigData);
+
+        assertEquals(expectedApiType, config.getApiType());
+
+        var newConfigData = new HashMap<String, Object>();
+        config.copyToConfig(newConfigData);
+
+        assertEquals(expectedApiType.name(), newConfigData.get("apiType"));
+        assertEquals(CONFIG_VERSION, newConfigData.get(CONFIG_VERSION_KEY));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideV1LocalSerialConfigData")
+    void v2ConfigApiTypeIsNotMigrated(boolean ignored, PiShockApiType expectedApiType) {
+        var oldConfigData = new HashMap<String, Object>();
+
+        oldConfigData.put("apiType", expectedApiType.name());
+        oldConfigData.put(CONFIG_VERSION_KEY, 2.0);
+
+        var config = new PishockZapConfig();
+        config.setFromConfig(oldConfigData);
+
+        assertEquals(expectedApiType, config.getApiType());
+
+        var newConfigData = new HashMap<String, Object>();
+        config.copyToConfig(newConfigData);
+
+        assertEquals(expectedApiType.name(), newConfigData.get("apiType"));
+        assertEquals(CONFIG_VERSION, newConfigData.get(CONFIG_VERSION_KEY));
     }
 }
