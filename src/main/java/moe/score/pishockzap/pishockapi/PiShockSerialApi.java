@@ -8,6 +8,7 @@ import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.HashMap;
@@ -27,8 +28,8 @@ public class PiShockSerialApi implements PiShockApi {
     private final String portName;
     private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
     private final Gson gson = new Gson();
-    private SerialPort commPort;
-    private Writer jsonWriter = null;
+    private volatile SerialPort commPort;
+    private volatile Writer jsonWriter = null;
 
     public PiShockSerialApi(@NonNull PishockZapConfig config, @NonNull Executor executor, @NonNull String portName) {
         this.config = config;
@@ -80,6 +81,30 @@ public class PiShockSerialApi implements PiShockApi {
         return (int) Math.round(duration * 1000.0f);
     }
 
+    private SerialPort createAndOpenPort(String portName) {
+        SerialPort commPort = SerialPort.getCommPort(portName);
+        commPort.setBaudRate(PISHOCK_SERIAL_BAUD_RATE);
+        commPort.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
+        commPort.openPort();
+        return commPort;
+    }
+
+    private Writer openWriter() {
+        if (jsonWriter == null) {
+            var commPort = this.commPort = createAndOpenPort(portName);
+            var jsonWriter = this.jsonWriter = new OutputStreamWriter(commPort.getOutputStream());
+            return jsonWriter;
+        }
+        return jsonWriter;
+    }
+
+    private void writeAsJson(Map<String, Object> data) throws IOException {
+        @SuppressWarnings("resource") Writer jsonWriter = openWriter();
+        jsonWriter.write(gson.toJson(data));
+        jsonWriter.write('\n');
+        jsonWriter.flush();
+    }
+
     /**
      * Perform a PiShock API call on a separate thread.
      *
@@ -88,36 +113,23 @@ public class PiShockSerialApi implements PiShockApi {
     private void doApiCallOnThread(Map<String, Object> data) {
         executor.execute(() -> {
             try {
-                if (commPort == null) {
-                    commPort = SerialPort.getCommPort(portName);
-                    commPort.setBaudRate(PISHOCK_SERIAL_BAUD_RATE);
-                    commPort.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
-                    commPort.openPort();
-
-                    jsonWriter = new OutputStreamWriter(commPort.getOutputStream());
-                }
-                jsonWriter.write(gson.toJson(data));
-                jsonWriter.write('\n');
-                jsonWriter.flush();
+                writeAsJson(data);
             } catch (Exception e) {
                 logger.warning("PiShock API call failed; exception thrown");
                 e.printStackTrace();
 
-                var commPort = this.commPort;
-                if (commPort != null) {
-                    this.commPort = null;
-                    this.jsonWriter = null;
-                    commPort.closePort();
-                }
+                close();
             }
         });
     }
 
     @Override
     public void close() {
+        var commPort = this.commPort;
         if (commPort != null) {
+            this.commPort = null;
+            this.jsonWriter = null;
             commPort.closePort();
-            commPort = null;
         }
     }
 
