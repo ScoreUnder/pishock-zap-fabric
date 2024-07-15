@@ -18,7 +18,7 @@ public class ZapController {
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     @Getter
     @NonNull
-    private PiShockApi api;
+    private volatile PiShockApi api;
     private final Thread thread;
     private final PishockZapConfig config;
     private final ShockQueue shockQueue;
