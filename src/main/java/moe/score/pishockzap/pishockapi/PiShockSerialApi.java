@@ -3,6 +3,7 @@ package moe.score.pishockzap.pishockapi;
 import com.fazecast.jSerialComm.SerialPort;
 import com.google.gson.Gson;
 import lombok.Getter;
+import lombok.NonNull;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
@@ -22,20 +23,21 @@ public class PiShockSerialApi implements PiShockApi {
     private final PishockZapConfig config;
     private final Executor executor;
     @Getter
+    @NonNull
     private final String portName;
     private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
     private final Gson gson = new Gson();
     private SerialPort commPort;
     private Writer jsonWriter = null;
 
-    public PiShockSerialApi(PishockZapConfig config, Executor executor, String portName) {
+    public PiShockSerialApi(@NonNull PishockZapConfig config, @NonNull Executor executor, @NonNull String portName) {
         this.config = config;
         this.executor = executor;
         this.portName = portName;
     }
 
     @Override
-    public void performOp(ShockDistribution distribution, OpType op, int intensity, float duration) {
+    public void performOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
         if (!config.isEnabled()) return;
         if (config.isVibrationOnly()) op = OpType.VIBRATE;
         if (!PiShockUtils.shockParamsAreValid(intensity, duration)) return;
@@ -119,6 +121,7 @@ public class PiShockSerialApi implements PiShockApi {
         }
     }
 
+    @NonNull
     public static Iterable<String> getSerialPorts() {
         return Stream.of(SerialPort.getCommPorts()).map(SerialPort::getSystemPortName)::iterator;
     }

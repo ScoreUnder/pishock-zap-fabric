@@ -1,6 +1,7 @@
 package moe.score.pishockzap.pishockapi;
 
 import com.google.gson.Gson;
+import lombok.NonNull;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
@@ -36,7 +37,7 @@ public class PiShockWebApiV1 implements PiShockApi {
         this.executor = executor;
     }
 
-    public void performOp(ShockDistribution distribution, OpType op, int intensity, float duration) {
+    public void performOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
         if (!config.isEnabled()) return;
         if (config.isVibrationOnly()) op = OpType.VIBRATE;
         if (!PiShockUtils.shockParamsAreValid(intensity, duration)) return;

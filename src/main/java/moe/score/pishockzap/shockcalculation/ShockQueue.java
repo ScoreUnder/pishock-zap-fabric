@@ -1,6 +1,7 @@
 package moe.score.pishockzap.shockcalculation;
 
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
@@ -16,6 +17,7 @@ import java.util.logging.Logger;
 public class ShockQueue {
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     private final BlockingQueue<QueuedShock> queue = new LinkedBlockingQueue<>();
+    @NonNull
     private final PishockZapConfig config;
 
     public CalculatedShock takeAndMergeShocks() throws InterruptedException {
@@ -169,6 +171,7 @@ public class ShockQueue {
 
     @AllArgsConstructor
     private static final class QueuedShock {
+        @NonNull
         private final ShockDistribution distribution;
         private final boolean isDeath;
         private float damageEquivalent;
