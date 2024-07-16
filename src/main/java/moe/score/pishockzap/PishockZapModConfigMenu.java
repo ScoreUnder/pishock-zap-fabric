@@ -305,7 +305,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .setDefaultValue(defaultConfig.getCustomWebhookUrl())
             .setErrorSupplier((url) -> {
                 if (apiTypeSwitcher.getValue() != PiShockApiType.WEBHOOK) return Optional.empty();
-                if (url.isBlank()) return Optional.of(Translation.of("error.pishock-zap.config.api.custom_webhook_url.empty"));
+                if (url.isBlank())
+                    return Optional.of(Translation.of("error.pishock-zap.config.api.custom_webhook_url.empty"));
                 try {
                     new URL(url);
                 } catch (Exception e) {
