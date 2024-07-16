@@ -2,6 +2,7 @@ package moe.score.pishockzap;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
+import lombok.NonNull;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
@@ -17,7 +18,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import org.jetbrains.annotations.NotNull;
 
 import java.net.URL;
 import java.util.Arrays;
@@ -34,7 +34,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
     private static final String PISHOCK_CONTROLLER_PAGE_URL = "https://pishock.com/#/control";
     public static final String PISHOCK_ACCOUNT_PAGE_URL = "https://pishock.com/#/account";
 
-    private static Screen createConfigScreen(Screen parent) {
+    private static @NonNull Screen createConfigScreen(Screen parent) {
         var mod = PishockZapMod.getInstance();
         var config = mod.getConfig();
 
@@ -348,7 +348,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         return configBuilder.build();
     }
 
-    private static Optional<Text> isShareCodeInvalid(String shareCode) {
+    private static @NonNull Optional<Text> isShareCodeInvalid(String shareCode) {
         if (shareCode.isBlank())
             return Optional.of(Translation.of("error.pishock-zap.config.api.share_codes.entry.empty"));
         if (shareCode.length() < 10 || !shareCode.matches("[0-9A-F]+")) {
@@ -357,7 +357,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         return Optional.empty();
     }
 
-    private static @NotNull AbstractConfigListEntry<ShockDistribution> createShockDistributionDropdown(ConfigEntryBuilder builder, String key, ShockDistribution def, Consumer<ShockDistribution> saveConsumer) {
+    private static @NonNull AbstractConfigListEntry<ShockDistribution> createShockDistributionDropdown(ConfigEntryBuilder builder, String key, ShockDistribution def, Consumer<ShockDistribution> saveConsumer) {
         return builder.startEnumSelector(Translation.of("title.pishock-zap.config." + key), ShockDistribution.class, def)
             .setDefaultValue(def)
             .setEnumNameProvider((value) -> Translation.of("enum.pishock-zap.config.shock_distribution." + value.name().toLowerCase()))
@@ -366,7 +366,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .build();
     }
 
-    private static FloatSliderBuilder createFloatSlider(
+    private static @NonNull FloatSliderBuilder createFloatSlider(
         ConfigEntryBuilder entryBuilder,
         Text fieldNameKey,
         float value,
@@ -376,7 +376,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         return new FloatSliderBuilder(entryBuilder.getResetButtonKey(), fieldNameKey, value, min, max);
     }
 
-    private static FloatSliderBuilder createFloatSlider(
+    private static @NonNull FloatSliderBuilder createFloatSlider(
         ConfigEntryBuilder entryBuilder,
         Text fieldNameKey,
         float value,
@@ -388,7 +388,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
     }
 
     @Override
-    public ConfigScreenFactory<?> getModConfigScreenFactory() {
+    public @NonNull ConfigScreenFactory<?> getModConfigScreenFactory() {
         return PishockZapModConfigMenu::createConfigScreen;
     }
 }

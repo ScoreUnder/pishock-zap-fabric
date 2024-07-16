@@ -9,12 +9,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import lombok.NonNull;
 import me.shedaniel.clothconfig2.gui.entries.IntegerSliderEntry;
 import me.shedaniel.clothconfig2.impl.builders.AbstractSliderFieldBuilder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
@@ -33,7 +33,7 @@ public class FloatSliderBuilder extends AbstractSliderFieldBuilder<Float, Intege
         this(resetButtonKey, fieldNameKey, value, min, max, 1000.0f);
     }
 
-    public @NotNull IntegerSliderEntry build() {
+    public @NonNull IntegerSliderEntry build() {
         IntegerSliderEntry entry = new IntegerSliderEntry(this.getFieldNameKey(), Math.round(this.min * floatScale), Math.round(this.max * floatScale), Math.round(this.value * floatScale), this.getResetButtonKey(), getDefaultValueScaled(), getSaveConsumerScaled(), null, this.isRequireRestart());
         Function<Float, Text> textGetter = this.textGetter;
         if (textGetter != null) {

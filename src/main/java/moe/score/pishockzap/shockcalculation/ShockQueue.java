@@ -20,7 +20,7 @@ public class ShockQueue {
     @NonNull
     private final PishockZapConfig config;
 
-    public CalculatedShock takeAndMergeShocks() throws InterruptedException {
+    public @NonNull CalculatedShock takeAndMergeShocks() throws InterruptedException {
         QueuedShock shock = queue.take();
         QueuedShock nextShock;
 
@@ -80,7 +80,7 @@ public class ShockQueue {
         return true;
     }
 
-    private CalculatedShock transformShock(QueuedShock shock) {
+    private @NonNull CalculatedShock transformShock(QueuedShock shock) {
         boolean separateDeathShock = config.isShockOnDeath() && shock.isDeath;
         OpType type;
         int intensity;

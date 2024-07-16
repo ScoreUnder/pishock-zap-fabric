@@ -7,6 +7,7 @@ import lombok.NonNull;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -21,15 +22,15 @@ import java.util.stream.Stream;
 public class PiShockSerialApi implements PiShockApi {
     public static final int PISHOCK_SERIAL_BAUD_RATE = 115200;
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
-    private final PishockZapConfig config;
-    private final Executor executor;
+    private final @NonNull PishockZapConfig config;
+    private final @NonNull Executor executor;
     @Getter
     @NonNull
     private final String portName;
     private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
     private final Gson gson = new Gson();
-    private volatile SerialPort commPort;
-    private volatile Writer jsonWriter = null;
+    private volatile @Nullable SerialPort commPort;
+    private volatile @Nullable Writer jsonWriter = null;
 
     public PiShockSerialApi(@NonNull PishockZapConfig config, @NonNull Executor executor, @NonNull String portName) {
         this.config = config;
@@ -81,7 +82,7 @@ public class PiShockSerialApi implements PiShockApi {
         return (int) Math.round(duration * 1000.0f);
     }
 
-    private SerialPort createAndOpenPort(String portName) {
+    private @NonNull SerialPort createAndOpenPort(String portName) {
         SerialPort commPort = SerialPort.getCommPort(portName);
         commPort.setBaudRate(PISHOCK_SERIAL_BAUD_RATE);
         commPort.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
@@ -89,12 +90,12 @@ public class PiShockSerialApi implements PiShockApi {
         return commPort;
     }
 
-    private Writer openWriter() {
-        if (jsonWriter == null) {
-            var commPort = this.commPort = createAndOpenPort(portName);
-            var jsonWriter = this.jsonWriter = new OutputStreamWriter(commPort.getOutputStream());
-            return jsonWriter;
-        }
+    private @NonNull Writer openWriter() {
+        Writer jsonWriter = this.jsonWriter;
+        if (jsonWriter != null) return jsonWriter;
+
+        var commPort = this.commPort = createAndOpenPort(portName);
+        jsonWriter = this.jsonWriter = new OutputStreamWriter(commPort.getOutputStream());
         return jsonWriter;
     }
 

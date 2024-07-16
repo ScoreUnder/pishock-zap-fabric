@@ -18,6 +18,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Style;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.BufferedWriter;
@@ -35,7 +36,7 @@ public class PishockZapMod implements ClientModInitializer {
     public static final int MAX_DAMAGE = 20;
     public static final String NAME = "PiShock-Zap";
     @Getter
-    private static PishockZapMod instance = null;
+    private static @Nullable PishockZapMod instance = null;
 
     private static final KeyBinding keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
         "key.pishock-zap.toggle",
