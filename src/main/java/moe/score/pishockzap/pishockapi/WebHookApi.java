@@ -1,6 +1,8 @@
 package moe.score.pishockzap.pishockapi;
 
 import com.google.gson.Gson;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
@@ -12,19 +14,15 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 
+@RequiredArgsConstructor
 public class WebHookApi implements PiShockApi {
-    private final PishockZapConfig config;
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
-    private final Executor executor;
     private final Gson gson = new Gson();
-
-    public WebHookApi(PishockZapConfig config, Executor executor) {
-        this.config = config;
-        this.executor = executor;
-    }
+    private final @NonNull PishockZapConfig config;
+    private final @NonNull Executor executor;
 
     @Override
-    public void performOp(ShockDistribution distribution, OpType op, int intensity, float duration) {
+    public void performOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
         if (!config.isEnabled()) return;
         if (config.isVibrationOnly()) op = OpType.VIBRATE;
         if (!PiShockUtils.shockParamsAreValid(intensity, duration)) return;
@@ -38,7 +36,7 @@ public class WebHookApi implements PiShockApi {
         doApiCallOnThread(data);
     }
 
-    private void doApiCallOnThread(Map<String, Object> data) {
+    private void doApiCallOnThread(@NonNull Map<String, Object> data) {
         executor.execute(() -> {
             try {
                 URLConnection connection = new URL(config.getCustomWebhookUrl()).openConnection();

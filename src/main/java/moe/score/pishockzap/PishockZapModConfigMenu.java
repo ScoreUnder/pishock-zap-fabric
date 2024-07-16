@@ -2,6 +2,7 @@ package moe.score.pishockzap;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
+import lombok.NonNull;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
@@ -17,10 +18,10 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import org.jetbrains.annotations.NotNull;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -34,8 +35,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
     private static final String PISHOCK_CONTROLLER_PAGE_URL = "https://pishock.com/#/control";
     public static final String PISHOCK_ACCOUNT_PAGE_URL = "https://pishock.com/#/account";
 
-    private static Screen createConfigScreen(Screen parent) {
-        var mod = PishockZapMod.getInstance();
+    private static @NonNull Screen createConfigScreen(Screen parent) {
+        var mod = Objects.requireNonNull(PishockZapMod.getInstance(), "PishockZapMod instance is null");
         var config = mod.getConfig();
 
         var defaultConfig = new PishockZapConfig();
@@ -305,7 +306,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .setDefaultValue(defaultConfig.getCustomWebhookUrl())
             .setErrorSupplier((url) -> {
                 if (apiTypeSwitcher.getValue() != PiShockApiType.WEBHOOK) return Optional.empty();
-                if (url.isBlank()) return Optional.of(Translation.of("error.pishock-zap.config.api.custom_webhook_url.empty"));
+                if (url.isBlank())
+                    return Optional.of(Translation.of("error.pishock-zap.config.api.custom_webhook_url.empty"));
                 try {
                     new URL(url);
                 } catch (Exception e) {
@@ -348,7 +350,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         return configBuilder.build();
     }
 
-    private static Optional<Text> isShareCodeInvalid(String shareCode) {
+    private static @NonNull Optional<Text> isShareCodeInvalid(@NonNull String shareCode) {
         if (shareCode.isBlank())
             return Optional.of(Translation.of("error.pishock-zap.config.api.share_codes.entry.empty"));
         if (shareCode.length() < 10 || !shareCode.matches("[0-9A-F]+")) {
@@ -357,7 +359,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         return Optional.empty();
     }
 
-    private static @NotNull AbstractConfigListEntry<ShockDistribution> createShockDistributionDropdown(ConfigEntryBuilder builder, String key, ShockDistribution def, Consumer<ShockDistribution> saveConsumer) {
+    private static @NonNull AbstractConfigListEntry<ShockDistribution> createShockDistributionDropdown(@NonNull ConfigEntryBuilder builder, String key, ShockDistribution def, Consumer<ShockDistribution> saveConsumer) {
         return builder.startEnumSelector(Translation.of("title.pishock-zap.config." + key), ShockDistribution.class, def)
             .setDefaultValue(def)
             .setEnumNameProvider((value) -> Translation.of("enum.pishock-zap.config.shock_distribution." + value.name().toLowerCase()))
@@ -366,9 +368,9 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .build();
     }
 
-    private static FloatSliderBuilder createFloatSlider(
-        ConfigEntryBuilder entryBuilder,
-        Text fieldNameKey,
+    private static @NonNull FloatSliderBuilder createFloatSlider(
+        @NonNull ConfigEntryBuilder entryBuilder,
+        @NonNull Text fieldNameKey,
         float value,
         float min,
         float max
@@ -376,9 +378,9 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         return new FloatSliderBuilder(entryBuilder.getResetButtonKey(), fieldNameKey, value, min, max);
     }
 
-    private static FloatSliderBuilder createFloatSlider(
-        ConfigEntryBuilder entryBuilder,
-        Text fieldNameKey,
+    private static @NonNull FloatSliderBuilder createFloatSlider(
+        @NonNull ConfigEntryBuilder entryBuilder,
+        @NonNull Text fieldNameKey,
         float value,
         float min,
         float max,
@@ -388,7 +390,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
     }
 
     @Override
-    public ConfigScreenFactory<?> getModConfigScreenFactory() {
+    public @NonNull ConfigScreenFactory<?> getModConfigScreenFactory() {
         return PishockZapModConfigMenu::createConfigScreen;
     }
 }

@@ -1,19 +1,18 @@
 package moe.score.pishockzap.pishockapi;
 
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import moe.score.pishockzap.config.ShockDistribution;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 import java.util.logging.Logger;
 
+@UtilityClass
 public class PiShockUtils {
     public static final int PISHOCK_MAX_DURATION = 15;
     public static final int PISHOCK_MAX_INTENSITY = 100;
 
     private static final Logger logger = Logger.getLogger(PiShockUtils.class.getName());
-
-    private PiShockUtils() {
-    }
 
     public static boolean shockParamsAreValid(int intensity, float duration) {
         if (intensity == 0 || duration == 0.0f) return false;
@@ -39,7 +38,7 @@ public class PiShockUtils {
          * @param length       number of shockers to pick from
          * @return a boolean array of length {@code length} with {@code true} for each shocker to shock
          */
-        public boolean @NotNull [] pickShockers(ShockDistribution distribution, int length) {
+        public boolean @NonNull [] pickShockers(@NonNull ShockDistribution distribution, int length) {
             boolean[] shocks = new boolean[length];
             int randomIndex = random.nextInt(length);
             if (roundRobinIndex >= length) roundRobinIndex = 0;
