@@ -62,17 +62,17 @@ This approach is recommended for users who are not familiar with modding.
 2. Download and install [Prism Launcher].
 3. Open Prism Launcher and click "Add Instance".
 4. Create a new custom instance
-  * Choose Minecraft 1.18.2.
-  * Choose either Fabric or Quilt as the mod loader, at the latest version.
-  * Click OK.
+    * Choose a Minecraft version in the 1.20 series.
+    * Choose either Fabric or Quilt as the mod loader, at the latest version.
+    * Click OK.
 5. Right-click your newly-created instance and click "Edit".
 6. Go to the "Mods" tab and click "Add file".
-  * Choose the JAR file you downloaded in step 1.
+    * Choose the JAR file you downloaded in step 1.
 7. Click "Download mods" and select the following mods: (these should all be
    close to the top of the list)
-  * Fabric API
-  * Cloth Config API
-  * Mod Menu
+    * Fabric API
+    * Cloth Config API
+    * Mod Menu
 8. Click "Review and Confirm" and then "OK".
 9. Click "Launch" to start the game. You can launch the game in future just by
    double-clicking the instance in Prism Launcher.

@@ -1,6 +1,7 @@
 package moe.score.pishockzap.config;
 
 import lombok.Data;
+import lombok.NonNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -11,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Data
 public class PishockZapConfig {
-    static final String CONFIG_VERSION_KEY = "CONFIG_VERSION_DO_NOT_EDIT";
+    static final @NonNull String CONFIG_VERSION_KEY = "CONFIG_VERSION_DO_NOT_EDIT";
     static final int CONFIG_VERSION = 2;
 
     /// Whether the mod is enabled at all
@@ -46,9 +47,9 @@ public class PishockZapConfig {
     /// The duration of a shock when the player dies
     private float shockDurationDeath = 5.0f;
     /// The distribution of shocks when the player takes damage
-    private ShockDistribution shockDistribution = ShockDistribution.ROUND_ROBIN;
+    private @NonNull ShockDistribution shockDistribution = ShockDistribution.ROUND_ROBIN;
     /// The distribution of shocks when the player dies
-    private ShockDistribution shockDistributionDeath = ShockDistribution.ALL;
+    private @NonNull ShockDistribution shockDistributionDeath = ShockDistribution.ALL;
 
     /// Debounce time between shock/vibrate requests (seconds)
     private float debounceTime = 1.0f;
@@ -60,30 +61,30 @@ public class PishockZapConfig {
     private boolean queueDifferent = true;
 
     /// The type of PiShock API to use
-    private PiShockApiType apiType = PiShockApiType.WEB_V1;
+    private @NonNull PiShockApiType apiType = PiShockApiType.WEB_V1;
 
     /// Identifier for on-site logs
-    private String logIdentifier = "PiShock-Zap (Minecraft)";
+    private @NonNull String logIdentifier = "PiShock-Zap (Minecraft)";
     /// PiShock account username
-    private String username = "";
+    private @NonNull String username = "";
     /// PiShock account API key
-    private String apiKey = "";
+    private @NonNull String apiKey = "";
     /// PiShock device share codes
-    private List<String> shareCodes = List.of("BADC0DE0000");
+    private @NonNull List<String> shareCodes = List.of("BADC0DE0000");
 
     /// PiShock device serial port
-    private String serialPort = "/dev/ttyACM0";
+    private @NonNull String serialPort = "/dev/ttyACM0";
     /// PiShock device IDs (for serial API)
-    private List<Integer> deviceIds = List.of(12345);
+    private @NonNull List<Integer> deviceIds = List.of(12345);
 
     /// Custom Webhook URL
-    private String customWebhookUrl = "";
+    private @NonNull String customWebhookUrl = "";
 
-    private boolean fieldIsListOfInteger(Field field) {
+    private boolean fieldIsListOfInteger(@NonNull Field field) {
         return field.getName().equals("deviceIds");
     }
 
-    private void setSingleConfigField(Field field, Object value) {
+    private void setSingleConfigField(@NonNull Field field, @NonNull Object value) {
         try {
             Class<?> type = field.getType();
             if (type.isAssignableFrom(ShockDistribution.class)) {
@@ -106,7 +107,7 @@ public class PishockZapConfig {
         }
     }
 
-    private Map<String, Object> performConfigMigrations(Map<String, Object> config) {
+    private @NonNull Map<String, Object> performConfigMigrations(@NonNull Map<String, Object> config) {
         int configVersion;
         if (!(config.get(CONFIG_VERSION_KEY) instanceof Number configVersionNumber)) {
             configVersion = 0;
@@ -142,7 +143,7 @@ public class PishockZapConfig {
         return config;
     }
 
-    public void setFromConfig(Map<String, Object> config) {
+    public void setFromConfig(@NonNull Map<String, Object> config) {
         config = performConfigMigrations(config);
 
         for (Field field : getClass().getDeclaredFields()) {
@@ -158,7 +159,7 @@ public class PishockZapConfig {
         }
     }
 
-    public void copyToConfig(Map<String, Object> config) {
+    public void copyToConfig(@NonNull Map<String, Object> config) {
         for (Field field : getClass().getDeclaredFields()) {
             try {
                 int modifiers = field.getModifiers();

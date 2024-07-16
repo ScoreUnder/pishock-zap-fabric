@@ -1,6 +1,7 @@
 package moe.score.pishockzap.shockcalculation;
 
 import lombok.Getter;
+import lombok.NonNull;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
@@ -16,14 +17,14 @@ import java.util.logging.Logger;
 public class ZapController {
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     @Getter
-    private PiShockApi api;
-    private final Thread thread;
-    private final PishockZapConfig config;
-    private final ShockQueue shockQueue;
+    @NonNull
+    private volatile PiShockApi api;
+    private final Thread thread = new Thread(this::run);
+    private final @NonNull PishockZapConfig config;
+    private final @NonNull ShockQueue shockQueue;
 
-    public ZapController(PiShockApi api, PishockZapConfig config) {
+    public ZapController(@NonNull PiShockApi api, @NonNull PishockZapConfig config) {
         this.api = api;
-        this.thread = new Thread(this::run);
         this.config = config;
         this.shockQueue = new ShockQueue(config);
     }
@@ -37,7 +38,7 @@ public class ZapController {
         this.thread.interrupt();
     }
 
-    public void setApi(PiShockApi api) {
+    public void setApi(@NonNull PiShockApi api) {
         this.api.close();
         this.api = api;
     }
@@ -58,7 +59,7 @@ public class ZapController {
         }
     }
 
-    public void queueShock(ShockDistribution distribution, boolean isDeath, float damageEquivalent) {
+    public void queueShock(@NonNull ShockDistribution distribution, boolean isDeath, float damageEquivalent) {
         logger.info("Queueing shock: " + distribution + ", " + isDeath + ", " + damageEquivalent);
         shockQueue.queueShock(distribution, isDeath, damageEquivalent);
     }
