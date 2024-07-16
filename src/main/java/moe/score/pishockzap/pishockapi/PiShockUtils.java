@@ -1,19 +1,18 @@
 package moe.score.pishockzap.pishockapi;
 
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import moe.score.pishockzap.config.ShockDistribution;
 
 import java.util.Random;
 import java.util.logging.Logger;
 
+@UtilityClass
 public class PiShockUtils {
     public static final int PISHOCK_MAX_DURATION = 15;
     public static final int PISHOCK_MAX_INTENSITY = 100;
 
     private static final Logger logger = Logger.getLogger(PiShockUtils.class.getName());
-
-    private PiShockUtils() {
-    }
 
     public static boolean shockParamsAreValid(int intensity, float duration) {
         if (intensity == 0 || duration == 0.0f) return false;
