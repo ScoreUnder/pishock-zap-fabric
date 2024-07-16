@@ -21,6 +21,7 @@ import net.minecraft.util.Formatting;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -35,7 +36,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
     public static final String PISHOCK_ACCOUNT_PAGE_URL = "https://pishock.com/#/account";
 
     private static @NonNull Screen createConfigScreen(Screen parent) {
-        var mod = PishockZapMod.getInstance();
+        var mod = Objects.requireNonNull(PishockZapMod.getInstance(), "PishockZapMod instance is null");
         var config = mod.getConfig();
 
         var defaultConfig = new PishockZapConfig();

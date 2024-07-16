@@ -33,7 +33,6 @@ import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 public class PishockZapMod implements ClientModInitializer {
-    public static final int MAX_DAMAGE = 20;
     public static final String NAME = "PiShock-Zap";
     @Getter
     private static @Nullable PishockZapMod instance = null;

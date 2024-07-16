@@ -79,7 +79,7 @@ public class PiShockSerialApi implements PiShockApi {
      * @return duration in PiShock API format
      */
     private int transformDuration(float duration) {
-        return (int) Math.round(duration * 1000.0f);
+        return Math.round(duration * 1000.0f);
     }
 
     private @NonNull SerialPort createAndOpenPort(String portName) {
