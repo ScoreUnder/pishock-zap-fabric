@@ -19,13 +19,12 @@ public class ZapController {
     @Getter
     @NonNull
     private volatile PiShockApi api;
-    private final Thread thread;
-    private final PishockZapConfig config;
-    private final ShockQueue shockQueue;
+    private final Thread thread = new Thread(this::run);
+    private final @NonNull PishockZapConfig config;
+    private final @NonNull ShockQueue shockQueue;
 
     public ZapController(@NonNull PiShockApi api, @NonNull PishockZapConfig config) {
         this.api = api;
-        this.thread = new Thread(this::run);
         this.config = config;
         this.shockQueue = new ShockQueue(config);
     }

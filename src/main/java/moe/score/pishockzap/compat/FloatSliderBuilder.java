@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 public class FloatSliderBuilder extends AbstractSliderFieldBuilder<Float, IntegerSliderEntry, FloatSliderBuilder> {
     private final float floatScale;
 
-    public FloatSliderBuilder(Text resetButtonKey, Text fieldNameKey, float value, float min, float max, float floatScale) {
+    public FloatSliderBuilder(@NonNull Text resetButtonKey, @NonNull Text fieldNameKey, float value, float min, float max, float floatScale) {
         super(resetButtonKey, fieldNameKey);
         this.value = value;
         this.max = max;
@@ -29,7 +29,7 @@ public class FloatSliderBuilder extends AbstractSliderFieldBuilder<Float, Intege
         this.floatScale = floatScale;
     }
 
-    public FloatSliderBuilder(Text resetButtonKey, Text fieldNameKey, float value, float min, float max) {
+    public FloatSliderBuilder(@NonNull Text resetButtonKey, @NonNull Text fieldNameKey, float value, float min, float max) {
         this(resetButtonKey, fieldNameKey, value, min, max, 1000.0f);
     }
 

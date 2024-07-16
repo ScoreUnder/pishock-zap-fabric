@@ -16,7 +16,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 
 public class PiShockWebApiV1 implements PiShockApi {
-    private static final URL API_URL;
+    private static final @NonNull URL API_URL;
 
     static {
         try {

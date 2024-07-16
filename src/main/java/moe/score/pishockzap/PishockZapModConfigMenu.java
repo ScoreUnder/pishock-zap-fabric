@@ -349,7 +349,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         return configBuilder.build();
     }
 
-    private static @NonNull Optional<Text> isShareCodeInvalid(String shareCode) {
+    private static @NonNull Optional<Text> isShareCodeInvalid(@NonNull String shareCode) {
         if (shareCode.isBlank())
             return Optional.of(Translation.of("error.pishock-zap.config.api.share_codes.entry.empty"));
         if (shareCode.length() < 10 || !shareCode.matches("[0-9A-F]+")) {
@@ -358,7 +358,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         return Optional.empty();
     }
 
-    private static @NonNull AbstractConfigListEntry<ShockDistribution> createShockDistributionDropdown(ConfigEntryBuilder builder, String key, ShockDistribution def, Consumer<ShockDistribution> saveConsumer) {
+    private static @NonNull AbstractConfigListEntry<ShockDistribution> createShockDistributionDropdown(@NonNull ConfigEntryBuilder builder, String key, ShockDistribution def, Consumer<ShockDistribution> saveConsumer) {
         return builder.startEnumSelector(Translation.of("title.pishock-zap.config." + key), ShockDistribution.class, def)
             .setDefaultValue(def)
             .setEnumNameProvider((value) -> Translation.of("enum.pishock-zap.config.shock_distribution." + value.name().toLowerCase()))
@@ -368,8 +368,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
     }
 
     private static @NonNull FloatSliderBuilder createFloatSlider(
-        ConfigEntryBuilder entryBuilder,
-        Text fieldNameKey,
+        @NonNull ConfigEntryBuilder entryBuilder,
+        @NonNull Text fieldNameKey,
         float value,
         float min,
         float max
@@ -378,8 +378,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
     }
 
     private static @NonNull FloatSliderBuilder createFloatSlider(
-        ConfigEntryBuilder entryBuilder,
-        Text fieldNameKey,
+        @NonNull ConfigEntryBuilder entryBuilder,
+        @NonNull Text fieldNameKey,
         float value,
         float min,
         float max,

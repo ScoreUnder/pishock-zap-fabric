@@ -6,7 +6,7 @@ import net.minecraft.entity.LivingEntity;
 import java.lang.ref.WeakReference;
 
 public class PlayerHpWatcher {
-    private static final @NonNull WeakReference<LivingEntity> NULL_WEAK_REFERENCE = new WeakReference<>(null);
+    private static final WeakReference<LivingEntity> NULL_WEAK_REFERENCE = new WeakReference<>(null);
     private @NonNull WeakReference<LivingEntity> lastPlayer = NULL_WEAK_REFERENCE;
     private int lastPlayerHp = -1;
     private int ignore = 0;

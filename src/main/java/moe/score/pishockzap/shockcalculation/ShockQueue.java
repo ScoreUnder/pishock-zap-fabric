@@ -38,7 +38,7 @@ public class ShockQueue {
         return queue.isEmpty();
     }
 
-    private boolean mergeShock(QueuedShock shock, QueuedShock nextShock) {
+    private boolean mergeShock(@NonNull QueuedShock shock, @NonNull QueuedShock nextShock) {
         if ((nextShock.isDeath || shock.isDeath) && config.isShockOnDeath()) {
             // Can't merge death shocks
             return false;
@@ -80,7 +80,7 @@ public class ShockQueue {
         return true;
     }
 
-    private @NonNull CalculatedShock transformShock(QueuedShock shock) {
+    private @NonNull CalculatedShock transformShock(@NonNull QueuedShock shock) {
         boolean separateDeathShock = config.isShockOnDeath() && shock.isDeath;
         OpType type;
         int intensity;
@@ -142,7 +142,7 @@ public class ShockQueue {
         return duration;
     }
 
-    private int sanityCheckIntensity(OpType type, int intensity) {
+    private int sanityCheckIntensity(@NonNull OpType type, int intensity) {
         if (intensity < 0 || intensity > PiShockUtils.PISHOCK_MAX_INTENSITY) {
             logger.warning("Intensity out of range: " + intensity);
             intensity = Math.max(0, Math.min(intensity, PiShockUtils.PISHOCK_MAX_INTENSITY));
@@ -165,7 +165,7 @@ public class ShockQueue {
         return Math.round((damageEquivalent / damageRange) * (intensityMax - intensityMin) + intensityMin);
     }
 
-    public void queueShock(ShockDistribution distribution, boolean isDeath, float damageEquivalent) {
+    public void queueShock(@NonNull ShockDistribution distribution, boolean isDeath, float damageEquivalent) {
         queue.add(new QueuedShock(distribution, isDeath, damageEquivalent, config.getDuration()));
     }
 

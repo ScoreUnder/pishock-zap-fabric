@@ -99,7 +99,7 @@ public class PiShockSerialApi implements PiShockApi {
         return jsonWriter;
     }
 
-    private void writeAsJson(Map<String, Object> data) throws IOException {
+    private void writeAsJson(@NonNull Map<String, Object> data) throws IOException {
         @SuppressWarnings("resource") Writer jsonWriter = openWriter();
         jsonWriter.write(gson.toJson(data));
         jsonWriter.write('\n');
@@ -111,7 +111,7 @@ public class PiShockSerialApi implements PiShockApi {
      *
      * @param data data to send
      */
-    private void doApiCallOnThread(Map<String, Object> data) {
+    private void doApiCallOnThread(@NonNull Map<String, Object> data) {
         executor.execute(() -> {
             try {
                 writeAsJson(data);
