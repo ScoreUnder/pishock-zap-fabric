@@ -8,16 +8,20 @@ import java.lang.ref.WeakReference;
 public class PlayerHpWatcher {
     private static final WeakReference<LivingEntity> NULL_WEAK_REFERENCE = new WeakReference<>(null);
     private @NonNull WeakReference<LivingEntity> lastPlayer = NULL_WEAK_REFERENCE;
-    private int lastPlayerHp = -1;
+    private float lastPlayerHp = -1;
     private int ignore = 0;
 
-    public int updatePlayerHpAndGetDamage(@NonNull LivingEntity player, int hp) {
-        int damage = calculateDamage(player, hp);
+    public float updatePlayerHpAndGetDamage(@NonNull LivingEntity player, float hp) {
+        float damage = calculateDamage(player, hp);
         lastPlayerHp = hp;
         return damage;
     }
 
-    private int calculateDamage(@NonNull LivingEntity player, int hp) {
+    public void updatePlayerHpBypassIgnore(float hp) {
+        lastPlayerHp = hp;
+    }
+
+    private float calculateDamage(@NonNull LivingEntity player, float hp) {
         if (player != lastPlayer.get()) {
             lastPlayer = new WeakReference<>(player);
             // Ignore the first update after the player is changed

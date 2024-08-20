@@ -23,6 +23,8 @@ public class PishockZapConfig {
     private boolean shockOnDeath = true;
     /// Whether to shock/vibrate based on the player's health rather than damage
     private boolean shockOnHealth = false;
+    /// Whether to allow fractional half-heart damage
+    private boolean fractionalDamage = false;
 
     /// The duration per shock/vibration
     private float duration = 1.0f;

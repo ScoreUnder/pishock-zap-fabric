@@ -65,6 +65,12 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .setTooltip(Translation.of("tooltip.pishock-zap.config.general.shock_on_health"))
             .setDefaultValue(defaultConfig.isShockOnHealth())
             .build());
+        generalCategory.addEntry(entryBuilder
+            .startBooleanToggle(Translation.of("title.pishock-zap.config.general.fractional_damage"), config.isFractionalDamage())
+            .setSaveConsumer(config::setFractionalDamage)
+            .setTooltip(Translation.of("tooltip.pishock-zap.config.general.fractional_damage"))
+            .setDefaultValue(defaultConfig.isFractionalDamage())
+            .build());
 
         var limitsCategory = configBuilder.getOrCreateCategory(Translation.of("title.pishock-zap.config.limits"));
 

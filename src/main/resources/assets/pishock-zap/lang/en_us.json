@@ -10,6 +10,7 @@
   "title.pishock-zap.config.general.vibration_only": "Vibration only (no shocks)",
   "title.pishock-zap.config.general.shock_on_death": "Enable shock on death",
   "title.pishock-zap.config.general.shock_on_health": "Shock by remaining health",
+  "title.pishock-zap.config.general.fractional_damage": "Fractional damage",
 
   "title.pishock-zap.config.limits": "Limits",
   "title.pishock-zap.config.limits.duration": "Duration",
@@ -70,6 +71,7 @@
   "tooltip.pishock-zap.config.general.vibration_only": "Only vibrate the device, don't shock, even on death.\nThis can be used to test the mod or simply\nprovide a less intense experience.\nFor example, if you want to check your share codes work.",
   "tooltip.pishock-zap.config.general.shock_on_death": "Shock the user on death with a\nconfigurable intensity and duration.\nIf disabled, normal damage shocks will still occur.",
   "tooltip.pishock-zap.config.general.shock_on_health": "Shock the user with an intensity\nbased on remaining health instead of damage.\nThis may encourage the user to stay healed up.",
+  "tooltip.pishock-zap.config.general.fractional_damage": "Calculate on exact damage values,\neven if it is not visible in the health bar.\nThis can make things more interesting when you are\nheavily armored, or have resistance effects.",
 
   "tooltip.pishock-zap.config.limits.duration": "The duration of the shock/vibration by default",
   "tooltip.pishock-zap.config.limits.max_duration": "The maximum duration of the shock/vibration\nif the duration is accumulated\n(See backoff settings)",
