@@ -2,6 +2,7 @@ package moe.score.pishockzap;
 
 import com.google.gson.Gson;
 import lombok.Getter;
+import lombok.NonNull;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
@@ -92,6 +93,13 @@ public class PishockZapMod implements ClientModInitializer {
                 }
                 break;
         }
+
+        // Update HP watcher, because rounding behavior might have changed
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        if (player != null) {
+            PlayerHp hpInfo = getPlayerHp(player);
+            playerHpWatcher.updatePlayerHpBypassIgnore(hpInfo.hp());
+        }
     }
 
     @SuppressWarnings("unchecked")  // Type erasure means we can't get a Map<String, Object> "safely"
@@ -130,13 +138,11 @@ public class PishockZapMod implements ClientModInitializer {
         // HP is a float, and the game uses ceil() when displaying it.
         // Death is when HP <= 0.0, so if the HP is 0.000001, the player
         // is still alive so rounding that down is not appropriate.
-        int hp = (int) Math.ceil(player.getHealth());
-        int maxHealth = (int) Math.ceil(player.getMaxHealth());
-        hp = Math.max(0, Math.min(hp, maxHealth));
+        PlayerHp hpInfo = getPlayerHp(player);
 
-        int damage = playerHpWatcher.updatePlayerHpAndGetDamage(player, hp);
+        float damage = playerHpWatcher.updatePlayerHpAndGetDamage(player, hpInfo.hp());
 
-        if (hp == maxHealth || maxHealth <= 0) {
+        if (hpInfo.hp() == hpInfo.maxHealth() || hpInfo.maxHealth() <= 0) {
             // Player is at full HP, can this really be called damage?
             // (Just in case other mods play with max health, it's not fair to zap the player for that)
             // Note: this return must be after updating player HP in the watcher, otherwise the watcher will
@@ -145,17 +151,28 @@ public class PishockZapMod implements ClientModInitializer {
         }
 
         if (damage > 0) {
-            boolean deathZap = hp == 0;
+            boolean deathZap = hpInfo.hp() == 0;
             ShockDistribution distribution = deathZap && config.isShockOnDeath() ? config.getShockDistributionDeath() : config.getShockDistribution();
-            float damageEquivalent = config.isShockOnHealth() ? maxHealth - hp : damage;
-            damageEquivalent /= maxHealth;
+            float damageEquivalent = config.isShockOnHealth() ? hpInfo.maxHealth() - hpInfo.hp() : damage;
+            damageEquivalent /= hpInfo.maxHealth();
             if (damageEquivalent > 1.0f) {
                 logger.warning("Damage equivalent " + damageEquivalent + " exceeds 100% damage, capping");
                 damageEquivalent = 1.0f;
             }
-            logger.info("Death? " + deathZap + ", damage: " + damage + ", hp: " + hp + ", damage equivalent: " + damageEquivalent);
+            logger.info("Death? " + deathZap + ", damage: " + damage + ", hp: " + hpInfo.hp() + ", damage equivalent: " + damageEquivalent);
             zapController.queueShock(distribution, deathZap, damageEquivalent);
         }
+    }
+
+    private @NonNull PlayerHp getPlayerHp(ClientPlayerEntity player) {
+        float hp = player.getHealth();
+        float maxHealth = player.getMaxHealth();
+        if (!config.isFractionalDamage()) {
+            hp = (float) Math.ceil(hp);
+            maxHealth = (float) Math.ceil(maxHealth);
+        }
+        hp = Math.max(0, Math.min(hp, maxHealth));
+        return new PlayerHp(hp, maxHealth);
     }
 
     @Override
@@ -182,5 +199,8 @@ public class PishockZapMod implements ClientModInitializer {
                 }
             }
         });
+    }
+
+    private record PlayerHp(float hp, float maxHealth) {
     }
 }
