@@ -92,32 +92,33 @@ compare them and then note some more specific quirks of each.
 
 ## Big comparison table
 
-| Feature                        | PiShock-Zap            | [PiShockForMc]         | [Shockcraft]       | [Minecraft Shock Collar] | Raith's PiShock mod | [The original Forge mod][original-forge-mod] |
-|--------------------------------|------------------------|------------------------|--------------------|--------------------------|---------------------|----------------------------------------------|
-| Minecraft versions             | 1.18.2, 1.20.x, 1.21.x | 1.19.x, 1.20.x, 1.21.x | 1.19.3, 1.19.4     | Wide range               | 1.19.x, 1.20.x      | 1.18.2                                       |
-| Author                         | [ScoreUnder]           | [ojaha065]             | [yanchan09]        | [Hepno]                  | [Raith]             | [DrasticLp]                                  |
-| Mod loader                     | Fabric                 | Forge                  | Fabric             | Bukkit                   | Forge               | Forge                                        |
-| Client-side                    | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :x:                      | :question:          | :white_check_mark:                           |
-| Singleplayer                   | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :x:                      | :question:          | :white_check_mark:                           |
-| Multiplayer                    | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :white_check_mark:       | :question:          | :white_check_mark:                           |
-| Works on vanilla servers       | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :x:                      | :question:          | :x:                                          |
-| Low-latency local serial API   | :white_check_mark:     | :x:                    | :x:                | :x:                      | :question:          | :x:                                          |
-| Multiple share codes           | :white_check_mark:     | :x:                    | :x:                | :x:                      | :question:          | :x:                                          |
-| Vibration support              | :white_check_mark:     | :white_check_mark:     | :x:                | :x:                      | :question:          | :x:                                          |
-| Vibration/shock threshold      | :white_check_mark:     | :x:                    | :x:                | :x:                      | :question:          | :x:                                          |
-| API connectivity checks        | :x:                    | :white_check_mark:     | :x:                | :x:                      | :question:          | :x:                                          |
-| Vibration test button          | :x:                    | :white_check_mark:     | :x:                | :x:                      | :question:          | :x:                                          |
-| In-game quick toggle           | Via hotkey             | :x:                    | Via command        | :x:                      | :question:          | :x:                                          |
-| Damage curves                  | :white_check_mark:     | :white_check_mark:     | :x:                | :x:                      | :question:          | :white_check_mark:                           |
-| Queued/combined damage events  | :white_check_mark:     | :white_check_mark:     | :x:                | :x:                      | :question:          | :x:                                          |
-| Separate shock-on-death config | :white_check_mark:     | :white_check_mark:     | :x:                | :x:                      | :question:          | :white_check_mark:                           |
-| Millisecond-precise duration   | :white_check_mark:     | :x:                    | :x:                | :white_check_mark:       | :question:          | :x:                                          |
-| Configuration method           | In-game settings       | In-game settings       | Slash commands     | Configuration file       | :question:          | In-game settings                             |
-| Configurability                | Control-freak          | Simple                 | Basic              | Basic                    | :question:          | Simple                                       |
-| Known performance issues       | :ok:                   | :ok:                   | :ok:               | :warning:                | :question:          | :warning:                                    |
-| Known limit-exceeding bugs     | :ok:                   | :ok:                   | :ok:               | :ok:                     | :question:          | :warning: :bangbang:                         |
-| Limit-respecting failsafes     | Multi-level            | Some                   | N/A                | N/A                      | :question:          | :x:                                          |
-| Source code available          | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :white_check_mark:       | :question:          | :x:                                          |
+| Feature                        | PiShock-Zap            | [PiShockForMc]         | [Shockcraft]       | [Minecraft Shock Collar] | Raith's PiShock mod | [The original Forge mod][original-forge-mod] | [pishock-mc]       |
+|--------------------------------|------------------------|------------------------|--------------------|--------------------------|---------------------|----------------------------------------------|--------------------|
+| Minecraft versions             | 1.18.2, 1.20.x, 1.21.x | 1.19.x, 1.20.x, 1.21.x | 1.19.3, 1.19.4     | Wide range               | 1.19.x, 1.20.x      | 1.18.2                                       | 1.21               |
+| Author                         | [ScoreUnder]           | [ojaha065]             | [yanchan09]        | [Hepno]                  | [Raith]             | [DrasticLp]                                  | [PancakeTAS]       |
+| Mod loader                     | Fabric                 | Forge                  | Fabric             | Bukkit                   | Forge               | Forge                                        | Fabric             |
+| Client-side                    | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :x:                      | :question:          | :white_check_mark:                           | :white_check_mark: |
+| Singleplayer                   | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :x:                      | :question:          | :white_check_mark:                           | :white_check_mark: |
+| Multiplayer                    | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :white_check_mark:       | :question:          | :white_check_mark:                           | :white_check_mark: |
+| Works on vanilla servers       | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :x:                      | :question:          | :x:                                          | :x:                |
+| Low-latency local serial API   | :white_check_mark:     | :x:                    | :x:                | :x:                      | :question:          | :x:                                          | :white_check_mark: |
+| Multiple share codes           | :white_check_mark:     | :x:                    | :x:                | :x:                      | :question:          | :x:                                          | :x:                |
+| Vibration support              | :white_check_mark:     | :white_check_mark:     | :x:                | :x:                      | :question:          | :x:                                          | :x:                |
+| Vibration/shock threshold      | :white_check_mark:     | :x:                    | :x:                | :x:                      | :question:          | :x:                                          | :x:                |
+| API connectivity checks        | :x:                    | :white_check_mark:     | :x:                | :x:                      | :question:          | :x:                                          | :x:                |
+| Vibration test button          | :x:                    | :white_check_mark:     | :x:                | :x:                      | :question:          | :x:                                          | :x:                |
+| In-game quick toggle           | Via hotkey             | :x:                    | Via command        | :x:                      | :question:          | :x:                                          | :x:                |
+| Damage curves                  | :white_check_mark:     | :white_check_mark:     | :x:                | :x:                      | :question:          | :white_check_mark:                           | :white_check_mark: |
+| Queued/combined damage events  | :white_check_mark:     | :white_check_mark:     | :x:                | :x:                      | :question:          | :x:                                          | :x:                |
+| Separate shock-on-death config | :white_check_mark:     | :white_check_mark:     | :x:                | :x:                      | :question:          | :white_check_mark:                           | :white_check_mark: |
+| Millisecond-precise duration   | :white_check_mark:     | :x:                    | :x:                | :white_check_mark:       | :question:          | :x:                                          | :white_check_mark: |
+| Configuration method           | In-game settings       | In-game settings       | Slash commands     | Configuration file       | :question:          | In-game settings                             | In-game settings   |
+| Configurability                | Control-freak          | Simple                 | Basic              | Basic                    | :question:          | Simple                                       | Simple             |
+| Known performance issues       | :ok:                   | :ok:                   | :ok:               | :warning:                | :question:          | :warning:                                    | :ok:               |
+| Known limit-exceeding bugs     | :ok:                   | :ok:                   | :ok:               | :ok:                     | :question:          | :warning: :bangbang:                         | :ok:               |
+| Limit-respecting failsafes     | Multi-level            | Some                   | N/A                | N/A                      | :question:          | :x:                                          | :x:                |
+| Source code available          | :white_check_mark:     | :white_check_mark:     | :white_check_mark: | :white_check_mark:       | :question:          | :x:                                          | :white_check_mark: |
+| Unit tests                     | :white_check_mark:     | :x:                    | :x:                | :x:                      | :question:          | :question:                                   | :x:                |
 
 ### [PiShockForMc]
 
@@ -166,6 +167,14 @@ It can be used on multiplayer servers, but only if the server has the mod
 installed. It may cause small client-side stutters when the player is damaged
 due to performing blocking HTTP requests on the main thread.
 
+### [pishock-mc]
+
+This is a relatively new Fabric mod which I have not yet had the chance to
+test in detail. It fulfils a similar niche to PiShock-Zap.
+
+It uses a different method of damage detection, which is accurate but requires
+a server-side mod to be installed. This means it is not suitable for use on
+vanilla servers.
 
 [releases]: https://github.com/ScoreUnder/pishock-zap-fabric/releases
 [Prism Launcher]: https://prismlauncher.org/
@@ -179,3 +188,5 @@ due to performing blocking HTTP requests on the main thread.
 [Hepno]: https://github.com/Hepno
 [ScoreUnder]: https://github.com/ScoreUnder
 [Raith]: https://github.com/RaithSphere
+[pishock-mc]: https://github.com/PancakeTAS/pishock-m
+[PancakeTAS]: https://github.com/PancakeTAS
