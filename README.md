@@ -188,5 +188,5 @@ vanilla servers.
 [Hepno]: https://github.com/Hepno
 [ScoreUnder]: https://github.com/ScoreUnder
 [Raith]: https://github.com/RaithSphere
-[pishock-mc]: https://github.com/PancakeTAS/pishock-m
+[pishock-mc]: https://github.com/PancakeTAS/pishock-mc
 [PancakeTAS]: https://github.com/PancakeTAS
