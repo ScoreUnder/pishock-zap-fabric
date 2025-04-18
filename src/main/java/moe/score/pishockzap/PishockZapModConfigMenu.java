@@ -8,6 +8,7 @@ import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import moe.score.pishockzap.compat.FloatSliderBuilder;
+import moe.score.pishockzap.compat.TextStyle;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PiShockApiType;
 import moe.score.pishockzap.config.PishockZapConfig;
@@ -15,7 +16,6 @@ import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.pishockapi.OpType;
 import moe.score.pishockzap.pishockapi.PiShockSerialApi;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -32,8 +32,8 @@ import static moe.score.pishockzap.pishockapi.PiShockUtils.PISHOCK_MAX_INTENSITY
 
 @SuppressWarnings("unused")
 public class PishockZapModConfigMenu implements ModMenuApi {
-    private static final String PISHOCK_CONTROLLER_PAGE_URL = "https://pishock.com/#/control";
     public static final String PISHOCK_ACCOUNT_PAGE_URL = "https://pishock.com/#/account";
+    private static final String PISHOCK_CONTROLLER_PAGE_URL = "https://pishock.com/#/control";
 
     private static @NonNull Screen createConfigScreen(Screen parent) {
         var mod = Objects.requireNonNull(PishockZapMod.getInstance(), "PishockZapMod instance is null");
@@ -335,17 +335,17 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             Translation.of("description.pishock-zap.config.api.webhook",
                 Translation.of("description.pishock-zap.config.api.webhook.payload",
                     Translation.raw("\"" + OpType.SHOCK.name() + "\"").styled(style ->
-                        style.withColor(Formatting.LIGHT_PURPLE).withUnderline(true).withHoverEvent(
-                            new HoverEvent(HoverEvent.Action.SHOW_TEXT, Translation.of("tooltip.pishock-zap.config.api.webhook.payload.operation", allOpTypes)))),
+                        TextStyle.setHoverText(style.withColor(Formatting.LIGHT_PURPLE).withUnderline(true),
+                            Translation.of("tooltip.pishock-zap.config.api.webhook.payload.operation", allOpTypes))),
                     Translation.raw("26").styled(style ->
-                        style.withColor(Formatting.LIGHT_PURPLE).withUnderline(true).withHoverEvent(
-                            new HoverEvent(HoverEvent.Action.SHOW_TEXT, Translation.of("tooltip.pishock-zap.config.api.webhook.payload.intensity")))),
+                        TextStyle.setHoverText(style.withColor(Formatting.LIGHT_PURPLE).withUnderline(true),
+                            Translation.of("tooltip.pishock-zap.config.api.webhook.payload.intensity"))),
                     Translation.raw("1.2").styled(style ->
-                        style.withColor(Formatting.LIGHT_PURPLE).withUnderline(true).withHoverEvent(
-                            new HoverEvent(HoverEvent.Action.SHOW_TEXT, Translation.of("tooltip.pishock-zap.config.api.webhook.payload.duration")))),
+                        TextStyle.setHoverText(style.withColor(Formatting.LIGHT_PURPLE).withUnderline(true),
+                            Translation.of("tooltip.pishock-zap.config.api.webhook.payload.duration"))),
                     Translation.raw("\"" + ShockDistribution.RANDOM.name() + "\"").styled(style ->
-                        style.withColor(Formatting.LIGHT_PURPLE).withUnderline(true).withHoverEvent(
-                            new HoverEvent(HoverEvent.Action.SHOW_TEXT, Translation.of("tooltip.pishock-zap.config.api.webhook.payload.distribution", allShockDistributions))))
+                        TextStyle.setHoverText(style.withColor(Formatting.LIGHT_PURPLE).withUnderline(true),
+                            Translation.of("tooltip.pishock-zap.config.api.webhook.payload.distribution", allShockDistributions)))
                 ).styled(style -> style.withColor(Formatting.GRAY))
             )).build());
 
