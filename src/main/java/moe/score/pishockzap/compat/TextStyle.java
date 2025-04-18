@@ -9,6 +9,6 @@ public class TextStyle {
     }
 
     public static Style setHoverText(Style style, Text text) {
-        return style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, text));
+        return style.withHoverEvent(new HoverEvent.ShowText(text));
     }
 }

@@ -1,8 +1,13 @@
 package moe.score.pishockzap.compat;
 
 import lombok.NonNull;
-import net.minecraft.text.*;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+
+import java.net.URI;
 
 public final class Translation {
     private Translation() {
@@ -26,8 +31,8 @@ public final class Translation {
 
     public static @NonNull MutableText addLink(@NonNull MutableText text, @NonNull String url, @NonNull Text tooltip) {
         return text.styled(style ->
-            style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url))
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, tooltip))
+            style.withClickEvent(new ClickEvent.OpenUrl(URI.create(url)))
+                .withHoverEvent(new HoverEvent.ShowText(tooltip))
                 .withUnderline(true)
                 .withColor(Formatting.BLUE)
         );
