@@ -131,7 +131,7 @@
   "error.pishock-zap.config.api.custom_webhook_url.empty": "Webhook URL cannot be empty",
   "error.pishock-zap.config.api.custom_webhook_url.invalid": "Webhook URL appears invalid",
 
-  "key.category.pishock-zap": "PiShock-Zap",
+  "key.category.pishock-zap.general": "PiShock-Zap",
 
   "key.pishock-zap.toggle": "Toggle PiShock-Zap enabled",
 

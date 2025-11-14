@@ -19,6 +19,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Style;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -38,11 +39,12 @@ public class PishockZapMod implements ClientModInitializer {
     @Getter
     private static @Nullable PishockZapMod instance = null;
 
+    private static final KeyBinding.Category keyBindingCategory = KeyBinding.Category.create(Identifier.of("pishock-zap", "general"));
     private static final KeyBinding keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
         "key.pishock-zap.toggle",
         InputUtil.Type.KEYSYM,
         GLFW.GLFW_KEY_F12,
-        "key.category.pishock-zap"
+        keyBindingCategory
     ));
 
     private final Logger logger = Logger.getLogger(NAME);
