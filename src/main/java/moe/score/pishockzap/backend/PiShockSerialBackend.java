@@ -32,6 +32,11 @@ public class PiShockSerialBackend extends SafeShockBackend {
     }
 
     @Override
+    protected boolean areShockParamsValid(OpType op, int intensity, float duration) {
+        return intensity < 0 || intensity > 100 || duration <= 0 || !Float.isFinite(duration);
+    }
+
+    @Override
     protected void safePerformOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
         List<Integer> shockers = config.getDeviceIds();
         if (shockers.isEmpty()) {
