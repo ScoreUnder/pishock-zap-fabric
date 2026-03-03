@@ -176,6 +176,6 @@ public class PiShockSerialBackend extends SafeShockBackend {
 
     @NonNull
     public static Iterable<String> getSerialPorts() {
-        return Stream.of(SerialPort.getCommPorts()).map(SerialPort::getSystemPortName)::iterator;
+        return Stream.of(SerialPort.getCommPorts()).map(SerialPort::getSystemPortPath)::iterator;
     }
 }
