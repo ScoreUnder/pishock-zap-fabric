@@ -3,6 +3,7 @@ package moe.score.pishockzap.frontend;
 import lombok.Getter;
 import lombok.NonNull;
 import moe.score.pishockzap.PishockZapMod;
+import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.backend.ShockBackend;
@@ -63,6 +64,12 @@ public class ZapController implements ShockFrontend {
     public void queueShock(@NonNull ShockDistribution distribution, boolean isDeath, float damageEquivalent) {
         logger.info("Queueing shock: " + distribution + ", " + isDeath + ", " + damageEquivalent);
         shockQueue.queueShock(distribution, isDeath, damageEquivalent);
+    }
+
+    @Override
+    public void queueRawShock(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
+        logger.info("Queueing raw shock: " + distribution + ", " + op + ", " + intensity + "%, " + duration + "s");
+        shockQueue.queueRawShock(distribution, op, intensity, duration);
     }
 
     @Override

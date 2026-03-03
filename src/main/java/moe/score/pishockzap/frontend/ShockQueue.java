@@ -8,6 +8,7 @@ import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.PiShockUtils;
+import moe.score.pishockzap.util.Either;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -16,17 +17,18 @@ import java.util.logging.Logger;
 @RequiredArgsConstructor
 public class ShockQueue {
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
-    private final BlockingQueue<QueuedShock> queue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Either<QueuedShock, CalculatedShock>> queue = new LinkedBlockingQueue<>();
     @NonNull
     private final PishockZapConfig config;
 
     public @NonNull CalculatedShock takeAndMergeShocks() throws InterruptedException {
-        QueuedShock shock = queue.take();
-        QueuedShock nextShock;
+        var either = queue.take();
+        if (either.isRight()) return either.right();
 
-        while ((nextShock = queue.peek()) != null) {
-            if (!mergeShock(shock, nextShock)) break;
-            queue.remove();  // should always have one because we just peeked earlier
+        QueuedShock shock = either.left();
+        while ((either = queue.peek()) != null && either.isLeft()) {
+            if (!mergeShock(shock, either.left())) break;
+            queue.remove();  // queue should always have an item available to remove, because we just peeked earlier
         }
 
         return transformShock(shock);
@@ -106,8 +108,7 @@ public class ShockQueue {
             if (shock.damageEquivalent > vibrationThreshold) {
                 type = OpType.SHOCK;
                 // This bodge exists so that the minimum intensity corresponds to a half-heart of damage instead of 0 damage.
-                // To accomplish this, we subtract an extra half-heart of damage from the damage equivalent and range.
-                // That might not play so nice mathematically when the player's max HP is not 20. But it's still good enough.
+                // To accomplish this, we subtract an extra $minDamage of damage from the damage equivalent and range.
                 intensity = transformIntensityIntoRange(
                     shock.damageEquivalent - vibrationThreshold - minDamage,
                     config.getMaxDamage() - vibrationThreshold - minDamage,
@@ -166,7 +167,11 @@ public class ShockQueue {
     }
 
     public void queueShock(@NonNull ShockDistribution distribution, boolean isDeath, float damageEquivalent) {
-        queue.add(new QueuedShock(distribution, isDeath, damageEquivalent, config.getDuration()));
+        queue.add(Either.left(new QueuedShock(distribution, isDeath, damageEquivalent, config.getDuration())));
+    }
+
+    public void queueRawShock(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
+        queue.add(Either.right(new CalculatedShock(distribution, op, intensity, duration)));
     }
 
     @AllArgsConstructor

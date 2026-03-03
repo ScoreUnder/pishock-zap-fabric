@@ -1,6 +1,7 @@
 package moe.score.pishockzap;
 
 import com.google.gson.Gson;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import moe.score.pishockzap.compat.Translation;
@@ -51,6 +52,7 @@ public class PishockZapMod implements ClientModInitializer {
     private final PishockZapConfig config = new PishockZapConfig();
     private final PlayerHpWatcher playerHpWatcher = new PlayerHpWatcher();
     private final ExecutorService apiExecutor = Executors.newSingleThreadExecutor();
+    @Getter(AccessLevel.PACKAGE)
     private final ZapController zapController = new ZapController(new PiShockWebApiV1Backend(config, apiExecutor), config);
 
     public void saveConfig() {

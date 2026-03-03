@@ -37,6 +37,11 @@ public class PiShockSerialBackend extends SafeShockBackend {
     }
 
     @Override
+    public float getMaxDuration() {
+        return 2147483.5f;
+    }
+
+    @Override
     protected void safePerformOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
         List<Integer> shockers = config.getDeviceIds();
         if (shockers.isEmpty()) {
