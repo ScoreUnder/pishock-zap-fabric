@@ -16,12 +16,6 @@ public interface ShockBackend {
     void performOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration);
 
     /**
-     * Check if this backend is sufficiently configured to be used.
-     * May log warnings.
-     */
-    boolean isConfigured();
-
-    /**
      * Close any resources this backend has open.
      * Not intended for public use; this is for switching out backends via user config.
      */
