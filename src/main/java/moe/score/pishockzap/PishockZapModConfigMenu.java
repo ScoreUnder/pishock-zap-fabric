@@ -10,7 +10,7 @@ import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import moe.score.pishockzap.compat.FloatSliderBuilder;
 import moe.score.pishockzap.compat.TextStyle;
 import moe.score.pishockzap.compat.Translation;
-import moe.score.pishockzap.config.PiShockApiType;
+import moe.score.pishockzap.config.ShockBackendType;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.backend.OpType;
@@ -202,7 +202,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         var apiCategory = configBuilder.getOrCreateCategory(Translation.of("title.pishock-zap.config.api"));
 
-        var apiTypeSwitcher = entryBuilder.startEnumSelector(Translation.of("title.pishock-zap.config.api_type"), PiShockApiType.class, config.getApiType())
+        var apiTypeSwitcher = entryBuilder.startEnumSelector(Translation.of("title.pishock-zap.config.api_type"), ShockBackendType.class, config.getApiType())
             .setDefaultValue(config.getApiType())
             .setEnumNameProvider((value) -> Translation.of("enum.pishock-zap.config.api_type." + value.name().toLowerCase()))
             .setSaveConsumer(config::setApiType)
@@ -219,7 +219,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var webV1Category = entryBuilder
             .startSubCategory(Translation.of("title.pishock-zap.config.api.web_v1"))
             .setExpanded(true)
-            .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == PiShockApiType.WEB_V1);
+            .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == ShockBackendType.WEB_V1);
 
         webV1Category.add(entryBuilder
             .startStrField(Translation.of("title.pishock-zap.config.api.log_identifier"), config.getLogIdentifier())
@@ -270,7 +270,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         SubCategoryBuilder localApiCategory = entryBuilder
             .startSubCategory(Translation.of("title.pishock-zap.config.api.local"))
             .setExpanded(true)
-            .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == PiShockApiType.SERIAL);
+            .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == ShockBackendType.SERIAL);
 
         localApiCategory.add(entryBuilder.startTextDescription(Translation.of("description.pishock-zap.config.api.local"))
             .build());
@@ -303,7 +303,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var webhookCategory = entryBuilder
             .startSubCategory(Translation.of("title.pishock-zap.config.api.webhook"))
             .setExpanded(true)
-            .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == PiShockApiType.WEBHOOK);
+            .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == ShockBackendType.WEBHOOK);
 
         webhookCategory.add(entryBuilder
             .startStrField(Translation.of("title.pishock-zap.config.api.custom_webhook_url"), config.getCustomWebhookUrl())
@@ -311,7 +311,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .setTooltip(Translation.of("tooltip.pishock-zap.config.api.custom_webhook_url"))
             .setDefaultValue(defaultConfig.getCustomWebhookUrl())
             .setErrorSupplier((url) -> {
-                if (apiTypeSwitcher.getValue() != PiShockApiType.WEBHOOK) return Optional.empty();
+                if (apiTypeSwitcher.getValue() != ShockBackendType.WEBHOOK) return Optional.empty();
                 if (url.isBlank())
                     return Optional.of(Translation.of("error.pishock-zap.config.api.custom_webhook_url.empty"));
                 try {

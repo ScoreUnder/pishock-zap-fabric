@@ -63,7 +63,7 @@ public class PishockZapConfig {
     private boolean queueDifferent = true;
 
     /// The type of PiShock API to use
-    private @NonNull PiShockApiType apiType = PiShockApiType.WEB_V1;
+    private @NonNull ShockBackendType apiType = ShockBackendType.WEB_V1;
 
     /// Identifier for on-site logs
     private @NonNull String logIdentifier = "PiShock-Zap (Minecraft)";
@@ -91,8 +91,8 @@ public class PishockZapConfig {
             Class<?> type = field.getType();
             if (type.isAssignableFrom(ShockDistribution.class)) {
                 value = ShockDistribution.valueOf((String) value);
-            } else if (type.isAssignableFrom(PiShockApiType.class)) {
-                value = PiShockApiType.valueOf((String) value);
+            } else if (type.isAssignableFrom(ShockBackendType.class)) {
+                value = ShockBackendType.valueOf((String) value);
             } else if ((type.isAssignableFrom(Integer.class) || type.isAssignableFrom(int.class)) && value instanceof Number) {
                 value = ((Number) value).intValue();
             } else if ((type.isAssignableFrom(Float.class) || type.isAssignableFrom(float.class)) && value instanceof Number) {
@@ -136,7 +136,7 @@ public class PishockZapConfig {
         if (configVersion < 2) {
             // Migrate from localEnabled to API type enum
             if (config.get("localEnabled") instanceof Boolean localEnabled) {
-                config.put("apiType", localEnabled ? PiShockApiType.SERIAL.name() : PiShockApiType.WEB_V1.name());
+                config.put("apiType", localEnabled ? ShockBackendType.SERIAL.name() : ShockBackendType.WEB_V1.name());
             }
         }
 
