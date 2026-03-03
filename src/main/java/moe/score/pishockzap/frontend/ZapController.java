@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  * process them according to the limits and backoff settings in the
  * configuration, then sends them to the PiShock API.
  */
-public class ZapController {
+public class ZapController implements ShockFrontend {
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     @Getter
     @NonNull
@@ -59,8 +59,33 @@ public class ZapController {
         }
     }
 
+    @Override
     public void queueShock(@NonNull ShockDistribution distribution, boolean isDeath, float damageEquivalent) {
         logger.info("Queueing shock: " + distribution + ", " + isDeath + ", " + damageEquivalent);
         shockQueue.queueShock(distribution, isDeath, damageEquivalent);
+    }
+
+    @Override
+    public void queueShockForDamage(float hp, float maxHealth, float damage) {
+        if (hp == maxHealth || maxHealth <= 0) {
+            // Player is at full HP, can this really be called damage?
+            // (Just in case other mods play with max health, it's not fair to zap the player for that)
+            // Note: this return must be after updating player HP in the watcher, otherwise the watcher will
+            // report incorrect damage the next time the player takes damage.
+            return;
+        }
+
+        if (damage > 0) {
+            boolean deathZap = hp == 0;
+            ShockDistribution distribution = deathZap && config.isShockOnDeath() ? config.getShockDistributionDeath() : config.getShockDistribution();
+            float damageEquivalent = config.isShockOnHealth() ? maxHealth - hp : damage;
+            damageEquivalent /= maxHealth;
+            if (damageEquivalent > 1.0f) {
+                logger.warning("Damage equivalent " + damageEquivalent + " exceeds 100% damage, capping");
+                damageEquivalent = 1.0f;
+            }
+            logger.info("Death? " + deathZap + ", damage: " + damage + ", hp: " + hp + ", damage equivalent: " + damageEquivalent);
+            queueShock(distribution, deathZap, damageEquivalent);
+        }
     }
 }

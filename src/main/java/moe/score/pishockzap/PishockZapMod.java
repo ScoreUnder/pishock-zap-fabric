@@ -142,26 +142,7 @@ public class PishockZapMod implements ClientModInitializer {
 
         float damage = playerHpWatcher.updatePlayerHpAndGetDamage(player, hpInfo.hp());
 
-        if (hpInfo.hp() == hpInfo.maxHealth() || hpInfo.maxHealth() <= 0) {
-            // Player is at full HP, can this really be called damage?
-            // (Just in case other mods play with max health, it's not fair to zap the player for that)
-            // Note: this return must be after updating player HP in the watcher, otherwise the watcher will
-            // report incorrect damage the next time the player takes damage.
-            return;
-        }
-
-        if (damage > 0) {
-            boolean deathZap = hpInfo.hp() == 0;
-            ShockDistribution distribution = deathZap && config.isShockOnDeath() ? config.getShockDistributionDeath() : config.getShockDistribution();
-            float damageEquivalent = config.isShockOnHealth() ? hpInfo.maxHealth() - hpInfo.hp() : damage;
-            damageEquivalent /= hpInfo.maxHealth();
-            if (damageEquivalent > 1.0f) {
-                logger.warning("Damage equivalent " + damageEquivalent + " exceeds 100% damage, capping");
-                damageEquivalent = 1.0f;
-            }
-            logger.info("Death? " + deathZap + ", damage: " + damage + ", hp: " + hpInfo.hp() + ", damage equivalent: " + damageEquivalent);
-            zapController.queueShock(distribution, deathZap, damageEquivalent);
-        }
+        zapController.queueShockForDamage(hpInfo.hp(), hpInfo.maxHealth(), damage);
     }
 
     private @NonNull PlayerHp getPlayerHp(ClientPlayerEntity player) {
