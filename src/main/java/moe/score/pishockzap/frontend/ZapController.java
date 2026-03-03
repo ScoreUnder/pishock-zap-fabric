@@ -49,11 +49,13 @@ public class ZapController implements ShockFrontend {
             try {
                 var shockData = shockQueue.takeAndMergeShocks();
                 logger.info("Performing shock: " + shockData);
-                backend.performOp(shockData.distribution(), shockData.type(), shockData.intensity(), shockData.duration());
+                var ok = backend.performOp(shockData.distribution(), shockData.type(), shockData.intensity(), shockData.duration());
 
-                // Waiting for shock to complete and then waiting for debounce time, so not a busy-wait per se
-                //noinspection BusyWait
-                Thread.sleep((long) ((shockData.duration() + config.getDebounceTime()) * 1000.0f));
+                if (ok) {
+                    // Waiting for shock to complete and then waiting for debounce time, so not a busy-wait per se
+                    //noinspection BusyWait
+                    Thread.sleep((long) ((shockData.duration() + config.getDebounceTime()) * 1000.0f));
+                }
             } catch (InterruptedException e) {
                 return;
             }
