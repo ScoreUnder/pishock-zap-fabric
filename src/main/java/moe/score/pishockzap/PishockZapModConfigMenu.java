@@ -14,7 +14,7 @@ import moe.score.pishockzap.config.ShockBackendType;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.backend.OpType;
-import moe.score.pishockzap.backend.PiShockSerialBackend;
+import moe.score.pishockzap.backend.impls.PiShockSerialBackend;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;

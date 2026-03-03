@@ -1,7 +1,9 @@
-package moe.score.pishockzap.backend;
+package moe.score.pishockzap.backend.impls;
 
 import com.google.gson.Gson;
 import lombok.NonNull;
+import moe.score.pishockzap.backend.OpType;
+import moe.score.pishockzap.backend.SimpleHttpRequestShockBackend;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import org.jetbrains.annotations.Nullable;
