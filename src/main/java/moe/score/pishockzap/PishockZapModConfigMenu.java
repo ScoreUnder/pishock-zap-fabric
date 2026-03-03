@@ -6,15 +6,16 @@ import lombok.NonNull;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import me.shedaniel.clothconfig2.gui.entries.StringListEntry;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
+import moe.score.pishockzap.backend.OpType;
+import moe.score.pishockzap.backend.impls.PiShockSerialBackend;
 import moe.score.pishockzap.compat.FloatSliderBuilder;
 import moe.score.pishockzap.compat.TextStyle;
 import moe.score.pishockzap.compat.Translation;
-import moe.score.pishockzap.config.ShockBackendType;
 import moe.score.pishockzap.config.PishockZapConfig;
+import moe.score.pishockzap.config.ShockBackendType;
 import moe.score.pishockzap.config.ShockDistribution;
-import moe.score.pishockzap.backend.OpType;
-import moe.score.pishockzap.backend.impls.PiShockSerialBackend;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -221,12 +222,13 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .setExpanded(true)
             .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == ShockBackendType.WEB_V1);
 
-        webV1Category.add(entryBuilder
+        StringListEntry logIdentifierField = entryBuilder
             .startStrField(Translation.of("title.pishock-zap.config.api.log_identifier"), config.getLogIdentifier())
             .setSaveConsumer(config::setLogIdentifier)
             .setTooltip(Translation.of("tooltip.pishock-zap.config.api.log_identifier"))
             .setDefaultValue(defaultConfig.getLogIdentifier())
-            .build());
+            .build();
+        webV1Category.add(logIdentifierField);
 
         webV1Category.add(entryBuilder.startTextDescription(
                 Translation.of("description.pishock-zap.config.api.web_v1",
@@ -350,6 +352,45 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             )).build());
 
         apiCategory.addEntry(webhookCategory.build());
+
+        var openShockApiCategory = entryBuilder
+            .startSubCategory(Translation.of("title.pishock-zap.config.api.openshock"))
+            .setExpanded(true)
+            .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == ShockBackendType.OPENSHOCK);
+
+        openShockApiCategory.add(entryBuilder
+            .startStrField(Translation.of("title.pishock-zap.config.api.openshock.api_token"), config.getOpenShockApiToken())
+            .setSaveConsumer(config::setOpenShockApiToken)
+            .setTooltip(Translation.of("tooltip.pishock-zap.config.api.openshock.api_token"))
+            // no default
+            .setErrorSupplier(tok -> {
+                if (apiTypeSwitcher.getValue() != ShockBackendType.OPENSHOCK) return Optional.empty();
+                if (tok.isBlank()) return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.api_token.empty"));
+                return Optional.empty();
+            })
+            .build());
+
+        openShockApiCategory.add(entryBuilder
+            .startStrList(Translation.of("title.pishock-zap.config.api.openshock.device_ids"), config.getOpenShockShockerIds())
+            .setSaveConsumer(config::setOpenShockShockerIds)
+            .setTooltip(Translation.of("tooltip.pishock-zap.config.api.openshock.device_ids"))
+            .setErrorSupplier(l -> {
+                if (apiTypeSwitcher.getValue() != ShockBackendType.OPENSHOCK) return Optional.empty();
+                if (l.isEmpty()) return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.device_ids.list_empty"));
+                return Optional.empty();
+            })
+            .setCellErrorSupplier(id -> {
+                if (apiTypeSwitcher.getValue() != ShockBackendType.OPENSHOCK) return Optional.empty();
+                if (id.isBlank()) return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.device_ids.empty"));
+                return Optional.empty();
+            })
+            .setExpanded(true)
+            // no default
+            .build());
+
+        openShockApiCategory.add(logIdentifierField);
+
+        apiCategory.addEntry(openShockApiCategory.build());
 
         configBuilder.setSavingRunnable(mod::saveConfig);
 

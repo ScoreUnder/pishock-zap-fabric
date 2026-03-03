@@ -98,6 +98,11 @@ public class PishockZapConfig {
     /// Custom Webhook URL
     private @NonNull String customWebhookUrl = "";
 
+    /// OpenShock API token
+    private @NonNull String openShockApiToken = "";
+    /// OpenShock shocker IDs
+    private @NonNull List<String> openShockShockerIds = List.of("badc0def-ffff-ffff-ffff-badc0defffff");
+
     private boolean fieldIsListOfInteger(@NonNull Field field) {
         return field.getName().equals("deviceIds");
     }

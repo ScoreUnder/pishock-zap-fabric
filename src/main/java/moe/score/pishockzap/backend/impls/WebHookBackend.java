@@ -2,8 +2,8 @@ package moe.score.pishockzap.backend.impls;
 
 import com.google.gson.Gson;
 import lombok.NonNull;
+import moe.score.pishockzap.backend.BulkHttpRequestShockBackend;
 import moe.score.pishockzap.backend.OpType;
-import moe.score.pishockzap.backend.SimpleHttpRequestShockBackend;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import org.jetbrains.annotations.Nullable;
@@ -12,11 +12,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
-public class WebHookBackend extends SimpleHttpRequestShockBackend<ShockDistribution, Map<String, Object>> {
+public class WebHookBackend extends BulkHttpRequestShockBackend<Map<String, Object>> {
     private static final Gson gson = new Gson();
 
     public WebHookBackend(PishockZapConfig config, Executor executor) {
@@ -53,11 +52,6 @@ public class WebHookBackend extends SimpleHttpRequestShockBackend<ShockDistribut
     }
 
     @Override
-    protected @NonNull List<ShockDistribution> getDevices() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public boolean isConfigured() {
         try {
             getUrl(Map.of());
@@ -65,10 +59,5 @@ public class WebHookBackend extends SimpleHttpRequestShockBackend<ShockDistribut
         } catch (MalformedURLException e) {
             return false;
         }
-    }
-
-    @Override
-    public void safePerformOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
-        doApiCallOnThread(generateDataForOperation(distribution, op, intensity, duration));
     }
 }

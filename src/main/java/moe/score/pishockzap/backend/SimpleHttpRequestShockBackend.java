@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 
 public abstract class SimpleHttpRequestShockBackend<T, U> extends SafeShockBackend {
     protected final Logger logger = Logger.getLogger(PishockZapMod.NAME);
-    private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
+    protected final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
     protected final Executor executor;
 
     public SimpleHttpRequestShockBackend(PishockZapConfig config, Executor executor) {

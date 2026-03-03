@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import moe.score.pishockzap.backend.impls.OpenShockWebApiBackend;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.backend.impls.PiShockSerialBackend;
@@ -34,6 +35,7 @@ import java.util.logging.Logger;
 
 public class PishockZapMod implements ClientModInitializer {
     public static final String NAME = "PiShock-Zap";
+    public static final String ID = "pishock-zap";
     @Getter
     private static @Nullable PishockZapMod instance = null;
 
@@ -89,6 +91,11 @@ public class PishockZapMod implements ClientModInitializer {
             case WEBHOOK:
                 if (!(zapController.getBackend() instanceof WebHookBackend)) {
                     zapController.setBackend(new WebHookBackend(config, apiExecutor));
+                }
+                break;
+            case OPENSHOCK:
+                if (!(zapController.getBackend() instanceof OpenShockWebApiBackend)) {
+                    zapController.setBackend(new OpenShockWebApiBackend(config, apiExecutor));
                 }
                 break;
         }
@@ -179,6 +186,11 @@ public class PishockZapMod implements ClientModInitializer {
                 }
             }
         });
+    }
+
+    public static String getVersion() {
+        return FabricLoader.getInstance().getModContainer(ID)
+            .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("unknown");
     }
 
     private record PlayerHp(float hp, float maxHealth) {

@@ -4,4 +4,5 @@ public enum ShockBackendType {
     WEB_V1,
     SERIAL,
     WEBHOOK,
+    OPENSHOCK,
 }
