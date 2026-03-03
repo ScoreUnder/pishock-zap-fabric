@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,22 +53,31 @@ public class PiShockSerialApi implements PiShockApi {
 
         boolean[] shocks = distributor.pickShockers(distribution, shockers.size());
 
+        var lines = new ArrayList<String>();
         for (int i = 0; i < shocks.length; i++) {
             if (!shocks[i]) continue;
             int deviceId = shockers.get(i);
 
-            Map<String, Object> data = new HashMap<>();
-            data.put("cmd", "operate");
-            Map<String, Object> params = new HashMap<>();
-            data.put("value", params);
-
-            params.put("id", deviceId);
-            params.put("op", op.firmwareCode);
-            params.put("intensity", intensity);
-            params.put("duration", transformDuration(duration));
-
-            doApiCallOnThread(data);
+            Map<String, Object> data = getOperationData(op, intensity, duration, deviceId);
+            String line = convertToJson(data);
+            lines.add(line);
         }
+        if (!lines.isEmpty()) {
+            doApiCallOnThread(lines);
+        }
+    }
+
+    private @NonNull Map<String, Object> getOperationData(@NonNull OpType op, int intensity, float duration, int deviceId) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("cmd", "operate");
+        Map<String, Object> params = new HashMap<>();
+        data.put("value", params);
+
+        params.put("id", deviceId);
+        params.put("op", op.firmwareCode);
+        params.put("intensity", intensity);
+        params.put("duration", transformDuration(duration));
+        return data;
     }
 
     /**
@@ -99,22 +109,28 @@ public class PiShockSerialApi implements PiShockApi {
         return jsonWriter;
     }
 
-    private void writeAsJson(@NonNull Map<String, Object> data) throws IOException {
+    private String convertToJson(@NonNull Map<String, Object> data) {
+        return gson.toJson(data);
+    }
+
+    private void writeLines(@NonNull Iterable<String> data) throws IOException {
         @SuppressWarnings("resource") Writer jsonWriter = openWriter();
-        jsonWriter.write(gson.toJson(data));
-        jsonWriter.write('\n');
+        for (String line : data) {
+            jsonWriter.write(line);
+            jsonWriter.write('\n');
+        }
         jsonWriter.flush();
     }
 
     /**
      * Perform a PiShock API call on a separate thread.
      *
-     * @param data data to send
+     * @param lines data to send
      */
-    private void doApiCallOnThread(@NonNull Map<String, Object> data) {
+    private void doApiCallOnThread(@NonNull Iterable<String> lines) {
         executor.execute(() -> {
             try {
-                writeAsJson(data);
+                writeLines(lines);
             } catch (Exception e) {
                 logger.warning("PiShock API call failed; exception thrown");
                 e.printStackTrace();
