@@ -37,7 +37,7 @@ public class PiShockSerialBackend extends SafeShockBackend {
 
     @Override
     protected boolean areShockParamsValid(OpType op, int intensity, float duration) {
-        return intensity < 0 || intensity > 100 || duration <= 0 || !Float.isFinite(duration);
+        return intensity >= 0 && intensity <= 100 && duration > 0 && duration < getMaxDuration();
     }
 
     @Override
