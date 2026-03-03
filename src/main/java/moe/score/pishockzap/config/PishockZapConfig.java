@@ -1,13 +1,18 @@
 package moe.score.pishockzap.config;
 
+import com.google.common.collect.ImmutableList;
 import lombok.Data;
 import lombok.NonNull;
+import moe.score.pishockzap.PishockZapMod;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Data
@@ -72,7 +77,18 @@ public class PishockZapConfig {
     /// PiShock account API key
     private @NonNull String apiKey = "";
     /// PiShock device share codes
-    private @NonNull List<String> shareCodes = List.of("BADC0DE0000");
+    private @NonNull List<String> shareCodes = ImmutableList.of("BADC0DE0000");
+
+    public void setLogIdentifier(String string) {
+        logIdentifier = string.isBlank() ? "PiShock-Zap (Minecraft)" : string.trim();
+    }
+
+    public void setShareCodes(List<String> strings) {
+        shareCodes = ImmutableList.copyOf(strings.stream()
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .iterator());
+    }
 
     /// PiShock device serial port
     private @NonNull String serialPort = "/dev/ttyACM0";
@@ -86,7 +102,7 @@ public class PishockZapConfig {
         return field.getName().equals("deviceIds");
     }
 
-    private void setSingleConfigField(@NonNull Field field, @NonNull Object value) {
+    private void setSingleConfigField(@NonNull Field field, @NonNull Method setter, @NonNull Object value) {
         try {
             Class<?> type = field.getType();
             if (type.isAssignableFrom(ShockDistribution.class)) {
@@ -101,8 +117,8 @@ public class PishockZapConfig {
                 // noinspection unchecked -- gets checked pretty damn quickly
                 value = ((List<Number>) value).stream().map(Number::intValue).collect(Collectors.toList());
             }
-            field.set(this, value);
-        } catch (IllegalAccessException e) {
+            setter.invoke(this, value);
+        } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         } catch (IllegalArgumentException | ClassCastException e) {
             System.err.printf("Config value %s is not of type %s (got %s)%n", field.getName(), field.getType().getName(), value.getClass().getName());
@@ -145,8 +161,27 @@ public class PishockZapConfig {
         return config;
     }
 
+    private static String fromSetterName(String setterName) {
+        if (setterName.length() < 4) return "";
+        var sb = new StringBuilder(setterName.length() - 3);
+        sb.append(Character.toLowerCase(setterName.charAt(3)));
+        sb.append(setterName, 4, setterName.length());
+        return sb.toString();
+    }
+
     public void setFromConfig(@NonNull Map<String, Object> config) {
         config = performConfigMigrations(config);
+
+        var setMethods = new HashMap<String, Method>();
+        for (Method method : getClass().getDeclaredMethods()) {
+            if (method.isSynthetic() || method.isBridge() || method.getParameterCount() != 1 || Modifier.isStatic(method.getModifiers()))
+                continue;
+
+            String name = fromSetterName(method.getName());
+            if (name.isEmpty()) continue;
+
+            setMethods.put(name, method);
+        }
 
         for (Field field : getClass().getDeclaredFields()) {
             int modifiers = field.getModifiers();
@@ -154,9 +189,15 @@ public class PishockZapConfig {
                 continue;
             }
 
-            Object value = config.get(field.getName());
+            String fieldName = field.getName();
+            Method setter = setMethods.get(fieldName);
+            if (setter == null) {
+                Logger.getLogger(PishockZapMod.NAME).warning("Missing setter for config field " + fieldName);
+                continue;
+            }
+            Object value = config.get(fieldName);
             if (value != null) {
-                setSingleConfigField(field, value);
+                setSingleConfigField(field, setter, value);
             }
         }
     }

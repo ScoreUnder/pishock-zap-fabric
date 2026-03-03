@@ -2,7 +2,6 @@ package moe.score.pishockzap.backend;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.google.gson.Gson;
-import lombok.Getter;
 import lombok.NonNull;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
@@ -12,39 +11,28 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-public class PiShockSerialBackend implements ShockBackend {
+public class PiShockSerialBackend extends SafeShockBackend {
     public static final int PISHOCK_SERIAL_BAUD_RATE = 115200;
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
-    private final @NonNull PishockZapConfig config;
+    private static final Gson gson = new Gson();
     private final @NonNull Executor executor;
-    @Getter
-    @NonNull
-    private final String portName;
+    private String lastPortName;
     private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
-    private final Gson gson = new Gson();
     private volatile @Nullable SerialPort commPort;
     private volatile @Nullable Writer jsonWriter = null;
 
-    public PiShockSerialBackend(@NonNull PishockZapConfig config, @NonNull Executor executor, @NonNull String portName) {
-        this.config = config;
+    public PiShockSerialBackend(@NonNull PishockZapConfig config, @NonNull Executor executor) {
+        super(config);
         this.executor = executor;
-        this.portName = portName;
     }
 
     @Override
-    public void performOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
-        if (!config.isEnabled()) return;
-        if (config.isVibrationOnly()) op = OpType.VIBRATE;
-        if (!PiShockUtils.shockParamsAreValid(intensity, duration)) return;
-
+    protected void safePerformOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
         List<Integer> shockers = config.getDeviceIds();
         if (shockers.isEmpty()) {
             logger.warning("No PiShock shocker IDs configured");
@@ -65,6 +53,19 @@ public class PiShockSerialBackend implements ShockBackend {
         if (!lines.isEmpty()) {
             doApiCallOnThread(lines);
         }
+    }
+
+    @Override
+    public boolean isConfigured() {
+        if (config.getDeviceIds().isEmpty()) {
+            logger.warning("No PiShock shocker IDs configured");
+            return false;
+        }
+        if (config.getSerialPort().isBlank()) {
+            logger.warning("No serial port configured");
+            return false;
+        }
+        return true;
     }
 
     private @NonNull Map<String, Object> getOperationData(@NonNull OpType op, int intensity, float duration, int deviceId) {
@@ -101,10 +102,14 @@ public class PiShockSerialBackend implements ShockBackend {
     }
 
     private @NonNull Writer openWriter() {
+        if (!Objects.equals(lastPortName, config.getSerialPort())) {
+            lastPortName = config.getSerialPort();
+            close();
+        }
         Writer jsonWriter = this.jsonWriter;
         if (jsonWriter != null) return jsonWriter;
 
-        var commPort = this.commPort = createAndOpenPort(portName);
+        var commPort = this.commPort = createAndOpenPort(lastPortName);
         jsonWriter = this.jsonWriter = new OutputStreamWriter(commPort.getOutputStream());
         return jsonWriter;
     }

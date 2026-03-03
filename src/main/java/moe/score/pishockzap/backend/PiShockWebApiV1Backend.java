@@ -1,22 +1,24 @@
 package moe.score.pishockzap.backend;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import lombok.NonNull;
-import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
-import moe.score.pishockzap.config.ShockDistribution;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.HashMap;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.logging.Logger;
 
-public class PiShockWebApiV1Backend implements ShockBackend {
+public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String, Map<String, Object>> {
     private static final @NonNull URL API_URL;
+    private static final Map<String, String> API_HEADERS = ImmutableMap.of("Content-Type", "application/json");
+    private static final Gson gson = new Gson();
 
     static {
         try {
@@ -26,64 +28,73 @@ public class PiShockWebApiV1Backend implements ShockBackend {
         }
     }
 
-    private final PishockZapConfig config;
-    private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
-    private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
-    private final Executor executor;
-    private final Gson gson = new Gson();
-
     public PiShockWebApiV1Backend(PishockZapConfig config, Executor executor) {
-        this.config = config;
-        this.executor = executor;
+        super(config, executor);
     }
 
-    public void performOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
-        if (!config.isEnabled()) return;
-        if (config.isVibrationOnly()) op = OpType.VIBRATE;
-        if (!PiShockUtils.shockParamsAreValid(intensity, duration)) return;
+    @Override
+    protected Map<String, Object> generateDataForOperation(String shareCode, @NonNull OpType op, int intensity, float duration) {
+        return Map.of(
+            "Username", config.getUsername(),
+            "Code", shareCode,
+            "Name", config.getLogIdentifier(),
+            "Apikey", config.getApiKey(),
+            "Op", op.code,
+            "Intensity", intensity,
+            "Duration", transformDuration(duration));
+    }
+
+    @Override
+    protected @NonNull URL getUrl(Map<String, Object> data) {
+        return API_URL;
+    }
+
+    @Override
+    protected @NonNull Map<String, String> getHeaders(Map<String, Object> data) {
+        return API_HEADERS;
+    }
+
+    @Override
+    protected byte @Nullable [] getPostBody(Map<String, Object> data) {
+        return gson.toJson(data).getBytes(StandardCharsets.UTF_8);
+    }
+
+    @Override
+    protected void onResponse(Map<String, Object> data, byte[] response) {
+        var responseStr = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(response)).toString();
+
+        // Test if successful (not reported in status code)
+        // "Operation Succeeded." is the success message for v1 firmware
+        // "Operation Attempted." is the success message for v3 firmware
+        if (!responseStr.contains("Operation Succeeded") && !responseStr.contains("Operation Attempted")) {
+            logger.warning("PiShock API call failed; response: " + responseStr);
+        }
+    }
+
+    @Override
+    public boolean isConfigured() {
         if (config.getApiKey().isBlank()) {
             logger.warning("No PiShock API key configured");
-            return;
+            return false;
         }
         if (config.getUsername().isBlank()) {
             logger.warning("No PiShock username configured");
-            return;
+            return false;
         }
-
-        String logIdentifier = config.getLogIdentifier();
-        if (logIdentifier.isBlank()) logIdentifier = "PiShock-Zap (Minecraft)";
-        else logIdentifier = logIdentifier.trim();
-
-        String[] shockers = config.getShareCodes().stream()
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .toArray(String[]::new);
-        if (shockers.length == 0) {
+        if (config.getShareCodes().isEmpty()) {
             logger.warning("No PiShock share codes configured");
-            return;
+            return false;
         }
-
-        boolean[] shocks = distributor.pickShockers(distribution, shockers.length);
-
-        for (int i = 0; i < shocks.length; i++) {
-            if (!shocks[i]) continue;
-            String shareCode = shockers[i];
-
-            Map<String, Object> data = new HashMap<>();
-            data.put("Username", config.getUsername());
-            data.put("Code", shareCode);
-            data.put("Name", logIdentifier);
-            data.put("Apikey", config.getApiKey());
-
-            data.put("Op", op.code);
-            data.put("Intensity", intensity);
-            data.put("Duration", transformDuration(duration));
-
-            doApiCallOnThread(data);
-        }
+        return true;
     }
 
-    /** Transform a floating-point duration in seconds to a PiShock API duration.
+    @Override
+    protected @NonNull List<String> getDevices() {
+        return config.getShareCodes();
+    }
+
+    /**
+     * Transform a floating-point duration in seconds to a PiShock API duration.
      * <p>
      * PiShock API duration can be specified one of two ways: as an integer number of seconds,
      * or if greater than 100, as an integer number of milliseconds.
@@ -102,41 +113,5 @@ public class PiShockWebApiV1Backend implements ShockBackend {
             return 0;
         }
         return Math.round(durationMs);
-    }
-
-    /** Perform a PiShock API call on a separate thread.
-     *
-     * @param data data to send
-     */
-    private void doApiCallOnThread(Map<String, Object> data) {
-        executor.execute(() -> {
-            try {
-                URLConnection connection = API_URL.openConnection();
-                connection.setDoOutput(true);
-                connection.setRequestProperty("Content-Type", "application/json");
-
-                // Send data as JSON
-                try (var outputStream = connection.getOutputStream()) {
-                    String json = gson.toJson(data);
-                    outputStream.write(json.getBytes());
-                }
-
-                // Read response and convert to string
-                String response;
-                try (var inputStream = connection.getInputStream()) {
-                    response = new String(inputStream.readAllBytes());
-                }
-
-                // Test if successful (not reported in status code)
-                // "Operation Succeeded." is the success message for v1 firmware
-                // "Operation Attempted." is the success message for v3 firmware
-                if (!response.contains("Operation Succeeded") && !response.contains("Operation Attempted")) {
-                    logger.warning("PiShock API call failed; response: " + response);
-                }
-            } catch (Exception e) {
-                logger.warning("PiShock API call failed; exception thrown");
-                e.printStackTrace();
-            }
-        });
     }
 }

@@ -82,9 +82,8 @@ public class PishockZapMod implements ClientModInitializer {
                 }
                 break;
             case SERIAL:
-                if (!(zapController.getBackend() instanceof PiShockSerialBackend piShockSerialBackend)
-                    || !Objects.equals(piShockSerialBackend.getPortName(), config.getSerialPort())) {
-                    zapController.setBackend(new PiShockSerialBackend(config, apiExecutor, config.getSerialPort()));
+                if (!(zapController.getBackend() instanceof PiShockSerialBackend)) {
+                    zapController.setBackend(new PiShockSerialBackend(config, apiExecutor));
                 }
                 break;
             case WEBHOOK:

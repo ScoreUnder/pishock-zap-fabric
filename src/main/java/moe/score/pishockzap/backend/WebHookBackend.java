@@ -2,59 +2,71 @@ package moe.score.pishockzap.backend;
 
 import com.google.gson.Gson;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
+import org.jetbrains.annotations.Nullable;
 
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.HashMap;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.logging.Logger;
 
-@RequiredArgsConstructor
-public class WebHookBackend implements ShockBackend {
-    private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
-    private final Gson gson = new Gson();
-    private final @NonNull PishockZapConfig config;
-    private final @NonNull Executor executor;
+public class WebHookBackend extends SimpleHttpRequestShockBackend<ShockDistribution, Map<String, Object>> {
+    private static final Gson gson = new Gson();
 
-    @Override
-    public void performOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
-        if (!config.isEnabled()) return;
-        if (config.isVibrationOnly()) op = OpType.VIBRATE;
-        if (!PiShockUtils.shockParamsAreValid(intensity, duration)) return;
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("operation", op.name());
-        data.put("intensity", intensity);
-        data.put("duration", duration);
-        data.put("distribution", distribution.name());
-
-        doApiCallOnThread(data);
+    public WebHookBackend(PishockZapConfig config, Executor executor) {
+        super(config, executor);
     }
 
-    private void doApiCallOnThread(@NonNull Map<String, Object> data) {
-        executor.execute(() -> {
-            try {
-                URLConnection connection = new URL(config.getCustomWebhookUrl()).openConnection();
-                connection.setDoOutput(true);
-                connection.setRequestProperty("Content-Type", "application/json");
+    @Override
+    protected Map<String, Object> generateDataForOperation(ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
+        return Map.of(
+            "operation", op.name(),
+            "intensity", intensity,
+            "duration", duration,
+            "distribution", distribution.name());
+    }
 
-                // Send data as JSON
-                try (var outputStream = connection.getOutputStream()) {
-                    String json = gson.toJson(data);
-                    outputStream.write(json.getBytes());
-                }
+    @Override
+    protected @NonNull URL getUrl(Map<String, Object> data) throws MalformedURLException {
+        return new URL(config.getCustomWebhookUrl());
+    }
 
-                connection.getInputStream().close();
-                logger.info("Custom Webhook call successful, data: " + gson.toJson(data));
-            } catch (Exception e) {
-                logger.warning("Custom Webhook call failed; exception thrown");
-                e.printStackTrace();
-            }
-        });
+    @Override
+    protected @NonNull Map<String, String> getHeaders(Map<String, Object> data) {
+        return Map.of();
+    }
+
+    @Override
+    protected byte @Nullable [] getPostBody(Map<String, Object> data) {
+        return gson.toJson(data).getBytes(StandardCharsets.UTF_8);
+    }
+
+    @Override
+    protected void onResponse(Map<String, Object> data, byte[] response) {
+        logger.info("Custom Webhook call successful, request: " + gson.toJson(data) + "\nresponse: " + StandardCharsets.UTF_8.decode(ByteBuffer.wrap(response)));
+    }
+
+    @Override
+    protected @NonNull List<ShockDistribution> getDevices() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isConfigured() {
+        try {
+            getUrl(Map.of());
+            return true;
+        } catch (MalformedURLException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public void safePerformOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
+        doApiCallOnThread(generateDataForOperation(distribution, op, intensity, duration));
     }
 }
