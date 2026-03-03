@@ -1,11 +1,11 @@
-package moe.score.pishockzap.shockcalculation;
+package moe.score.pishockzap.frontend;
 
 import lombok.Getter;
 import lombok.NonNull;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
-import moe.score.pishockzap.pishockapi.PiShockApi;
+import moe.score.pishockzap.backend.ShockBackend;
 
 import java.util.logging.Logger;
 
@@ -18,13 +18,13 @@ public class ZapController {
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     @Getter
     @NonNull
-    private volatile PiShockApi api;
+    private volatile ShockBackend backend;
     private final Thread thread = new Thread(this::run);
     private final @NonNull PishockZapConfig config;
     private final @NonNull ShockQueue shockQueue;
 
-    public ZapController(@NonNull PiShockApi api, @NonNull PishockZapConfig config) {
-        this.api = api;
+    public ZapController(@NonNull ShockBackend backend, @NonNull PishockZapConfig config) {
+        this.backend = backend;
         this.config = config;
         this.shockQueue = new ShockQueue(config);
     }
@@ -38,9 +38,9 @@ public class ZapController {
         this.thread.interrupt();
     }
 
-    public void setApi(@NonNull PiShockApi api) {
-        this.api.close();
-        this.api = api;
+    public void setBackend(@NonNull ShockBackend api) {
+        this.backend.close();
+        this.backend = api;
     }
 
     private void run() {
@@ -48,7 +48,7 @@ public class ZapController {
             try {
                 var shockData = shockQueue.takeAndMergeShocks();
                 logger.info("Performing shock: " + shockData);
-                api.performOp(shockData.distribution(), shockData.type(), shockData.intensity(), shockData.duration());
+                backend.performOp(shockData.distribution(), shockData.type(), shockData.intensity(), shockData.duration());
 
                 // Waiting for shock to complete and then waiting for debounce time, so not a busy-wait per se
                 //noinspection BusyWait

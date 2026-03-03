@@ -1,4 +1,4 @@
-package moe.score.pishockzap.pishockapi;
+package moe.score.pishockzap.backend;
 
 import com.google.gson.Gson;
 import lombok.NonNull;
@@ -15,7 +15,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 
 @RequiredArgsConstructor
-public class WebHookApi implements PiShockApi {
+public class WebHookBackend implements ShockBackend {
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     private final Gson gson = new Gson();
     private final @NonNull PishockZapConfig config;

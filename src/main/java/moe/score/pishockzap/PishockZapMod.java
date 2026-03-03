@@ -6,10 +6,10 @@ import lombok.NonNull;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
-import moe.score.pishockzap.pishockapi.PiShockSerialApi;
-import moe.score.pishockzap.pishockapi.PiShockWebApiV1;
-import moe.score.pishockzap.pishockapi.WebHookApi;
-import moe.score.pishockzap.shockcalculation.ZapController;
+import moe.score.pishockzap.backend.PiShockSerialBackend;
+import moe.score.pishockzap.backend.PiShockWebApiV1Backend;
+import moe.score.pishockzap.backend.WebHookBackend;
+import moe.score.pishockzap.frontend.ZapController;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -51,7 +51,7 @@ public class PishockZapMod implements ClientModInitializer {
     private final PishockZapConfig config = new PishockZapConfig();
     private final PlayerHpWatcher playerHpWatcher = new PlayerHpWatcher();
     private final ExecutorService apiExecutor = Executors.newSingleThreadExecutor();
-    private final ZapController zapController = new ZapController(new PiShockWebApiV1(config, apiExecutor), config);
+    private final ZapController zapController = new ZapController(new PiShockWebApiV1Backend(config, apiExecutor), config);
 
     public void saveConfig() {
         Map<String, Object> configMap = new HashMap<>();
@@ -77,19 +77,19 @@ public class PishockZapMod implements ClientModInitializer {
         // (And serial API port, if we're using the serial API)
         switch (config.getApiType()) {
             case WEB_V1:
-                if (!(zapController.getApi() instanceof PiShockWebApiV1)) {
-                    zapController.setApi(new PiShockWebApiV1(config, apiExecutor));
+                if (!(zapController.getBackend() instanceof PiShockWebApiV1Backend)) {
+                    zapController.setBackend(new PiShockWebApiV1Backend(config, apiExecutor));
                 }
                 break;
             case SERIAL:
-                if (!(zapController.getApi() instanceof PiShockSerialApi piShockSerialApi)
-                    || !Objects.equals(piShockSerialApi.getPortName(), config.getSerialPort())) {
-                    zapController.setApi(new PiShockSerialApi(config, apiExecutor, config.getSerialPort()));
+                if (!(zapController.getBackend() instanceof PiShockSerialBackend piShockSerialBackend)
+                    || !Objects.equals(piShockSerialBackend.getPortName(), config.getSerialPort())) {
+                    zapController.setBackend(new PiShockSerialBackend(config, apiExecutor, config.getSerialPort()));
                 }
                 break;
             case WEBHOOK:
-                if (!(zapController.getApi() instanceof WebHookApi)) {
-                    zapController.setApi(new WebHookApi(config, apiExecutor));
+                if (!(zapController.getBackend() instanceof WebHookBackend)) {
+                    zapController.setBackend(new WebHookBackend(config, apiExecutor));
                 }
                 break;
         }

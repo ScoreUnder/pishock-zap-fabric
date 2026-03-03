@@ -1,4 +1,4 @@
-package moe.score.pishockzap.pishockapi;
+package moe.score.pishockzap.backend;
 
 import com.google.gson.Gson;
 import lombok.NonNull;
@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 
-public class PiShockWebApiV1 implements PiShockApi {
+public class PiShockWebApiV1Backend implements ShockBackend {
     private static final @NonNull URL API_URL;
 
     static {
@@ -32,7 +32,7 @@ public class PiShockWebApiV1 implements PiShockApi {
     private final Executor executor;
     private final Gson gson = new Gson();
 
-    public PiShockWebApiV1(PishockZapConfig config, Executor executor) {
+    public PiShockWebApiV1Backend(PishockZapConfig config, Executor executor) {
         this.config = config;
         this.executor = executor;
     }

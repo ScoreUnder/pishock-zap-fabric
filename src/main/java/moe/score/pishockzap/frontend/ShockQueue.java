@@ -1,4 +1,4 @@
-package moe.score.pishockzap.shockcalculation;
+package moe.score.pishockzap.frontend;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
-import moe.score.pishockzap.pishockapi.OpType;
-import moe.score.pishockzap.pishockapi.PiShockUtils;
+import moe.score.pishockzap.backend.OpType;
+import moe.score.pishockzap.backend.PiShockUtils;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;

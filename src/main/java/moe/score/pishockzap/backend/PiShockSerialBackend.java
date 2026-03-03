@@ -1,4 +1,4 @@
-package moe.score.pishockzap.pishockapi;
+package moe.score.pishockzap.backend;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.google.gson.Gson;
@@ -20,7 +20,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-public class PiShockSerialApi implements PiShockApi {
+public class PiShockSerialBackend implements ShockBackend {
     public static final int PISHOCK_SERIAL_BAUD_RATE = 115200;
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     private final @NonNull PishockZapConfig config;
@@ -33,7 +33,7 @@ public class PiShockSerialApi implements PiShockApi {
     private volatile @Nullable SerialPort commPort;
     private volatile @Nullable Writer jsonWriter = null;
 
-    public PiShockSerialApi(@NonNull PishockZapConfig config, @NonNull Executor executor, @NonNull String portName) {
+    public PiShockSerialBackend(@NonNull PishockZapConfig config, @NonNull Executor executor, @NonNull String portName) {
         this.config = config;
         this.executor = executor;
         this.portName = portName;
