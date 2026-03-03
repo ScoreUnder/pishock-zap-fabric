@@ -259,7 +259,10 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .startStrList(Translation.of("title.pishock-zap.config.api.share_codes"), config.getShareCodes())
             .setSaveConsumer(config::setShareCodes)
             .setTooltip(Translation.of("tooltip.pishock-zap.config.api.share_codes"))
-            .setCellErrorSupplier(PishockZapModConfigMenu::isShareCodeInvalid)
+            .setCellErrorSupplier(shareCode -> {
+                if (apiTypeSwitcher.getValue() != ShockBackendType.WEB_V1) return Optional.empty();
+                return isShareCodeInvalid(shareCode);
+            })
             .setExpanded(true)
             // no default
             .build());
@@ -365,7 +368,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             // no default
             .setErrorSupplier(tok -> {
                 if (apiTypeSwitcher.getValue() != ShockBackendType.OPENSHOCK) return Optional.empty();
-                if (tok.isBlank()) return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.api_token.empty"));
+                if (tok.isBlank())
+                    return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.api_token.empty"));
                 return Optional.empty();
             })
             .build());
@@ -376,12 +380,14 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .setTooltip(Translation.of("tooltip.pishock-zap.config.api.openshock.device_ids"))
             .setErrorSupplier(l -> {
                 if (apiTypeSwitcher.getValue() != ShockBackendType.OPENSHOCK) return Optional.empty();
-                if (l.isEmpty()) return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.device_ids.list_empty"));
+                if (l.isEmpty())
+                    return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.device_ids.list_empty"));
                 return Optional.empty();
             })
             .setCellErrorSupplier(id -> {
                 if (apiTypeSwitcher.getValue() != ShockBackendType.OPENSHOCK) return Optional.empty();
-                if (id.isBlank()) return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.device_ids.empty"));
+                if (id.isBlank())
+                    return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.device_ids.empty"));
                 return Optional.empty();
             })
             .setExpanded(true)
