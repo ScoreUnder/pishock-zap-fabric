@@ -2,6 +2,7 @@ package moe.score.pishockzap.backend;
 
 import lombok.NonNull;
 import moe.score.pishockzap.config.ShockDistribution;
+import moe.score.pishockzap.util.TriState;
 
 public interface ShockBackend {
     /**
@@ -16,8 +17,23 @@ public interface ShockBackend {
      */
     boolean performOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration);
 
+    /**
+     * The maximum supported duration for this specific backend.
+     */
     default float getMaxDuration() {
         return PiShockUtils.PISHOCK_MAX_DURATION;
+    }
+
+    /**
+     * Whether this backend allows you to replace ongoing operations or not.
+     * i.e. if you were to send a shock at 50% for 10 seconds, then before a second passes, send another at 70% for 3
+     * seconds, this method would return {@link TriState#TRUE} if that results in the shock being set to 70% at the new
+     * duration, {@link TriState#FALSE} if the second shock is ignored, and {@link TriState#UNCERTAIN} if there is no
+     * reasonable way to tell.
+     */
+    @NonNull
+    default TriState canReplaceOngoingOperation() {
+        return TriState.UNCERTAIN;
     }
 
     /**

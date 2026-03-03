@@ -6,6 +6,7 @@ import lombok.NonNull;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.SimpleHttpRequestShockBackend;
 import moe.score.pishockzap.config.PishockZapConfig;
+import moe.score.pishockzap.util.TriState;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.MalformedURLException;
@@ -93,6 +94,11 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
     @Override
     protected @NonNull List<String> getDevices() {
         return config.getShareCodes();
+    }
+
+    @Override
+    public @NonNull TriState canReplaceOngoingOperation() {
+        return TriState.FALSE;
     }
 
     /**

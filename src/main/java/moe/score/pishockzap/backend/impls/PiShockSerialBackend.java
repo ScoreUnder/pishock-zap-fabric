@@ -9,6 +9,7 @@ import moe.score.pishockzap.backend.PiShockUtils;
 import moe.score.pishockzap.backend.SafeShockBackend;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
+import moe.score.pishockzap.util.TriState;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -79,6 +80,11 @@ public class PiShockSerialBackend extends SafeShockBackend {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public @NonNull TriState canReplaceOngoingOperation() {
+        return TriState.TRUE;
     }
 
     private @NonNull Map<String, Object> getOperationData(@NonNull OpType op, int intensity, float duration, int deviceId) {
