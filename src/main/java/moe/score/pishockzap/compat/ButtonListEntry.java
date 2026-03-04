@@ -3,12 +3,12 @@ package moe.score.pishockzap.compat;
 import lombok.Builder;
 import me.shedaniel.clothconfig2.gui.entries.TooltipListEntry;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.Window;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 import java.util.List;
@@ -24,7 +24,8 @@ public class ButtonListEntry extends TooltipListEntry<Void> {
     @Builder(setterPrefix = "set")
     public ButtonListEntry(Text fieldName, Text buttonText, Consumer<ButtonListEntry> onClickCallback, Supplier<Optional<Text[]>> tooltipSupplier) {
         super(fieldName, tooltipSupplier);
-        this.buttonWidget = new ButtonWidget(0, 0, 150, 20, buttonText, btn -> onClickCallback.accept(this));
+        this.buttonWidget = ButtonWidget.builder(buttonText, btn -> onClickCallback.accept(this))
+                .dimensions(0, 0, 150, 20).build();
         this.widgets = List.of(buttonWidget);
     }
 
@@ -44,22 +45,22 @@ public class ButtonListEntry extends TooltipListEntry<Void> {
         return Optional.empty();
     }
 
-    public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
-        super.render(matrices, index, y, x, entryWidth, entryHeight, mouseX, mouseY, isHovered, delta);
+    public void render(DrawContext graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
+        super.render(graphics, index, y, x, entryWidth, entryHeight, mouseX, mouseY, isHovered, delta);
         Window window = MinecraftClient.getInstance().getWindow();
         buttonWidget.active = isEditable();
-        buttonWidget.y = y;
+        buttonWidget.setY(y);
         var displayed = getDisplayedFieldName();
         var textRenderer = MinecraftClient.getInstance().textRenderer;
         if (textRenderer.isRightToLeft()) {
-            textRenderer.drawWithShadow(matrices, displayed.asOrderedText(), (float) (window.getScaledWidth() - x - textRenderer.getWidth(displayed)), y + 6, 0xffffff);
-            buttonWidget.x = x;
+            graphics.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, displayed.asOrderedText(), window.getScaledWidth() - x - textRenderer.getWidth(displayed), y + 6, 0xffffff);
+            buttonWidget.setX(x);
         } else {
-            textRenderer.drawWithShadow(matrices, displayed.asOrderedText(), (float) x, (float) (y + 6), this.getPreferredTextColor());
-            buttonWidget.x = x + entryWidth - 150;
+            graphics.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, displayed.asOrderedText(), x, y + 6, this.getPreferredTextColor());
+            buttonWidget.setX(x + entryWidth - 150);
         }
 
-        buttonWidget.render(matrices, mouseX, mouseY, delta);
+        buttonWidget.render(graphics, mouseX, mouseY, delta);
     }
 
     public List<? extends Element> children() {
