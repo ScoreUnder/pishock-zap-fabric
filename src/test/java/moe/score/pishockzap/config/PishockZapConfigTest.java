@@ -58,14 +58,14 @@ class PishockZapConfigTest {
 
     static Stream<Arguments> provideV1LocalSerialConfigData() {
         return Stream.of(
-            Arguments.of(true, PiShockApiType.SERIAL),
-            Arguments.of(false, PiShockApiType.WEB_V1)
+            Arguments.of(true, ShockBackendType.SERIAL),
+            Arguments.of(false, ShockBackendType.WEB_V1)
         );
     }
 
     @ParameterizedTest
     @MethodSource("provideV1LocalSerialConfigData")
-    void v1ConfigLocalIsMigrated(boolean localEnabled, PiShockApiType expectedApiType) {
+    void v1ConfigLocalIsMigrated(boolean localEnabled, ShockBackendType expectedApiType) {
         var oldConfigData = new HashMap<String, Object>();
 
         oldConfigData.put("localEnabled", localEnabled);
@@ -85,7 +85,7 @@ class PishockZapConfigTest {
 
     @ParameterizedTest
     @MethodSource("provideV1LocalSerialConfigData")
-    void v2ConfigApiTypeIsNotMigrated(boolean ignored, PiShockApiType expectedApiType) {
+    void v2ConfigApiTypeIsNotMigrated(boolean ignored, ShockBackendType expectedApiType) {
         var oldConfigData = new HashMap<String, Object>();
 
         oldConfigData.put("apiType", expectedApiType.name());

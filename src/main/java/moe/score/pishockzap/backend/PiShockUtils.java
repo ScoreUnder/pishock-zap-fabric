@@ -1,4 +1,4 @@
-package moe.score.pishockzap.pishockapi;
+package moe.score.pishockzap.backend;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -20,7 +20,7 @@ public class PiShockUtils {
             logger.warning("PiShock intensity out of range: " + intensity);
             return false;
         }
-        if (duration < 0.0f || duration > PISHOCK_MAX_DURATION) {
+        if (duration < 0.0f || duration > PISHOCK_MAX_DURATION || !Float.isFinite(duration)) {
             logger.warning("PiShock duration out of range: " + duration);
             return false;
         }

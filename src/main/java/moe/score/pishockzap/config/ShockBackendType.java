@@ -1,7 +1,8 @@
 package moe.score.pishockzap.config;
 
-public enum PiShockApiType {
+public enum ShockBackendType {
     WEB_V1,
     SERIAL,
     WEBHOOK,
+    OPENSHOCK,
 }

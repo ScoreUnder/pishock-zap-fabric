@@ -2,7 +2,7 @@ plugins {
     id 'base'
 	id 'fabric-loom' version "$loom_version"
 	id 'maven-publish'
-	id "io.freefair.lombok" version "9.1.0"
+	id 'io.freefair.lombok' version '9.2.0'
 }
 
 version = "${project.mod_version}+${project.minecraft_version}"
@@ -50,9 +50,9 @@ dependencies {
 	include "com.fazecast:jSerialComm:[2.0.0,3.0.0)"
 
     // JUnit 5
-    testImplementation "org.junit.jupiter:junit-jupiter-api:6.0.1"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:6.0.1"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:6.0.1"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${project.junit_version}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.junit_version}"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:${project.junit_version}"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
@@ -65,7 +65,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = project.java_language_version.toInteger()
 }
 
 java {
@@ -74,13 +74,13 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.toVersion(project.java_language_version)
+	targetCompatibility = JavaVersion.toVersion(project.java_language_version)
 }
 
 jar {
 	from("LICENSE") {
-		rename { "${it}_${project.base.archivesName.get()}"}
+		rename { "${it}_${project.archives_base_name}"}
 	}
 }
 

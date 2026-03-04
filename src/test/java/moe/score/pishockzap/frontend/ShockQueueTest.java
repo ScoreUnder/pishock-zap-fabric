@@ -1,8 +1,8 @@
-package moe.score.pishockzap.shockcalculation;
+package moe.score.pishockzap.frontend;
 
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
-import moe.score.pishockzap.pishockapi.OpType;
+import moe.score.pishockzap.backend.OpType;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

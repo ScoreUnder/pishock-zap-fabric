@@ -1,15 +1,16 @@
 package moe.score.pishockzap;
 
 import com.google.gson.Gson;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import moe.score.pishockzap.backend.impls.OpenShockWebApiBackend;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
-import moe.score.pishockzap.config.ShockDistribution;
-import moe.score.pishockzap.pishockapi.PiShockSerialApi;
-import moe.score.pishockzap.pishockapi.PiShockWebApiV1;
-import moe.score.pishockzap.pishockapi.WebHookApi;
-import moe.score.pishockzap.shockcalculation.ZapController;
+import moe.score.pishockzap.backend.impls.PiShockSerialBackend;
+import moe.score.pishockzap.backend.impls.PiShockWebApiV1Backend;
+import moe.score.pishockzap.backend.impls.WebHookBackend;
+import moe.score.pishockzap.frontend.ZapController;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -29,13 +30,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 public class PishockZapMod implements ClientModInitializer {
     public static final String NAME = "PiShock-Zap";
+    public static final String ID = "pishock-zap";
     @Getter
     private static @Nullable PishockZapMod instance = null;
 
@@ -53,7 +54,8 @@ public class PishockZapMod implements ClientModInitializer {
     private final PishockZapConfig config = new PishockZapConfig();
     private final PlayerHpWatcher playerHpWatcher = new PlayerHpWatcher();
     private final ExecutorService apiExecutor = Executors.newSingleThreadExecutor();
-    private final ZapController zapController = new ZapController(new PiShockWebApiV1(config, apiExecutor), config);
+    @Getter(AccessLevel.PACKAGE)
+    private final ZapController zapController = new ZapController(new PiShockWebApiV1Backend(config, apiExecutor), config);
 
     public void saveConfig() {
         Map<String, Object> configMap = new HashMap<>();
@@ -79,19 +81,23 @@ public class PishockZapMod implements ClientModInitializer {
         // (And serial API port, if we're using the serial API)
         switch (config.getApiType()) {
             case WEB_V1:
-                if (!(zapController.getApi() instanceof PiShockWebApiV1)) {
-                    zapController.setApi(new PiShockWebApiV1(config, apiExecutor));
+                if (!(zapController.getBackend() instanceof PiShockWebApiV1Backend)) {
+                    zapController.setBackend(new PiShockWebApiV1Backend(config, apiExecutor));
                 }
                 break;
             case SERIAL:
-                if (!(zapController.getApi() instanceof PiShockSerialApi piShockSerialApi)
-                    || !Objects.equals(piShockSerialApi.getPortName(), config.getSerialPort())) {
-                    zapController.setApi(new PiShockSerialApi(config, apiExecutor, config.getSerialPort()));
+                if (!(zapController.getBackend() instanceof PiShockSerialBackend)) {
+                    zapController.setBackend(new PiShockSerialBackend(config, apiExecutor));
                 }
                 break;
             case WEBHOOK:
-                if (!(zapController.getApi() instanceof WebHookApi)) {
-                    zapController.setApi(new WebHookApi(config, apiExecutor));
+                if (!(zapController.getBackend() instanceof WebHookBackend)) {
+                    zapController.setBackend(new WebHookBackend(config, apiExecutor));
+                }
+                break;
+            case OPENSHOCK:
+                if (!(zapController.getBackend() instanceof OpenShockWebApiBackend)) {
+                    zapController.setBackend(new OpenShockWebApiBackend(config, apiExecutor));
                 }
                 break;
         }
@@ -144,26 +150,7 @@ public class PishockZapMod implements ClientModInitializer {
 
         float damage = playerHpWatcher.updatePlayerHpAndGetDamage(player, hpInfo.hp());
 
-        if (hpInfo.hp() == hpInfo.maxHealth() || hpInfo.maxHealth() <= 0) {
-            // Player is at full HP, can this really be called damage?
-            // (Just in case other mods play with max health, it's not fair to zap the player for that)
-            // Note: this return must be after updating player HP in the watcher, otherwise the watcher will
-            // report incorrect damage the next time the player takes damage.
-            return;
-        }
-
-        if (damage > 0) {
-            boolean deathZap = hpInfo.hp() == 0;
-            ShockDistribution distribution = deathZap && config.isShockOnDeath() ? config.getShockDistributionDeath() : config.getShockDistribution();
-            float damageEquivalent = config.isShockOnHealth() ? hpInfo.maxHealth() - hpInfo.hp() : damage;
-            damageEquivalent /= hpInfo.maxHealth();
-            if (damageEquivalent > 1.0f) {
-                logger.warning("Damage equivalent " + damageEquivalent + " exceeds 100% damage, capping");
-                damageEquivalent = 1.0f;
-            }
-            logger.info("Death? " + deathZap + ", damage: " + damage + ", hp: " + hpInfo.hp() + ", damage equivalent: " + damageEquivalent);
-            zapController.queueShock(distribution, deathZap, damageEquivalent);
-        }
+        zapController.queueShockForDamage(hpInfo.hp(), hpInfo.maxHealth(), damage);
     }
 
     private @NonNull PlayerHp getPlayerHp(ClientPlayerEntity player) {
@@ -201,6 +188,11 @@ public class PishockZapMod implements ClientModInitializer {
                 }
             }
         });
+    }
+
+    public static String getVersion() {
+        return FabricLoader.getInstance().getModContainer(ID)
+            .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("unknown");
     }
 
     private record PlayerHp(float hp, float maxHealth) {
