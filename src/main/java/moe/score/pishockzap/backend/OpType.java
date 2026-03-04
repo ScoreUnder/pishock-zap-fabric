@@ -1,4 +1,4 @@
-package moe.score.pishockzap.pishockapi;
+package moe.score.pishockzap.backend;
 
 import lombok.NonNull;
 
