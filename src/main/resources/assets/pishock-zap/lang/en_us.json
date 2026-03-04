@@ -139,8 +139,13 @@
   "enum.pishock-zap.config.api_type.webhook": "Custom Webhook",
   "enum.pishock-zap.config.api_type.openshock": "OpenShock Web",
 
+  "error.pishock-zap.config.api.share_codes.empty": "Need at least one share code",
   "error.pishock-zap.config.api.share_codes.entry.empty": "Share code cannot be empty",
   "error.pishock-zap.config.api.share_codes.entry.invalid": "Share code appears invalid",
+
+  "error.pishock-zap.config.api.local.device_ids.list_empty": "Need at least one device ID",
+  "error.pishock-zap.config.api.local.device_ids.must_be_positive": "Device IDs must be a positive number",
+  "error.pishock-zap.config.api.local.device_ids.too_high": "Impossibly high device ID",
 
   "error.pishock-zap.config.api.custom_webhook_url.empty": "Webhook URL cannot be empty",
   "error.pishock-zap.config.api.custom_webhook_url.invalid": "Webhook URL appears invalid",

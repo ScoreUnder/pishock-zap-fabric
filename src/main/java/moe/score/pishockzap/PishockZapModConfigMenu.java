@@ -3,10 +3,13 @@ package moe.score.pishockzap;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
+import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.gui.entries.StringListEntry;
+import me.shedaniel.clothconfig2.gui.entries.StringListListEntry;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.impls.OpenShockWebApiBackend;
@@ -26,10 +29,11 @@ import net.minecraft.util.Formatting;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.*;
 import java.util.stream.Collectors;
 
 import static moe.score.pishockzap.backend.PiShockUtils.PISHOCK_MAX_DURATION;
@@ -49,79 +53,29 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var configBuilder = ConfigBuilder.create()
             .setParentScreen(parent)
             .setTitle(Translation.of("title.pishock-zap.config"));
+        var entryBuilder = configBuilder.entryBuilder();
+        var helper = new Helper(config, defaultConfig, entryBuilder);
 
         var generalCategory = configBuilder.getOrCreateCategory(Translation.of("title.pishock-zap.config.general"));
-        var entryBuilder = configBuilder.entryBuilder();
-        generalCategory.addEntry(entryBuilder
-            .startBooleanToggle(Translation.of("title.pishock-zap.config.general.enabled"), config.isEnabled())
-            .setSaveConsumer(config::setEnabled)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.general.enabled"))
-            .setDefaultValue(defaultConfig.isEnabled())
-            .build());
-        generalCategory.addEntry(entryBuilder
-            .startBooleanToggle(Translation.of("title.pishock-zap.config.general.vibration_only"), config.isVibrationOnly())
-            .setSaveConsumer(config::setVibrationOnly)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.general.vibration_only"))
-            .setDefaultValue(defaultConfig.isVibrationOnly())
-            .build());
-        generalCategory.addEntry(entryBuilder
-            .startBooleanToggle(Translation.of("title.pishock-zap.config.general.shock_on_health"), config.isShockOnHealth())
-            .setSaveConsumer(config::setShockOnHealth)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.general.shock_on_health"))
-            .setDefaultValue(defaultConfig.isShockOnHealth())
-            .build());
-        generalCategory.addEntry(entryBuilder
-            .startBooleanToggle(Translation.of("title.pishock-zap.config.general.fractional_damage"), config.isFractionalDamage())
-            .setSaveConsumer(config::setFractionalDamage)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.general.fractional_damage"))
-            .setDefaultValue(defaultConfig.isFractionalDamage())
-            .build());
+        helper.setCategory(generalCategory);
+
+        helper.addBooleanSwitch("general.enabled", PishockZapConfig::isEnabled, PishockZapConfig::setEnabled);
+        helper.addBooleanSwitch("general.vibration_only", PishockZapConfig::isVibrationOnly, PishockZapConfig::setVibrationOnly);
+        helper.addBooleanSwitch("general.shock_on_health", PishockZapConfig::isShockOnHealth, PishockZapConfig::setShockOnHealth);
+        helper.addBooleanSwitch("general.fractional_damage", PishockZapConfig::isFractionalDamage, PishockZapConfig::setFractionalDamage);
 
         var limitsCategory = configBuilder.getOrCreateCategory(Translation.of("title.pishock-zap.config.limits"));
 
         var shockLimitsCategory = entryBuilder
             .startSubCategory(Translation.of("title.pishock-zap.config.limits.shock_limits"));
+        helper.setCategory(shockLimitsCategory);
 
-        shockLimitsCategory.add(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.duration"), config.getDuration(), 0.1f, PISHOCK_MAX_DURATION)
-            .setSaveConsumer(config::setDuration)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.duration"))
-            .setDefaultValue(defaultConfig.getDuration())
-            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.duration", String.format("%.3f", value)))
-            .build());
-        shockLimitsCategory.add(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.max_duration"), config.getMaxDuration(), 0.1f, PISHOCK_MAX_DURATION)
-            .setSaveConsumer(config::setMaxDuration)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.max_duration"))
-            .setDefaultValue(defaultConfig.getMaxDuration())
-            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.duration", String.format("%.3f", value)))
-            .build());
-        shockLimitsCategory.add(entryBuilder
-            .startIntSlider(Translation.of("title.pishock-zap.config.limits.vibration_intensity_min"), config.getVibrationIntensityMin(), 1, PISHOCK_MAX_INTENSITY)
-            .setSaveConsumer(config::setVibrationIntensityMin)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.vibration_intensity_min"))
-            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.vibration_intensity", value))
-            .setDefaultValue(defaultConfig.getVibrationIntensityMin())
-            .build());
-        shockLimitsCategory.add(entryBuilder
-            .startIntSlider(Translation.of("title.pishock-zap.config.limits.vibration_intensity_max"), config.getVibrationIntensityMax(), 1, PISHOCK_MAX_INTENSITY)
-            .setSaveConsumer(config::setVibrationIntensityMax)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.vibration_intensity_max"))
-            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.vibration_intensity", value))
-            .setDefaultValue(defaultConfig.getVibrationIntensityMax())
-            .build());
-        shockLimitsCategory.add(entryBuilder
-            .startIntSlider(Translation.of("title.pishock-zap.config.limits.shock_intensity_min"), config.getShockIntensityMin(), 1, PISHOCK_MAX_INTENSITY)
-            .setSaveConsumer(config::setShockIntensityMin)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.shock_intensity_min"))
-            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.intensity", value))
-            .setDefaultValue(defaultConfig.getShockIntensityMin())
-            .build());
-        shockLimitsCategory.add(entryBuilder
-            .startIntSlider(Translation.of("title.pishock-zap.config.limits.shock_intensity_max"), config.getShockIntensityMax(), 1, PISHOCK_MAX_INTENSITY)
-            .setSaveConsumer(config::setShockIntensityMax)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.shock_intensity_max"))
-            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.intensity", value))
-            .setDefaultValue(defaultConfig.getShockIntensityMax())
-            .build());
+        helper.addFloatSlider("limits.duration", "duration", PishockZapConfig::getDuration, PishockZapConfig::setDuration, 0.1f, PISHOCK_MAX_DURATION);
+        helper.addFloatSlider("limits.max_duration", "duration", PishockZapConfig::getMaxDuration, PishockZapConfig::setMaxDuration, 0.1f, PISHOCK_MAX_DURATION);
+        helper.addIntSlider("limits.vibration_intensity_min", "vibration_intensity", PishockZapConfig::getVibrationIntensityMin, PishockZapConfig::setVibrationIntensityMin, 1, PISHOCK_MAX_INTENSITY);
+        helper.addIntSlider("limits.vibration_intensity_max", "vibration_intensity", PishockZapConfig::getVibrationIntensityMax, PishockZapConfig::setVibrationIntensityMax, 1, PISHOCK_MAX_INTENSITY);
+        helper.addIntSlider("limits.shock_intensity_min", "intensity", PishockZapConfig::getShockIntensityMin, PishockZapConfig::setShockIntensityMin, 1, PISHOCK_MAX_INTENSITY);
+        helper.addIntSlider("limits.shock_intensity_max", "intensity", PishockZapConfig::getShockIntensityMax, PishockZapConfig::setShockIntensityMax, 1, PISHOCK_MAX_INTENSITY);
         shockLimitsCategory.add(createShockDistributionDropdown(entryBuilder, "limits.shock_distribution", config.getShockDistribution(), config::setShockDistribution));
 
         shockLimitsCategory.setExpanded(true);
@@ -129,81 +83,34 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         var damageThresholdsCategory = entryBuilder
             .startSubCategory(Translation.of("title.pishock-zap.config.limits.damage_thresholds"));
+        helper.setCategory(damageThresholdsCategory);
 
-        damageThresholdsCategory.add(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.vibration_threshold"), config.getVibrationThreshold(), 0.0f, 1.0f, 100.0f)
-            .setSaveConsumer(config::setVibrationThreshold)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.vibration_threshold"))
-            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.hp", String.format("%.0f", value * 100.0f)))
-            .setDefaultValue(defaultConfig.getVibrationThreshold())
-            .build());
-        damageThresholdsCategory.add(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.min_damage"), config.getMinDamage(), 0.0f, 1.0f, 100.0f)
-            .setSaveConsumer(config::setMinDamage)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.min_damage"))
-            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.hp", String.format("%.0f", value * 100.0f)))
-            .setDefaultValue(defaultConfig.getMinDamage())
-            .build());
-        damageThresholdsCategory.add(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.max_damage"), config.getMaxDamage(), 0.0f, 1.0f, 100.0f)
-            .setSaveConsumer(config::setMaxDamage)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.max_damage"))
-            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.hp", String.format("%.0f", value * 100.0f)))
-            .setDefaultValue(defaultConfig.getMaxDamage())
-            .build());
+        helper.addFloatSlider("limits.vibration_threshold", "hp", PishockZapConfig::getVibrationThreshold, PishockZapConfig::setVibrationThreshold, 0, 1, 100, 100);
+        helper.addFloatSlider("limits.min_damage", "hp", PishockZapConfig::getMinDamage, PishockZapConfig::setMinDamage, 0, 1, 100, 100);
+        helper.addFloatSlider("limits.max_damage", "hp", PishockZapConfig::getMaxDamage, PishockZapConfig::setMaxDamage, 0, 1, 100, 100);
 
         damageThresholdsCategory.setExpanded(true);
         limitsCategory.addEntry(damageThresholdsCategory.build());
 
         var shockOnDeathCategory = entryBuilder
             .startSubCategory(Translation.of("title.pishock-zap.config.limits.shock_on_death_category"));
+        helper.setCategory(shockOnDeathCategory);
 
-        shockOnDeathCategory.add(entryBuilder
-            .startBooleanToggle(Translation.of("title.pishock-zap.config.general.shock_on_death"), config.isShockOnDeath())
-            .setSaveConsumer(config::setShockOnDeath)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.general.shock_on_death"))
-            .setDefaultValue(defaultConfig.isShockOnDeath())
-            .build());
-        shockOnDeathCategory.add(entryBuilder
-            .startIntSlider(Translation.of("title.pishock-zap.config.limits.shock_intensity_death"), config.getShockIntensityDeath(), 1, PISHOCK_MAX_INTENSITY)
-            .setSaveConsumer(config::setShockIntensityDeath)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.shock_intensity_death"))
-            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.intensity", value))
-            .setDefaultValue(defaultConfig.getShockIntensityDeath())
-            .build());
-        shockOnDeathCategory.add(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.limits.shock_duration_death"), config.getShockDurationDeath(), 0.1f, PISHOCK_MAX_DURATION)
-            .setSaveConsumer(config::setShockDurationDeath)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.limits.shock_duration_death"))
-            .setDefaultValue(defaultConfig.getShockDurationDeath())
-            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.duration", String.format("%.3f", value)))
-            .build());
+        helper.addBooleanSwitch("general.shock_on_death", PishockZapConfig::isShockOnDeath, PishockZapConfig::setShockOnDeath);
+        helper.addIntSlider("limits.shock_intensity_death", "intensity", PishockZapConfig::getShockIntensityDeath, PishockZapConfig::setShockIntensityDeath, 1, PISHOCK_MAX_INTENSITY);
+        helper.addFloatSlider("limits.shock_duration_death", "duration", PishockZapConfig::getShockDurationDeath, PishockZapConfig::setShockDurationDeath, 0.1f, PISHOCK_MAX_DURATION);
         shockOnDeathCategory.add(createShockDistributionDropdown(entryBuilder, "limits.shock_distribution_death", config.getShockDistributionDeath(), config::setShockDistributionDeath));
 
         shockOnDeathCategory.setExpanded(true);
         limitsCategory.addEntry(shockOnDeathCategory.build());
 
         var debounceCategory = configBuilder.getOrCreateCategory(Translation.of("title.pishock-zap.config.debounce"));
-        debounceCategory.addEntry(createFloatSlider(entryBuilder, Translation.of("title.pishock-zap.config.debounce.debounce_time"), config.getDebounceTime(), 0.1f, 60.0f)
-            .setSaveConsumer(config::setDebounceTime)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.debounce.debounce_time"))
-            .setTextGetter((value) -> Translation.of("label.pishock-zap.config.time_interval", String.format("%.3f", value)))
-            .setDefaultValue(defaultConfig.getDebounceTime())
-            .build());
-        debounceCategory.addEntry(entryBuilder
-            .startBooleanToggle(Translation.of("title.pishock-zap.config.debounce.accumulate_duration"), config.isAccumulateDuration())
-            .setSaveConsumer(config::setAccumulateDuration)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.debounce.accumulate_duration"))
-            .setDefaultValue(defaultConfig.isAccumulateDuration())
-            .build());
-        debounceCategory.addEntry(entryBuilder
-            .startBooleanToggle(Translation.of("title.pishock-zap.config.debounce.accumulate_intensity"), config.isAccumulateIntensity())
-            .setSaveConsumer(config::setAccumulateIntensity)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.debounce.accumulate_intensity"))
-            .setDefaultValue(defaultConfig.isAccumulateIntensity())
-            .build());
-        debounceCategory.addEntry(entryBuilder
-            .startBooleanToggle(Translation.of("title.pishock-zap.config.debounce.queue_different"), config.isQueueDifferent())
-            .setSaveConsumer(config::setQueueDifferent)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.debounce.queue_different"))
-            .setDefaultValue(defaultConfig.isQueueDifferent())
-            .build());
+        helper.setCategory(debounceCategory);
+
+        helper.addFloatSlider("debounce.debounce_time", "time_interval", PishockZapConfig::getDebounceTime, PishockZapConfig::setDebounceTime, 0.1f, 60f);
+        helper.addBooleanSwitch("debounce.accumulate_duration", PishockZapConfig::isAccumulateDuration, PishockZapConfig::setAccumulateDuration);
+        helper.addBooleanSwitch("debounce.accumulate_intensity", PishockZapConfig::isAccumulateIntensity, PishockZapConfig::setAccumulateIntensity);
+        helper.addBooleanSwitch("debounce.queue_different", PishockZapConfig::isQueueDifferent, PishockZapConfig::setQueueDifferent);
 
         var apiCategory = configBuilder.getOrCreateCategory(Translation.of("title.pishock-zap.config.api"));
 
@@ -225,14 +132,9 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .startSubCategory(Translation.of("title.pishock-zap.config.api.web_v1"))
             .setExpanded(true)
             .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == ShockBackendType.WEB_V1);
+        helper.setCategory(webV1Category);
 
-        StringListEntry logIdentifierField = entryBuilder
-            .startStrField(Translation.of("title.pishock-zap.config.api.log_identifier"), config.getLogIdentifier())
-            .setSaveConsumer(config::setLogIdentifier)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.api.log_identifier"))
-            .setDefaultValue(defaultConfig.getLogIdentifier())
-            .build();
-        webV1Category.add(logIdentifierField);
+        var logIdentifierField = helper.addTextField("api.log_identifier", PishockZapConfig::getLogIdentifier, PishockZapConfig::setLogIdentifier);
 
         webV1Category.add(entryBuilder.startTextDescription(
                 Translation.of("description.pishock-zap.config.api.web_v1",
@@ -247,29 +149,16 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 ))
             .build());
 
-        webV1Category.add(entryBuilder
-            .startStrField(Translation.of("title.pishock-zap.config.api.username"), config.getUsername())
-            .setSaveConsumer(config::setUsername)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.api.username"))
-            // no default
-            .build());
-        webV1Category.add(entryBuilder
-            .startStrField(Translation.of("title.pishock-zap.config.api.api_key"), config.getApiKey())
-            .setSaveConsumer(config::setApiKey)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.api.api_key"))
-            // no default
-            .build());
-        webV1Category.add(entryBuilder
-            .startStrList(Translation.of("title.pishock-zap.config.api.share_codes"), config.getShareCodes())
-            .setSaveConsumer(config::setShareCodes)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.api.share_codes"))
-            .setCellErrorSupplier(shareCode -> {
-                if (apiTypeSwitcher.getValue() != ShockBackendType.WEB_V1) return Optional.empty();
-                return isShareCodeInvalid(shareCode);
-            })
-            .setExpanded(true)
-            // no default
-            .build());
+        helper.addTextFieldNoDefault("api.username", PishockZapConfig::getUsername, PishockZapConfig::setUsername);
+        helper.addTextFieldNoDefault("api.api_key", PishockZapConfig::getApiKey, PishockZapConfig::setApiKey);
+        helper.addStringListFieldNoDefault("api.share_codes", PishockZapConfig::getShareCodes, PishockZapConfig::setShareCodes, list -> {
+            if (apiTypeSwitcher.getValue() != ShockBackendType.WEB_V1) return Optional.empty();
+            if (list.isEmpty()) return Optional.of(Translation.of("error.pishock-zap.config.api.share_codes.empty"));
+            return Optional.empty();
+        }, shareCode -> {
+            if (apiTypeSwitcher.getValue() != ShockBackendType.WEB_V1) return Optional.empty();
+            return isShareCodeInvalid(shareCode);
+        });
 
         webV1Category.add(entryBuilder.startTextDescription(
             Translation.of("description.pishock-zap.config.api.web_v1.disclaimer")).build());
@@ -280,6 +169,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .startSubCategory(Translation.of("title.pishock-zap.config.api.local"))
             .setExpanded(true)
             .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == ShockBackendType.SERIAL);
+        helper.setCategory(localApiCategory);
 
         localApiCategory.add(entryBuilder.startTextDescription(Translation.of("description.pishock-zap.config.api.local"))
             .build());
@@ -300,37 +190,38 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 ))
         ).build());
 
-        localApiCategory.add(entryBuilder
-            .startIntList(Translation.of("title.pishock-zap.config.api.device_ids"), config.getDeviceIds())
-            .setSaveConsumer(config::setDeviceIds)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.api.device_ids"))
-            .setExpanded(true)
-            // no default
-            .build());
+        helper.addIntListFieldNoDefault("api.device_ids", PishockZapConfig::getDeviceIds, PishockZapConfig::setDeviceIds, list -> {
+            if (apiTypeSwitcher.getValue() != ShockBackendType.SERIAL) return Optional.empty();
+            if (list.isEmpty())
+                return Optional.of(Translation.of("error.pishock-zap.config.api.local.device_ids.list_empty"));
+            return Optional.empty();
+        }, id -> {
+            if (apiTypeSwitcher.getValue() != ShockBackendType.SERIAL) return Optional.empty();
+            if (id == null || id < 0)
+                return Optional.of(Translation.of("error.pishock-zap.config.api.local.device_ids.must_be_positive"));
+            if (id >= 65536 * 4)
+                return Optional.of(Translation.of("error.pishock-zap.config.api.local.device_ids.too_high"));
+            return Optional.empty();
+        });
         apiCategory.addEntry(localApiCategory.build());
 
         var webhookCategory = entryBuilder
             .startSubCategory(Translation.of("title.pishock-zap.config.api.webhook"))
             .setExpanded(true)
             .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == ShockBackendType.WEBHOOK);
+        helper.setCategory(webhookCategory);
 
-        webhookCategory.add(entryBuilder
-            .startStrField(Translation.of("title.pishock-zap.config.api.custom_webhook_url"), config.getCustomWebhookUrl())
-            .setSaveConsumer(config::setCustomWebhookUrl)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.api.custom_webhook_url"))
-            .setDefaultValue(defaultConfig.getCustomWebhookUrl())
-            .setErrorSupplier((url) -> {
-                if (apiTypeSwitcher.getValue() != ShockBackendType.WEBHOOK) return Optional.empty();
-                if (url.isBlank())
-                    return Optional.of(Translation.of("error.pishock-zap.config.api.custom_webhook_url.empty"));
-                try {
-                    new URL(url);
-                } catch (Exception e) {
-                    return Optional.of(Translation.of("error.pishock-zap.config.api.custom_webhook_url.invalid"));
-                }
-                return Optional.empty();
-            })
-            .build());
+        helper.addTextField("api.custom_webhook_url", PishockZapConfig::getCustomWebhookUrl, PishockZapConfig::setCustomWebhookUrl, url -> {
+            if (apiTypeSwitcher.getValue() != ShockBackendType.WEBHOOK) return Optional.empty();
+            if (url.isBlank())
+                return Optional.of(Translation.of("error.pishock-zap.config.api.custom_webhook_url.empty"));
+            try {
+                new URL(url);
+            } catch (Exception e) {
+                return Optional.of(Translation.of("error.pishock-zap.config.api.custom_webhook_url.invalid"));
+            }
+            return Optional.empty();
+        });
 
         var allOpTypes = Arrays.stream(OpType.values())
             .map(OpType::name)
@@ -364,71 +255,45 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .startSubCategory(Translation.of("title.pishock-zap.config.api.openshock"))
             .setExpanded(true)
             .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == ShockBackendType.OPENSHOCK);
+        helper.setCategory(openShockApiCategory);
 
-        var openShockApiTokenField = entryBuilder
-            .startStrField(Translation.of("title.pishock-zap.config.api.openshock.api_token"), config.getOpenShockApiToken())
-            .setSaveConsumer(config::setOpenShockApiToken)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.api.openshock.api_token"))
-            // no default
-            .setErrorSupplier(tok -> {
+        var openShockApiTokenField = helper.addTextField(
+            "api.openshock.api_token", PishockZapConfig::getOpenShockApiToken, PishockZapConfig::setOpenShockApiToken, tok -> {
                 if (apiTypeSwitcher.getValue() != ShockBackendType.OPENSHOCK) return Optional.empty();
                 if (tok.isBlank())
                     return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.api_token.empty"));
                 return Optional.empty();
-            })
-            .build();
-        openShockApiCategory.add(openShockApiTokenField);
+            });
 
-        var openShockDeviceIdField = entryBuilder
-            .startStrList(Translation.of("title.pishock-zap.config.api.openshock.device_ids"), config.getOpenShockShockerIds())
-            .setSaveConsumer(config::setOpenShockShockerIds)
-            .setTooltip(Translation.of("tooltip.pishock-zap.config.api.openshock.device_ids"))
-            .setErrorSupplier(l -> {
+        var openShockDeviceIdField = helper.makeStringListFieldNoDefault(
+            "api.openshock.device_ids", PishockZapConfig::getOpenShockShockerIds, PishockZapConfig::setOpenShockShockerIds,
+            l -> {
                 if (apiTypeSwitcher.getValue() != ShockBackendType.OPENSHOCK) return Optional.empty();
                 if (l.isEmpty())
                     return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.device_ids.list_empty"));
                 return Optional.empty();
-            })
-            .setCellErrorSupplier(id -> {
+            },
+            id -> {
                 if (apiTypeSwitcher.getValue() != ShockBackendType.OPENSHOCK) return Optional.empty();
                 if (id.isBlank())
                     return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.device_ids.empty"));
                 return Optional.empty();
-            })
-            .setExpanded(true)
-            // no default
-            .build();
+            }
+        );
 
         if (openShockDeviceIdField instanceof ListEntryExt openShockDeviceIdsExt) {
-            openShockApiCategory.add(ButtonListEntry.builder()
-                .setButtonText(Translation.of("label.pishock-zap.config.api.openshock.add_my_ids"))
-                .setFieldName(Translation.of("title.pishock-zap.config.api.openshock.add_my_ids"))
-                .setTooltipSupplier(() -> Optional.of(new Text[]{Translation.of("tooltip.pishock-zap.config.api.openshock.add_my_ids")}))
-                .setOnClickCallback(btn -> {
-                    btn.setEditable(false);
-                    btn.setButtonText(Translation.of("label.pishock-zap.config.api.openshock.add_my_ids.working"));
-                    var future = OpenShockWebApiBackend.probeDeviceIds(openShockApiTokenField.getValue());
-                    future.handleAsync((shockers, throwable) -> {
-                        if (throwable != null) {
-                            throwable.printStackTrace();
-                            btn.setEditable(true);
-                            btn.setButtonText(Translation.of("label.pishock-zap.config.api.openshock.add_my_ids.error"));
-                        } else {
-                            for (var text : shockers) {
-                                openShockDeviceIdsExt.pishockZap$addListEntry(text);
-                            }
-                            btn.setButtonText(Translation.of("label.pishock-zap.config.api.openshock.add_my_ids"));
-                            btn.setEditable(true);
-                        }
-                        return null;
-                    }, MinecraftClient.getInstance());
-                })
-                .build());
+            helper.addActionButton(
+                "api.openshock.add_my_ids",
+                () -> OpenShockWebApiBackend.probeDeviceIds(openShockApiTokenField.getValue()),
+                ids -> {
+                    for (var text : ids) {
+                        openShockDeviceIdsExt.pishockZap$addListEntry(text);
+                    }
+                });
         }
 
-        openShockApiCategory.add(openShockDeviceIdField);
-
-        openShockApiCategory.add(logIdentifierField);
+        helper.add(openShockDeviceIdField);
+        helper.add(logIdentifierField);
 
         apiCategory.addEntry(openShockApiCategory.build());
 
@@ -455,29 +320,160 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .build();
     }
 
-    private static @NonNull FloatSliderBuilder createFloatSlider(
-        @NonNull ConfigEntryBuilder entryBuilder,
-        @NonNull Text fieldNameKey,
-        float value,
-        float min,
-        float max
-    ) {
-        return new FloatSliderBuilder(entryBuilder.getResetButtonKey(), fieldNameKey, value, min, max);
-    }
-
-    private static @NonNull FloatSliderBuilder createFloatSlider(
-        @NonNull ConfigEntryBuilder entryBuilder,
-        @NonNull Text fieldNameKey,
-        float value,
-        float min,
-        float max,
-        float floatScale
-    ) {
-        return new FloatSliderBuilder(entryBuilder.getResetButtonKey(), fieldNameKey, value, min, max, floatScale);
-    }
-
     @Override
     public @NonNull ConfigScreenFactory<?> getModConfigScreenFactory() {
         return PishockZapModConfigMenu::createConfigScreen;
+    }
+
+    @RequiredArgsConstructor
+    private static class Helper {
+        private final PishockZapConfig config;
+        private final PishockZapConfig defaultConfig;
+        private final ConfigEntryBuilder entryBuilder;
+        private Consumer<AbstractConfigListEntry<?>> addEntry;
+
+        public void addBooleanSwitch(String keyPart, Function<PishockZapConfig, Boolean> get, BiConsumer<PishockZapConfig, Boolean> set) {
+            add(entryBuilder
+                .startBooleanToggle(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
+                .setSaveConsumer(v -> set.accept(config, v))
+                .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
+                .setDefaultValue(get.apply(defaultConfig))
+                .build());
+        }
+
+        public void addFloatSlider(String keyPart, String formatKeyPart, Function<PishockZapConfig, Float> get, BiConsumer<PishockZapConfig, Float> set, float min, float max) {
+            addFloatSlider(keyPart, formatKeyPart, get, set, min, max, 1000f, 1);
+        }
+
+        public void addFloatSlider(String keyPart, String formatKeyPart, Function<PishockZapConfig, Float> get, BiConsumer<PishockZapConfig, Float> set, float min, float max, float floatScale, float displayScale) {
+            var formatKey = "label.pishock-zap.config." + formatKeyPart;
+            var digits = (int) Math.ceil(Math.log10(floatScale / displayScale));
+            var formatStr = "%." + digits + "f";
+
+            float value1 = get.apply(config);
+            add(new FloatSliderBuilder(entryBuilder.getResetButtonKey(), Translation.of("title.pishock-zap.config." + keyPart), value1, min, max, floatScale)
+                .setSaveConsumer(v -> set.accept(config, v))
+                .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
+                .setDefaultValue(get.apply(defaultConfig))
+                .setTextGetter((value) -> Translation.of(formatKey, String.format(formatStr, value * displayScale)))
+                .build());
+        }
+
+        public void addIntSlider(String keyPart, String formatKeyPart, Function<PishockZapConfig, Integer> get, BiConsumer<PishockZapConfig, Integer> set, int min, int max) {
+            add(entryBuilder
+                .startIntSlider(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config), min, max)
+                .setSaveConsumer(v -> set.accept(config, v))
+                .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
+                .setTextGetter((value) -> Translation.of("label.pishock-zap.config." + formatKeyPart, value))
+                .setDefaultValue(get.apply(defaultConfig))
+                .build());
+        }
+
+        public StringListEntry addTextField(String keyPart, Function<PishockZapConfig, String> get, BiConsumer<PishockZapConfig, String> set) {
+            StringListEntry field = entryBuilder
+                .startStrField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
+                .setSaveConsumer(v -> set.accept(config, v))
+                .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
+                .setDefaultValue(get.apply(defaultConfig))
+                .build();
+            add(field);
+            return field;
+        }
+
+        public void addTextFieldNoDefault(String keyPart, Function<PishockZapConfig, String> get, BiConsumer<PishockZapConfig, String> set) {
+            add(entryBuilder
+                .startStrField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
+                .setSaveConsumer(v -> set.accept(config, v))
+                .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
+                // no default
+                .build());
+        }
+
+        public StringListEntry addTextField(String keyPart, Function<PishockZapConfig, String> get, BiConsumer<PishockZapConfig, String> set, Function<String, Optional<Text>> errorSupplier) {
+            StringListEntry field = entryBuilder
+                .startStrField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
+                .setSaveConsumer(v -> set.accept(config, v))
+                .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
+                .setDefaultValue(get.apply(defaultConfig))
+                .setErrorSupplier(errorSupplier)
+                .build();
+            add(field);
+            return field;
+        }
+
+        public void addStringListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<String>> get, BiConsumer<PishockZapConfig, List<String>> set, Function<List<String>, Optional<Text>> errorSupplier, Function<String, Optional<Text>> cellErrorSupplier) {
+            add(makeStringListFieldNoDefault(keyPart, get, set, errorSupplier, cellErrorSupplier));
+        }
+
+        public @NonNull StringListListEntry makeStringListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<String>> get, BiConsumer<PishockZapConfig, List<String>> set, Function<List<String>, Optional<Text>> errorSupplier, Function<String, Optional<Text>> cellErrorSupplier) {
+            return entryBuilder
+                .startStrList(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
+                .setSaveConsumer(v -> set.accept(config, v))
+                .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
+                .setErrorSupplier(errorSupplier)
+                .setCellErrorSupplier(cellErrorSupplier)
+                .setExpanded(true)
+                // no default
+                .build();
+        }
+
+        public void addIntListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<Integer>> get, BiConsumer<PishockZapConfig, List<Integer>> set, Function<List<Integer>, Optional<Text>> errorSupplier, Function<Integer, Optional<Text>> cellErrorSupplier) {
+            add(entryBuilder
+                .startIntList(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
+                .setSaveConsumer(v -> set.accept(config, v))
+                .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
+                .setErrorSupplier(errorSupplier)
+                .setCellErrorSupplier(cellErrorSupplier)
+                .setExpanded(true)
+                // no default
+                .build());
+        }
+
+        public <T> void addActionButton(String keyPart, Supplier<CompletableFuture<T>> action, Consumer<T> success) {
+            add(ButtonListEntry.builder()
+                .setButtonText(Translation.of("label.pishock-zap.config." + keyPart))
+                .setFieldName(Translation.of("title.pishock-zap.config." + keyPart))
+                .setTooltipSupplier(() -> Optional.of(new Text[]{Translation.of("tooltip.pishock-zap.config.api." + keyPart)}))
+                .setOnClickCallback(btn -> {
+                    btn.setEditable(false);
+                    btn.setButtonText(Translation.of("label.pishock-zap.config." + keyPart + ".working"));
+                    action.get().handleAsync(new BiFunction<>() {
+                        @Override
+                        public Object apply(T t, Throwable throwable) {
+                            if (throwable != null) {
+                                onError(throwable);
+                            } else {
+                                try {
+                                    success.accept(t);
+                                    btn.setEditable(true);
+                                    btn.setButtonText(Translation.of("label.pishock-zap.config." + keyPart));
+                                } catch (Exception e) {
+                                    onError(e);
+                                }
+                            }
+                            return null;
+                        }
+
+                        private void onError(Throwable throwable) {
+                            throwable.printStackTrace();
+                            btn.setEditable(true);
+                            btn.setButtonText(Translation.of("label.pishock-zap.config." + keyPart + ".error"));
+                        }
+                    }, MinecraftClient.getInstance());
+                })
+                .build());
+        }
+
+        public void add(AbstractConfigListEntry<?> e) {
+            addEntry.accept(e);
+        }
+
+        public void setCategory(ConfigCategory category) {
+            addEntry = category::addEntry;
+        }
+
+        public void setCategory(SubCategoryBuilder category) {
+            addEntry = category::add;
+        }
     }
 }
