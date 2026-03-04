@@ -433,7 +433,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             add(ButtonListEntry.builder()
                 .setButtonText(Translation.of("label.pishock-zap.config." + keyPart))
                 .setFieldName(Translation.of("title.pishock-zap.config." + keyPart))
-                .setTooltipSupplier(() -> Optional.of(new Text[]{Translation.of("tooltip.pishock-zap.config.api." + keyPart)}))
+                .setTooltipSupplier(() -> Optional.of(new Text[]{Translation.of("tooltip.pishock-zap.config." + keyPart)}))
                 .setOnClickCallback(btn -> {
                     btn.setEditable(false);
                     btn.setButtonText(Translation.of("label.pishock-zap.config." + keyPart + ".working"));
