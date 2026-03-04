@@ -3,7 +3,7 @@
   "id": "pishock-zap",
   "version": "${version}",
   "name": "PiShock-Zap",
-  "description": "Connect PiShock devices to Minecraft! Like hardcore mode, but with real consequences",
+  "description": "Connect PiShock/OpenShock devices to Minecraft! Like hardcore mode, but with real consequences",
   "authors": ["score"],
   "contact": {},
   "license": "GPLv3",
@@ -19,6 +19,10 @@
   "mixins": [
     {
       "config": "pishock-zap.client.mixins.json",
+      "environment": "client"
+    },
+    {
+      "config": "pishock-zap.clothconfig.mixins.json",
       "environment": "client"
     }
   ],

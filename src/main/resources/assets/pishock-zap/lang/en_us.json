@@ -53,6 +53,11 @@
   "title.pishock-zap.config.api.webhook": "Custom Webhook",
   "title.pishock-zap.config.api.custom_webhook_url": "Webhook URL",
 
+  "title.pishock-zap.config.api.openshock": "OpenShock Web API",
+  "title.pishock-zap.config.api.openshock.api_token": "API token",
+  "title.pishock-zap.config.api.openshock.device_ids": "Device IDs",
+  "title.pishock-zap.config.api.openshock.add_my_ids": "Fetch IDs automatically",
+
   "description.pishock-zap.config.api_type": "It is recommended to use the %1$s API unless you have a specific reason to use another API type.",
 
   "description.pishock-zap.config.api.web_v1": "You can find your username and API key on the %1$s. Note that regenerating your API key will disconnect all other PiShock integrations which use it, so if you have one written down then use that. Share codes are available from the %2$s (click the \"share\" button to generate a share code).",
@@ -108,11 +113,19 @@
   "tooltip.pishock-zap.config.api.webhook.payload.duration": "The duration of the operation.\nA number in seconds",
   "tooltip.pishock-zap.config.api.webhook.payload.distribution": "The shock distribution of the operation.\nOne of: %1$s",
 
+  "tooltip.pishock-zap.config.api.openshock.api_token": "An API token with access to your shockers",
+  "tooltip.pishock-zap.config.api.openshock.device_ids": "The IDs of the shockers to use (not share codes!)",
+  "tooltip.pishock-zap.config.api.openshock.add_my_ids": "Use your API token to automatically\nfetch device IDs from the server",
+
   "label.pishock-zap.config.hp": "\u2764 %1$s%%",
   "label.pishock-zap.config.intensity": "\u26A1 %1$s%%",
   "label.pishock-zap.config.vibration_intensity": "\u2637 %1$s%%",
   "label.pishock-zap.config.duration": "\u23F3 %1$ss",
   "label.pishock-zap.config.time_interval": "%1$ss",
+
+  "label.pishock-zap.config.api.openshock.add_my_ids": "Go",
+  "label.pishock-zap.config.api.openshock.add_my_ids.working": "In progress...",
+  "label.pishock-zap.config.api.openshock.add_my_ids.error": "Error",
 
   "enum.pishock-zap.config.shock_distribution.first": "First device",
   "enum.pishock-zap.config.shock_distribution.last": "Last device",
@@ -122,14 +135,24 @@
   "enum.pishock-zap.config.shock_distribution.all": "All devices",
 
   "enum.pishock-zap.config.api_type.web_v1": "PiShock Web",
-  "enum.pishock-zap.config.api_type.serial": "Local Serial",
+  "enum.pishock-zap.config.api_type.serial": "PiShock Serial",
   "enum.pishock-zap.config.api_type.webhook": "Custom Webhook",
+  "enum.pishock-zap.config.api_type.openshock": "OpenShock Web",
 
+  "error.pishock-zap.config.api.share_codes.empty": "Need at least one share code",
   "error.pishock-zap.config.api.share_codes.entry.empty": "Share code cannot be empty",
   "error.pishock-zap.config.api.share_codes.entry.invalid": "Share code appears invalid",
 
+  "error.pishock-zap.config.api.local.device_ids.list_empty": "Need at least one device ID",
+  "error.pishock-zap.config.api.local.device_ids.must_be_positive": "Device IDs must be a positive number",
+  "error.pishock-zap.config.api.local.device_ids.too_high": "Impossibly high device ID",
+
   "error.pishock-zap.config.api.custom_webhook_url.empty": "Webhook URL cannot be empty",
   "error.pishock-zap.config.api.custom_webhook_url.invalid": "Webhook URL appears invalid",
+
+  "error.pishock-zap.config.api.openshock.api_token.empty": "API token is required",
+  "error.pishock-zap.config.api.openshock.device_ids.list_empty": "Must provide Device IDs",
+  "error.pishock-zap.config.api.openshock.device_ids.empty": "Device ID cannot be empty",
 
   "key.category.pishock-zap": "PiShock-Zap",
 
