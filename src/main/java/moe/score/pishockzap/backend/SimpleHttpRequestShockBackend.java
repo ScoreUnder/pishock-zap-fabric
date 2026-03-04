@@ -4,6 +4,7 @@ import lombok.NonNull;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
+import moe.score.pishockzap.util.HttpUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.MalformedURLException;
@@ -50,26 +51,7 @@ public abstract class SimpleHttpRequestShockBackend<T, U> extends SafeShockBacke
     protected void doApiCallOnThread(U data) {
         executor.execute(() -> {
             try {
-                URLConnection connection = getUrl(data).openConnection();
-                var postBody = getPostBody(data);
-                if (postBody != null) {
-                    connection.setDoOutput(true);
-                }
-
-                for (var header : getHeaders(data).entrySet()) {
-                    connection.setRequestProperty(header.getKey(), header.getValue());
-                }
-
-                if (postBody != null) {
-                    try (var outputStream = connection.getOutputStream()) {
-                        outputStream.write(postBody);
-                    }
-                }
-
-                byte[] response;
-                try (var inputStream = connection.getInputStream()) {
-                    response = inputStream.readAllBytes();
-                }
+                byte[] response = HttpUtil.makeRequestSync(getUrl(data), getPostBody(data), getHeaders(data));
                 onResponse(data, response);
             } catch (Exception e) {
                 logger.warning("API call failed; exception thrown");

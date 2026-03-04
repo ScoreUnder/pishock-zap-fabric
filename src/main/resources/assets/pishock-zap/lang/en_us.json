@@ -56,6 +56,7 @@
   "title.pishock-zap.config.api.openshock": "OpenShock Web API",
   "title.pishock-zap.config.api.openshock.api_token": "API token",
   "title.pishock-zap.config.api.openshock.device_ids": "Device IDs",
+  "title.pishock-zap.config.api.openshock.add_my_ids": "Fetch IDs automatically",
 
   "description.pishock-zap.config.api_type": "It is recommended to use the %1$s API unless you have a specific reason to use another API type.",
 
@@ -114,12 +115,17 @@
 
   "tooltip.pishock-zap.config.api.openshock.api_token": "An API token with access to your shockers",
   "tooltip.pishock-zap.config.api.openshock.device_ids": "The IDs of the shockers to use (not share codes!)",
+  "tooltip.pishock-zap.config.api.openshock.add_my_ids": "Use your API token to automatically\nfetch device IDs from the server",
 
   "label.pishock-zap.config.hp": "\u2764 %1$s%%",
   "label.pishock-zap.config.intensity": "\u26A1 %1$s%%",
   "label.pishock-zap.config.vibration_intensity": "\u2637 %1$s%%",
   "label.pishock-zap.config.duration": "\u23F3 %1$ss",
   "label.pishock-zap.config.time_interval": "%1$ss",
+
+  "label.pishock-zap.config.api.openshock.add_my_ids": "Go",
+  "label.pishock-zap.config.api.openshock.add_my_ids.working": "In progress...",
+  "label.pishock-zap.config.api.openshock.add_my_ids.error": "Error",
 
   "enum.pishock-zap.config.shock_distribution.first": "First device",
   "enum.pishock-zap.config.shock_distribution.last": "Last device",

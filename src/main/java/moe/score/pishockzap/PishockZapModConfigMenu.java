@@ -9,13 +9,17 @@ import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.gui.entries.StringListEntry;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import moe.score.pishockzap.backend.OpType;
+import moe.score.pishockzap.backend.impls.OpenShockWebApiBackend;
 import moe.score.pishockzap.backend.impls.PiShockSerialBackend;
+import moe.score.pishockzap.compat.ButtonListEntry;
 import moe.score.pishockzap.compat.FloatSliderBuilder;
 import moe.score.pishockzap.compat.TextStyle;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockBackendType;
 import moe.score.pishockzap.config.ShockDistribution;
+import moe.score.pishockzap.mixin.pool.ListEntryExt;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -361,7 +365,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .setExpanded(true)
             .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == ShockBackendType.OPENSHOCK);
 
-        openShockApiCategory.add(entryBuilder
+        var openShockApiTokenField = entryBuilder
             .startStrField(Translation.of("title.pishock-zap.config.api.openshock.api_token"), config.getOpenShockApiToken())
             .setSaveConsumer(config::setOpenShockApiToken)
             .setTooltip(Translation.of("tooltip.pishock-zap.config.api.openshock.api_token"))
@@ -372,9 +376,10 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                     return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.api_token.empty"));
                 return Optional.empty();
             })
-            .build());
+            .build();
+        openShockApiCategory.add(openShockApiTokenField);
 
-        openShockApiCategory.add(entryBuilder
+        var openShockDeviceIdField = entryBuilder
             .startStrList(Translation.of("title.pishock-zap.config.api.openshock.device_ids"), config.getOpenShockShockerIds())
             .setSaveConsumer(config::setOpenShockShockerIds)
             .setTooltip(Translation.of("tooltip.pishock-zap.config.api.openshock.device_ids"))
@@ -392,7 +397,36 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             })
             .setExpanded(true)
             // no default
-            .build());
+            .build();
+
+        if (openShockDeviceIdField instanceof ListEntryExt openShockDeviceIdsExt) {
+            openShockApiCategory.add(ButtonListEntry.builder()
+                .setButtonText(Translation.of("label.pishock-zap.config.api.openshock.add_my_ids"))
+                .setFieldName(Translation.of("title.pishock-zap.config.api.openshock.add_my_ids"))
+                .setTooltipSupplier(() -> Optional.of(new Text[]{Translation.of("tooltip.pishock-zap.config.api.openshock.add_my_ids")}))
+                .setOnClickCallback(btn -> {
+                    btn.setEditable(false);
+                    btn.setButtonText(Translation.of("label.pishock-zap.config.api.openshock.add_my_ids.working"));
+                    var future = OpenShockWebApiBackend.probeDeviceIds(openShockApiTokenField.getValue());
+                    future.handleAsync((shockers, throwable) -> {
+                        if (throwable != null) {
+                            throwable.printStackTrace();
+                            btn.setEditable(true);
+                            btn.setButtonText(Translation.of("label.pishock-zap.config.api.openshock.add_my_ids.error"));
+                        } else {
+                            for (var text : shockers) {
+                                openShockDeviceIdsExt.pishockZap$addListEntry(text);
+                            }
+                            btn.setButtonText(Translation.of("label.pishock-zap.config.api.openshock.add_my_ids"));
+                            btn.setEditable(true);
+                        }
+                        return null;
+                    }, MinecraftClient.getInstance());
+                })
+                .build());
+        }
+
+        openShockApiCategory.add(openShockDeviceIdField);
 
         openShockApiCategory.add(logIdentifierField);
 

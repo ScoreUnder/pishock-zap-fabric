@@ -20,6 +20,10 @@
     {
       "config": "pishock-zap.client.mixins.json",
       "environment": "client"
+    },
+    {
+      "config": "pishock-zap.clothconfig.mixins.json",
+      "environment": "client"
     }
   ],
   "depends": {
