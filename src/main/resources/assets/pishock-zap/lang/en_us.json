@@ -46,10 +46,13 @@
   "title.pishock-zap.config.api.username": "Username",
   "title.pishock-zap.config.api.api_key": "API key",
   "title.pishock-zap.config.api.share_codes": "Share codes",
+  "title.pishock-zap.config.api.web_v1.add_my_ids": "Fetch share codes automatically",
 
   "title.pishock-zap.config.api.local": "Local Serial API",
   "title.pishock-zap.config.api.serial_port": "Serial port",
   "title.pishock-zap.config.api.device_ids": "Shocker IDs",
+  "title.pishock-zap.config.api.local.add_my_ids": "Fetch IDs automatically",
+
   "title.pishock-zap.config.api.webhook": "Custom Webhook",
   "title.pishock-zap.config.api.custom_webhook_url": "Webhook URL",
 
@@ -103,9 +106,11 @@
   "tooltip.pishock-zap.config.api.username": "Your PiShock account username",
   "tooltip.pishock-zap.config.api.api_key": "Your PiShock account API key",
   "tooltip.pishock-zap.config.api.share_codes": "The share codes of the devices you want\nto control with this mod",
+  "tooltip.pishock-zap.config.api.web_v1.add_my_ids": "Use your API key to automatically\nfetch share codes from the server",
 
   "tooltip.pishock-zap.config.api.serial_port": "The path or name of the serial port to use\nfor local serial API communication\nFor example, COM3 or /dev/ttyUSB0",
   "tooltip.pishock-zap.config.api.device_ids": "The IDs of the shockers to drive via local serial API",
+  "tooltip.pishock-zap.config.api.local.add_my_ids": "Request shocker device IDs from\nthe connected PiShock",
 
   "tooltip.pishock-zap.config.api.custom_webhook_url": "The URL of the webhook to send data to",
   "tooltip.pishock-zap.config.api.webhook.payload.operation": "The operation to perform.\nOne of: %1$s",
@@ -122,6 +127,14 @@
   "label.pishock-zap.config.vibration_intensity": "\u2637 %1$s%%",
   "label.pishock-zap.config.duration": "\u23F3 %1$ss",
   "label.pishock-zap.config.time_interval": "%1$ss",
+
+  "label.pishock-zap.config.api.web_v1.add_my_ids": "Go",
+  "label.pishock-zap.config.api.web_v1.add_my_ids.working": "In progress...",
+  "label.pishock-zap.config.api.web_v1.add_my_ids.error": "Error",
+
+  "label.pishock-zap.config.api.local.add_my_ids": "Go",
+  "label.pishock-zap.config.api.local.add_my_ids.working": "In progress...",
+  "label.pishock-zap.config.api.local.add_my_ids.error": "Error",
 
   "label.pishock-zap.config.api.openshock.add_my_ids": "Go",
   "label.pishock-zap.config.api.openshock.add_my_ids.working": "In progress...",

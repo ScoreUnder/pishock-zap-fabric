@@ -1,27 +1,41 @@
 package moe.score.pishockzap.backend.impls;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.SimpleHttpRequestShockBackend;
 import moe.score.pishockzap.config.PishockZapConfig;
+import moe.score.pishockzap.util.HttpUtil;
 import moe.score.pishockzap.util.TriState;
+import org.apache.http.client.utils.URIBuilder;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String, Map<String, Object>> {
+public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String, PiShockWebApiV1Backend.ShockerOperation> {
     private static final @NonNull URL API_URL;
     private static final Map<String, String> API_HEADERS = ImmutableMap.of("Content-Type", "application/json");
     private static final Gson gson = new Gson();
+    private static final Gson pascalCaseGson = new GsonBuilder()
+            .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE).create();
 
     static {
         try {
@@ -36,34 +50,28 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
     }
 
     @Override
-    protected Map<String, Object> generateDataForOperation(String shareCode, @NonNull OpType op, int intensity, float duration) {
-        return Map.of(
-            "Username", config.getUsername(),
-            "Code", shareCode,
-            "Name", config.getLogIdentifier(),
-            "Apikey", config.getApiKey(),
-            "Op", op.code,
-            "Intensity", intensity,
-            "Duration", transformDuration(duration));
+    protected ShockerOperation generateDataForOperation(String shareCode, @NonNull OpType op, int intensity, float duration) {
+        return new ShockerOperation(config.getUsername(), shareCode, config.getLogIdentifier(), config.getApiKey(),
+            op.code, intensity, transformDuration(duration));
     }
 
     @Override
-    protected @NonNull URL getUrl(Map<String, Object> data) {
+    protected @NonNull URL getUrl(ShockerOperation data) {
         return API_URL;
     }
 
     @Override
-    protected @NonNull Map<String, String> getHeaders(Map<String, Object> data) {
+    protected @NonNull Map<String, String> getHeaders(ShockerOperation data) {
         return API_HEADERS;
     }
 
     @Override
-    protected byte @Nullable [] getPostBody(Map<String, Object> data) {
-        return gson.toJson(data).getBytes(StandardCharsets.UTF_8);
+    protected byte @Nullable [] getPostBody(ShockerOperation data) {
+        return pascalCaseGson.toJson(data).getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
-    protected void onResponse(Map<String, Object> data, byte[] response) {
+    protected void onResponse(ShockerOperation data, byte[] response) {
         var responseStr = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(response)).toString();
 
         // Test if successful (not reported in status code)
@@ -121,5 +129,137 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
             return 0;
         }
         return Math.round(durationMs);
+    }
+
+    public static CompletableFuture<List<String>> probeShareCodes(String username, String apiKey) {
+        return getUserProfile(username, apiKey).thenComposeAsync(userProfileResponse -> {
+            var profile = pascalCaseGson.fromJson(userProfileResponse, UserProfile.class);
+
+            return getShareCodesByOwner(apiKey, profile.userId).thenComposeAsync(shareIdsResponse -> {
+                Map<String, List<Integer>> shareIdsMap = gson.fromJson(shareIdsResponse,
+                        new TypeToken<Map<String, List<Integer>>>() {
+                        }.getType());
+                List<Integer> myShareIds = shareIdsMap.get(profile.username);
+                List<Integer> shareIds = myShareIds == null || myShareIds.isEmpty()
+                        ? shareIdsMap.values().stream().flatMap(List::stream).toList()
+                        : shareIdsMap.get(profile.username);
+
+                return getShockersByShareIds(apiKey, profile.userId, shareIds);
+            });
+        }).thenApplyAsync(shockersResponse -> {
+            Map<String, List<ShareCodeInfo>> shockersMap = gson.fromJson(shockersResponse,
+                    new TypeToken<Map<String, List<ShareCodeInfo>>>() {
+                    }.getType());
+            return shockersMap.values().stream()
+                    .flatMap(List::stream)
+                    .map(info -> info.shareCode)
+                    .toList();
+        });
+    }
+
+    private static @NonNull CompletableFuture<String> getUserProfile(String username, String apiKey) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                URL url = new URIBuilder("https://auth.pishock.com/Auth/GetUserIfAPIKeyValid")
+                        .addParameter("apikey", apiKey)
+                        .addParameter("username", username)
+                        .build().toURL();
+                return new String(HttpUtil.makeRequestSync(url, null, Map.of()), StandardCharsets.UTF_8);
+            } catch (IOException | URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private static @NonNull CompletableFuture<String> getShareCodesByOwner(String apiKey, int userId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                URL url = new URIBuilder("https://ps.pishock.com/PiShock/GetShareCodesByOwner")
+                        .addParameter("UserId", String.valueOf(userId))
+                        .addParameter("Token", apiKey)
+                        .addParameter("api", "true")
+                        .build().toURL();
+                return new String(HttpUtil.makeRequestSync(url, null, Map.of()), StandardCharsets.UTF_8);
+            } catch (IOException | URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private static @NonNull CompletableFuture<String> getShockersByShareIds(String apiKey, int userId, List<Integer> shareIds) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                URIBuilder builder = new URIBuilder("https://ps.pishock.com/PiShock/GetShockersByShareIds")
+                        .addParameter("UserId", String.valueOf(userId))
+                        .addParameter("Token", apiKey)
+                        .addParameter("api", "true");
+                for (int shareId : shareIds) {
+                    builder.addParameter("shareIds", String.valueOf(shareId));
+                }
+                return new String(HttpUtil.makeRequestSync(builder.build().toURL(), null, Map.of()), StandardCharsets.UTF_8);
+            } catch (IOException | URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Data
+    private static class UserProfile {
+        int userId;
+        String username;
+        String lastLogin;
+        String password;
+        @SerializedName("IPAddress")
+        String ipAddress;
+        Object sessions;
+        Object emails;
+        @SerializedName("APIKeys")
+        List<ApiKey> apiKeys;
+        Object oAuthLinks;
+        Object images;
+        Object accessPermissions;
+    }
+
+    @Data
+    private static class ApiKey {
+        @SerializedName("UserAPIKeyId")
+        int userApiKeyId;
+        Object user;
+        @SerializedName("APIKey")
+        String apiKey;
+        String name;
+        String expiry;
+        String generated;
+        Object scopes;
+    }
+
+    @Data
+    private static class ShareCodeInfo {
+        int shareId;
+        int clientId;
+        int shockerId;
+        String shockerName;
+        boolean isPaused;
+        int maxIntensity;
+        boolean canContinuous;
+        boolean canShock;
+        boolean canVibrate;
+        boolean canBeep;
+        boolean canLog;
+        String shareCode;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    protected static class ShockerOperation {
+        String username;
+        String code;
+        String name;
+        @SerializedName("Apikey")
+        String apiKey;
+        int op;
+        int intensity;
+        int duration;
     }
 }

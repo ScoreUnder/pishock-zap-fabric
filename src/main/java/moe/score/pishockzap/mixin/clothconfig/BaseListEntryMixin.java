@@ -40,4 +40,11 @@ public abstract class BaseListEntryMixin extends BaseListEntry implements ListEn
         this.cells.add(listCell);
         this.widgets.add(listCell);
     }
+
+    @Override
+    public void pishockZap$addListEntries(Iterable<?> values) {
+        for (var v : values)  {
+            pishockZap$addListEntry(v);
+        }
+    }
 }

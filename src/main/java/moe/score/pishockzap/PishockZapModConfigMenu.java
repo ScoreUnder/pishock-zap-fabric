@@ -8,12 +8,14 @@ import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import me.shedaniel.clothconfig2.gui.entries.IntegerListListEntry;
 import me.shedaniel.clothconfig2.gui.entries.StringListEntry;
 import me.shedaniel.clothconfig2.gui.entries.StringListListEntry;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.impls.OpenShockWebApiBackend;
 import moe.score.pishockzap.backend.impls.PiShockSerialBackend;
+import moe.score.pishockzap.backend.impls.PiShockWebApiV1Backend;
 import moe.score.pishockzap.compat.ButtonListEntry;
 import moe.score.pishockzap.compat.FloatSliderBuilder;
 import moe.score.pishockzap.compat.TextStyle;
@@ -149,9 +151,9 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 ))
             .build());
 
-        helper.addTextFieldNoDefault("api.username", PishockZapConfig::getUsername, PishockZapConfig::setUsername);
-        helper.addTextFieldNoDefault("api.api_key", PishockZapConfig::getApiKey, PishockZapConfig::setApiKey);
-        helper.addStringListFieldNoDefault("api.share_codes", PishockZapConfig::getShareCodes, PishockZapConfig::setShareCodes, list -> {
+        var piShockUsernameEntry = helper.addTextFieldNoDefault("api.username", PishockZapConfig::getUsername, PishockZapConfig::setUsername);
+        var piShockApiKeyEntry = helper.addTextFieldNoDefault("api.api_key", PishockZapConfig::getApiKey, PishockZapConfig::setApiKey);
+        StringListListEntry piShockShareCodesField = helper.makeStringListFieldNoDefault("api.share_codes", PishockZapConfig::getShareCodes, PishockZapConfig::setShareCodes, list -> {
             if (apiTypeSwitcher.getValue() != ShockBackendType.WEB_V1) return Optional.empty();
             if (list.isEmpty()) return Optional.of(Translation.of("error.pishock-zap.config.api.share_codes.empty"));
             return Optional.empty();
@@ -159,6 +161,15 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             if (apiTypeSwitcher.getValue() != ShockBackendType.WEB_V1) return Optional.empty();
             return isShareCodeInvalid(shareCode);
         });
+
+        if (piShockShareCodesField instanceof ListEntryExt piShockSerialDeviceIdsExt) {
+            helper.addActionButton(
+                "api.web_v1.add_my_ids",
+                () -> PiShockWebApiV1Backend.probeShareCodes(piShockUsernameEntry.getValue(), piShockApiKeyEntry.getValue()),
+                piShockSerialDeviceIdsExt::pishockZap$addListEntries);
+        }
+
+        helper.add(piShockShareCodesField);
 
         webV1Category.add(entryBuilder.startTextDescription(
             Translation.of("description.pishock-zap.config.api.web_v1.disclaimer")).build());
@@ -174,13 +185,14 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         localApiCategory.add(entryBuilder.startTextDescription(Translation.of("description.pishock-zap.config.api.local"))
             .build());
 
-        localApiCategory.add(entryBuilder
+        var piShockSerialPortEntry = entryBuilder
             .startDropdownMenu(Translation.of("title.pishock-zap.config.api.serial_port"), config.getSerialPort(), Function.identity(), Text::of)
             .setSelections(PiShockSerialBackend.getSerialPorts())
             .setSaveConsumer(config::setSerialPort)
             .setTooltip(Translation.of("tooltip.pishock-zap.config.api.serial_port"))
             .setDefaultValue(defaultConfig.getSerialPort())
-            .build());
+            .build();
+        localApiCategory.add(piShockSerialPortEntry);
 
         localApiCategory.add(entryBuilder.startTextDescription(
             Translation.of("description.pishock-zap.config.api.local.device_ids",
@@ -190,7 +202,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 ))
         ).build());
 
-        helper.addIntListFieldNoDefault("api.device_ids", PishockZapConfig::getDeviceIds, PishockZapConfig::setDeviceIds, list -> {
+        var piShockSerialDeviceIdField = helper.makeIntListFieldNoDefault("api.device_ids", PishockZapConfig::getDeviceIds, PishockZapConfig::setDeviceIds, list -> {
             if (apiTypeSwitcher.getValue() != ShockBackendType.SERIAL) return Optional.empty();
             if (list.isEmpty())
                 return Optional.of(Translation.of("error.pishock-zap.config.api.local.device_ids.list_empty"));
@@ -203,6 +215,16 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 return Optional.of(Translation.of("error.pishock-zap.config.api.local.device_ids.too_high"));
             return Optional.empty();
         });
+
+        if (piShockSerialDeviceIdField instanceof ListEntryExt piShockSerialDeviceIdsExt) {
+            helper.addActionButton(
+                "api.local.add_my_ids",
+                () -> PiShockSerialBackend.probeDeviceIds(piShockSerialPortEntry.getValue()),
+                piShockSerialDeviceIdsExt::pishockZap$addListEntries);
+        }
+
+        helper.add(piShockSerialDeviceIdField);
+
         apiCategory.addEntry(localApiCategory.build());
 
         var webhookCategory = entryBuilder
@@ -285,11 +307,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             helper.addActionButton(
                 "api.openshock.add_my_ids",
                 () -> OpenShockWebApiBackend.probeDeviceIds(openShockApiTokenField.getValue()),
-                ids -> {
-                    for (var text : ids) {
-                        openShockDeviceIdsExt.pishockZap$addListEntry(text);
-                    }
-                });
+                openShockDeviceIdsExt::pishockZap$addListEntries);
         }
 
         helper.add(openShockDeviceIdField);
@@ -380,13 +398,15 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             return field;
         }
 
-        public void addTextFieldNoDefault(String keyPart, Function<PishockZapConfig, String> get, BiConsumer<PishockZapConfig, String> set) {
-            add(entryBuilder
+        public StringListEntry addTextFieldNoDefault(String keyPart, Function<PishockZapConfig, String> get, BiConsumer<PishockZapConfig, String> set) {
+            StringListEntry entry = entryBuilder
                 .startStrField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
                 .setSaveConsumer(v -> set.accept(config, v))
                 .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
                 // no default
-                .build());
+                .build();
+            add(entry);
+            return entry;
         }
 
         public StringListEntry addTextField(String keyPart, Function<PishockZapConfig, String> get, BiConsumer<PishockZapConfig, String> set, Function<String, Optional<Text>> errorSupplier) {
@@ -418,7 +438,11 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         }
 
         public void addIntListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<Integer>> get, BiConsumer<PishockZapConfig, List<Integer>> set, Function<List<Integer>, Optional<Text>> errorSupplier, Function<Integer, Optional<Text>> cellErrorSupplier) {
-            add(entryBuilder
+            add(makeIntListFieldNoDefault(keyPart, get, set, errorSupplier, cellErrorSupplier));
+        }
+
+        public @NonNull IntegerListListEntry makeIntListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<Integer>> get, BiConsumer<PishockZapConfig, List<Integer>> set, Function<List<Integer>, Optional<Text>> errorSupplier, Function<Integer, Optional<Text>> cellErrorSupplier) {
+            return entryBuilder
                 .startIntList(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
                 .setSaveConsumer(v -> set.accept(config, v))
                 .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
@@ -426,7 +450,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .setCellErrorSupplier(cellErrorSupplier)
                 .setExpanded(true)
                 // no default
-                .build());
+                .build();
         }
 
         public <T> void addActionButton(String keyPart, Supplier<CompletableFuture<T>> action, Consumer<T> success) {
