@@ -63,7 +63,7 @@
 
   "description.pishock-zap.config.api_type": "It is recommended to use the %1$s API unless you have a specific reason to use another API type.",
 
-  "description.pishock-zap.config.api.web_v1": "You can find your username and API key on the %1$s. Note that regenerating your API key will disconnect all other PiShock integrations which use it, so if you have one written down then use that. Share codes are available from the %2$s (click the \"share\" button to generate a share code).",
+  "description.pishock-zap.config.api.web_v1": "You can find your username and API key on the %1$s. Share codes are available from the %2$s (click the \"share\" button to generate a share code).",
   "description.pishock-zap.config.api.web_v1.api_key_link": "PiShock account page",
   "description.pishock-zap.config.api.web_v1.share_codes_link": "PiShock controller page",
   "description.pishock-zap.config.api.web_v1.disclaimer": "This mod sends data to the PiShock servers. This data includes your username, API key, share codes, the log identifier, and the duration and intensity of all shock and vibrate operations. This data is sent as required when a shock or vibrate operation is requested. This data is only sent to the PiShock API and is not shared with any other service.",
@@ -106,7 +106,7 @@
   "tooltip.pishock-zap.config.api.username": "Your PiShock account username",
   "tooltip.pishock-zap.config.api.api_key": "Your PiShock account API key",
   "tooltip.pishock-zap.config.api.share_codes": "The share codes of the devices you want\nto control with this mod",
-  "tooltip.pishock-zap.config.api.web_v1.add_my_ids": "Use your API key to automatically\nfetch share codes from the server",
+  "tooltip.pishock-zap.config.api.web_v1.add_my_ids": "Use your API key to automatically\nfetch share codes from the server.\nYou may need to claim your own share codes\nin the app first before this finds them.",
 
   "tooltip.pishock-zap.config.api.serial_port": "The path or name of the serial port to use\nfor local serial API communication\nFor example, COM3 or /dev/ttyUSB0",
   "tooltip.pishock-zap.config.api.device_ids": "The IDs of the shockers to drive via local serial API",

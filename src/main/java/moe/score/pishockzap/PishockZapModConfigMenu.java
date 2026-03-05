@@ -43,7 +43,7 @@ import static moe.score.pishockzap.backend.PiShockUtils.PISHOCK_MAX_INTENSITY;
 
 @SuppressWarnings("unused")
 public class PishockZapModConfigMenu implements ModMenuApi {
-    public static final String PISHOCK_ACCOUNT_PAGE_URL = "https://pishock.com/#/account";
+    public static final String PISHOCK_ACCOUNT_PAGE_URL = "https://login.pishock.com/account";
     private static final String PISHOCK_CONTROLLER_PAGE_URL = "https://pishock.com/#/control";
 
     private static @NonNull Screen createConfigScreen(Screen parent) {
