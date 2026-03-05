@@ -3,6 +3,7 @@ package moe.score.pishockzap.config;
 import com.google.common.collect.ImmutableList;
 import lombok.Data;
 import lombok.NonNull;
+import moe.score.pishockzap.DefaultShockBackends;
 import moe.score.pishockzap.PishockZapMod;
 
 import java.lang.reflect.Field;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 @Data
 public class PishockZapConfig {
     static final @NonNull String CONFIG_VERSION_KEY = "CONFIG_VERSION_DO_NOT_EDIT";
-    static final int CONFIG_VERSION = 2;
+    static final int CONFIG_VERSION = 3;
 
     /// Whether the mod is enabled at all
     private boolean enabled = false;
@@ -68,7 +69,7 @@ public class PishockZapConfig {
     private boolean queueDifferent = true;
 
     /// The type of PiShock API to use
-    private @NonNull ShockBackendType apiType = ShockBackendType.WEB_V1;
+    private @NonNull String apiType = DefaultShockBackends.PISHOCK_WEB_V1;
 
     /// Identifier for on-site logs
     private @NonNull String logIdentifier = "PiShock-Zap (Minecraft)";
@@ -112,8 +113,6 @@ public class PishockZapConfig {
             Class<?> type = field.getType();
             if (type.isAssignableFrom(ShockDistribution.class)) {
                 value = ShockDistribution.valueOf((String) value);
-            } else if (type.isAssignableFrom(ShockBackendType.class)) {
-                value = ShockBackendType.valueOf((String) value);
             } else if ((type.isAssignableFrom(Integer.class) || type.isAssignableFrom(int.class)) && value instanceof Number) {
                 value = ((Number) value).intValue();
             } else if ((type.isAssignableFrom(Float.class) || type.isAssignableFrom(float.class)) && value instanceof Number) {
@@ -157,7 +156,19 @@ public class PishockZapConfig {
         if (configVersion < 2) {
             // Migrate from localEnabled to API type enum
             if (config.get("localEnabled") instanceof Boolean localEnabled) {
-                config.put("apiType", localEnabled ? ShockBackendType.SERIAL.name() : ShockBackendType.WEB_V1.name());
+                config.put("apiType", localEnabled ? "SERIAL" : "WEB_V1");
+            }
+        }
+
+        if (configVersion < 3) {
+            // Migrate from API type enum to registry
+            if (config.get("apiType") instanceof String s) {
+                config.put("apiType", switch (s) {
+                    case "SERIAL" -> DefaultShockBackends.PISHOCK_SERIAL;
+                    case "WEBHOOK" -> DefaultShockBackends.WEBHOOK;
+                    case "OPENSHOCK" -> DefaultShockBackends.OPENSHOCK_WEB;
+                    default -> DefaultShockBackends.PISHOCK_WEB_V1;
+                });
             }
         }
 

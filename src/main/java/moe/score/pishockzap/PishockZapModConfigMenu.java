@@ -13,6 +13,7 @@ import me.shedaniel.clothconfig2.gui.entries.StringListEntry;
 import me.shedaniel.clothconfig2.gui.entries.StringListListEntry;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import moe.score.pishockzap.backend.OpType;
+import moe.score.pishockzap.backend.ShockBackendRegistry;
 import moe.score.pishockzap.backend.impls.OpenShockWebApiBackend;
 import moe.score.pishockzap.backend.impls.PiShockSerialBackend;
 import moe.score.pishockzap.backend.impls.PiShockWebApiV1Backend;
@@ -21,7 +22,6 @@ import moe.score.pishockzap.compat.FloatSliderBuilder;
 import moe.score.pishockzap.compat.TextStyle;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
-import moe.score.pishockzap.config.ShockBackendType;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.mixin.pool.ListEntryExt;
 import net.minecraft.client.MinecraftClient;
@@ -116,9 +116,9 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         var apiCategory = configBuilder.getOrCreateCategory(Translation.of("title.pishock-zap.config.api"));
 
-        var apiTypeSwitcher = entryBuilder.startEnumSelector(Translation.of("title.pishock-zap.config.api_type"), ShockBackendType.class, config.getApiType())
+        var apiTypeSwitcher = entryBuilder.startSelector(Translation.of("title.pishock-zap.config.api_type"), ShockBackendRegistry.getAllBackendIds(), config.getApiType())
             .setDefaultValue(config.getApiType())
-            .setEnumNameProvider((value) -> Translation.of("enum.pishock-zap.config.api_type." + value.name().toLowerCase()))
+            .setNameProvider(value -> Translation.of(ShockBackendRegistry.getTranslationKey(value)))
             .setSaveConsumer(config::setApiType)
             .setTooltip(Translation.of("tooltip.pishock-zap.config.api_type"))
             .build();
@@ -133,7 +133,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var webV1Category = entryBuilder
             .startSubCategory(Translation.of("title.pishock-zap.config.api.web_v1"))
             .setExpanded(true)
-            .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == ShockBackendType.WEB_V1);
+            .setDisplayRequirement(() -> DefaultShockBackends.PISHOCK_WEB_V1.equals(apiTypeSwitcher.getValue()));
         helper.setCategory(webV1Category);
 
         var logIdentifierField = helper.addTextField("api.log_identifier", PishockZapConfig::getLogIdentifier, PishockZapConfig::setLogIdentifier);
@@ -154,11 +154,11 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var piShockUsernameEntry = helper.addTextFieldNoDefault("api.username", PishockZapConfig::getUsername, PishockZapConfig::setUsername);
         var piShockApiKeyEntry = helper.addTextFieldNoDefault("api.api_key", PishockZapConfig::getApiKey, PishockZapConfig::setApiKey);
         StringListListEntry piShockShareCodesField = helper.makeStringListFieldNoDefault("api.share_codes", PishockZapConfig::getShareCodes, PishockZapConfig::setShareCodes, list -> {
-            if (apiTypeSwitcher.getValue() != ShockBackendType.WEB_V1) return Optional.empty();
+            if (DefaultShockBackends.PISHOCK_WEB_V1.equals(apiTypeSwitcher.getValue())) return Optional.empty();
             if (list.isEmpty()) return Optional.of(Translation.of("error.pishock-zap.config.api.share_codes.empty"));
             return Optional.empty();
         }, shareCode -> {
-            if (apiTypeSwitcher.getValue() != ShockBackendType.WEB_V1) return Optional.empty();
+            if (DefaultShockBackends.PISHOCK_WEB_V1.equals(apiTypeSwitcher.getValue())) return Optional.empty();
             return isShareCodeInvalid(shareCode);
         });
 
@@ -179,7 +179,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         SubCategoryBuilder localApiCategory = entryBuilder
             .startSubCategory(Translation.of("title.pishock-zap.config.api.local"))
             .setExpanded(true)
-            .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == ShockBackendType.SERIAL);
+            .setDisplayRequirement(() -> DefaultShockBackends.PISHOCK_SERIAL.equals(apiTypeSwitcher.getValue()));
         helper.setCategory(localApiCategory);
 
         localApiCategory.add(entryBuilder.startTextDescription(Translation.of("description.pishock-zap.config.api.local"))
@@ -203,12 +203,12 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         ).build());
 
         var piShockSerialDeviceIdField = helper.makeIntListFieldNoDefault("api.device_ids", PishockZapConfig::getDeviceIds, PishockZapConfig::setDeviceIds, list -> {
-            if (apiTypeSwitcher.getValue() != ShockBackendType.SERIAL) return Optional.empty();
+            if (DefaultShockBackends.PISHOCK_SERIAL.equals(apiTypeSwitcher.getValue())) return Optional.empty();
             if (list.isEmpty())
                 return Optional.of(Translation.of("error.pishock-zap.config.api.local.device_ids.list_empty"));
             return Optional.empty();
         }, id -> {
-            if (apiTypeSwitcher.getValue() != ShockBackendType.SERIAL) return Optional.empty();
+            if (DefaultShockBackends.PISHOCK_SERIAL.equals(apiTypeSwitcher.getValue())) return Optional.empty();
             if (id == null || id < 0)
                 return Optional.of(Translation.of("error.pishock-zap.config.api.local.device_ids.must_be_positive"));
             if (id >= 65536 * 4)
@@ -230,11 +230,11 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var webhookCategory = entryBuilder
             .startSubCategory(Translation.of("title.pishock-zap.config.api.webhook"))
             .setExpanded(true)
-            .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == ShockBackendType.WEBHOOK);
+            .setDisplayRequirement(() -> DefaultShockBackends.WEBHOOK.equals(apiTypeSwitcher.getValue()));
         helper.setCategory(webhookCategory);
 
         helper.addTextField("api.custom_webhook_url", PishockZapConfig::getCustomWebhookUrl, PishockZapConfig::setCustomWebhookUrl, url -> {
-            if (apiTypeSwitcher.getValue() != ShockBackendType.WEBHOOK) return Optional.empty();
+            if (DefaultShockBackends.WEBHOOK.equals(apiTypeSwitcher.getValue())) return Optional.empty();
             if (url.isBlank())
                 return Optional.of(Translation.of("error.pishock-zap.config.api.custom_webhook_url.empty"));
             try {
@@ -276,12 +276,12 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var openShockApiCategory = entryBuilder
             .startSubCategory(Translation.of("title.pishock-zap.config.api.openshock"))
             .setExpanded(true)
-            .setDisplayRequirement(() -> apiTypeSwitcher.getValue() == ShockBackendType.OPENSHOCK);
+            .setDisplayRequirement(() -> DefaultShockBackends.OPENSHOCK_WEB.equals(apiTypeSwitcher.getValue()));
         helper.setCategory(openShockApiCategory);
 
         var openShockApiTokenField = helper.addTextField(
             "api.openshock.api_token", PishockZapConfig::getOpenShockApiToken, PishockZapConfig::setOpenShockApiToken, tok -> {
-                if (apiTypeSwitcher.getValue() != ShockBackendType.OPENSHOCK) return Optional.empty();
+                if (DefaultShockBackends.OPENSHOCK_WEB.equals(apiTypeSwitcher.getValue())) return Optional.empty();
                 if (tok.isBlank())
                     return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.api_token.empty"));
                 return Optional.empty();
@@ -290,13 +290,13 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var openShockDeviceIdField = helper.makeStringListFieldNoDefault(
             "api.openshock.device_ids", PishockZapConfig::getOpenShockShockerIds, PishockZapConfig::setOpenShockShockerIds,
             l -> {
-                if (apiTypeSwitcher.getValue() != ShockBackendType.OPENSHOCK) return Optional.empty();
+                if (DefaultShockBackends.OPENSHOCK_WEB.equals(apiTypeSwitcher.getValue())) return Optional.empty();
                 if (l.isEmpty())
                     return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.device_ids.list_empty"));
                 return Optional.empty();
             },
             id -> {
-                if (apiTypeSwitcher.getValue() != ShockBackendType.OPENSHOCK) return Optional.empty();
+                if (DefaultShockBackends.OPENSHOCK_WEB.equals(apiTypeSwitcher.getValue())) return Optional.empty();
                 if (id.isBlank())
                     return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.device_ids.empty"));
                 return Optional.empty();

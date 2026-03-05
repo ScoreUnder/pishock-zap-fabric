@@ -4,12 +4,10 @@ import com.google.gson.Gson;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
-import moe.score.pishockzap.backend.impls.OpenShockWebApiBackend;
+import moe.score.pishockzap.backend.ShockBackendRegistry;
+import moe.score.pishockzap.backend.impls.NullBackend;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
-import moe.score.pishockzap.backend.impls.PiShockSerialBackend;
-import moe.score.pishockzap.backend.impls.PiShockWebApiV1Backend;
-import moe.score.pishockzap.backend.impls.WebHookBackend;
 import moe.score.pishockzap.frontend.ZapController;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -29,8 +27,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class PishockZapMod implements ClientModInitializer {
@@ -53,7 +53,8 @@ public class PishockZapMod implements ClientModInitializer {
     private final PlayerHpWatcher playerHpWatcher = new PlayerHpWatcher();
     private final ExecutorService apiExecutor = Executors.newCachedThreadPool();
     @Getter(AccessLevel.PACKAGE)
-    private final ZapController zapController = new ZapController(new PiShockWebApiV1Backend(config, apiExecutor), config);
+    private final ZapController zapController = new ZapController(new NullBackend(), config);
+    private String currentBackendId = null;
 
     public void saveConfig() {
         Map<String, Object> configMap = new HashMap<>();
@@ -75,29 +76,16 @@ public class PishockZapMod implements ClientModInitializer {
         // (because we're too classy to "require restart" for everything)
         // Also getting observers on these properties is a bit of a pain
 
-        // PiShock API type
-        // (And serial API port, if we're using the serial API)
-        switch (config.getApiType()) {
-            case WEB_V1:
-                if (!(zapController.getBackend() instanceof PiShockWebApiV1Backend)) {
-                    zapController.setBackend(new PiShockWebApiV1Backend(config, apiExecutor));
-                }
-                break;
-            case SERIAL:
-                if (!(zapController.getBackend() instanceof PiShockSerialBackend)) {
-                    zapController.setBackend(new PiShockSerialBackend(config, apiExecutor));
-                }
-                break;
-            case WEBHOOK:
-                if (!(zapController.getBackend() instanceof WebHookBackend)) {
-                    zapController.setBackend(new WebHookBackend(config, apiExecutor));
-                }
-                break;
-            case OPENSHOCK:
-                if (!(zapController.getBackend() instanceof OpenShockWebApiBackend)) {
-                    zapController.setBackend(new OpenShockWebApiBackend(config, apiExecutor));
-                }
-                break;
+        // Respawn backend if we are using a different one
+        var newBackendId = config.getApiType();
+        if (!Objects.equals(currentBackendId, newBackendId)) {
+            try {
+                zapController.setBackend(ShockBackendRegistry.getCreateFunc(newBackendId).apply(config, apiExecutor));
+                currentBackendId = newBackendId;
+            } catch (Exception | LinkageError e) {
+                logger.log(Level.SEVERE, "Failed to create shock backend of type \"" + newBackendId + "\"", e);
+                zapController.setBackend(new NullBackend());
+            }
         }
 
         // Update HP watcher, because rounding behavior might have changed
@@ -165,7 +153,7 @@ public class PishockZapMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         instance = this;
-        // This entrypoint is suitable for setting up client-specific logic, such as rendering.
+        DefaultShockBackends.registerAll();
         loadConfig();
         zapController.start();
 
