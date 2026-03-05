@@ -18,10 +18,8 @@ import moe.score.pishockzap.util.TriState;
 import org.apache.http.client.utils.URIBuilder;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -52,7 +50,7 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
     @Override
     protected ShockerOperation generateDataForOperation(String shareCode, @NonNull OpType op, int intensity, float duration) {
         return new ShockerOperation(config.getUsername(), shareCode, config.getLogIdentifier(), config.getApiKey(),
-            op.code, intensity, transformDuration(duration));
+                op.code, intensity, transformDuration(duration));
     }
 
     @Override
@@ -158,49 +156,40 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
     }
 
     private static @NonNull CompletableFuture<String> getUserProfile(String username, String apiKey) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                URL url = new URIBuilder("https://auth.pishock.com/Auth/GetUserIfAPIKeyValid")
+        return HttpUtil.makeRequestAsyncUtf8(
+                () -> new URIBuilder("https://auth.pishock.com/Auth/GetUserIfAPIKeyValid")
                         .addParameter("apikey", apiKey)
                         .addParameter("username", username)
-                        .build().toURL();
-                return new String(HttpUtil.makeRequestSync(url, null, Map.of()), StandardCharsets.UTF_8);
-            } catch (IOException | URISyntaxException e) {
-                throw new RuntimeException(e);
-            }
-        });
+                        .build().toURL(),
+                null,
+                Map::of);
     }
 
     private static @NonNull CompletableFuture<String> getShareCodesByOwner(String apiKey, int userId) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                URL url = new URIBuilder("https://ps.pishock.com/PiShock/GetShareCodesByOwner")
+        return HttpUtil.makeRequestAsyncUtf8(
+                () -> new URIBuilder("https://ps.pishock.com/PiShock/GetShareCodesByOwner")
                         .addParameter("UserId", String.valueOf(userId))
                         .addParameter("Token", apiKey)
                         .addParameter("api", "true")
-                        .build().toURL();
-                return new String(HttpUtil.makeRequestSync(url, null, Map.of()), StandardCharsets.UTF_8);
-            } catch (IOException | URISyntaxException e) {
-                throw new RuntimeException(e);
-            }
-        });
+                        .build().toURL(),
+                null,
+                Map::of);
     }
 
     private static @NonNull CompletableFuture<String> getShockersByShareIds(String apiKey, int userId, List<Integer> shareIds) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                URIBuilder builder = new URIBuilder("https://ps.pishock.com/PiShock/GetShockersByShareIds")
-                        .addParameter("UserId", String.valueOf(userId))
-                        .addParameter("Token", apiKey)
-                        .addParameter("api", "true");
-                for (int shareId : shareIds) {
-                    builder.addParameter("shareIds", String.valueOf(shareId));
-                }
-                return new String(HttpUtil.makeRequestSync(builder.build().toURL(), null, Map.of()), StandardCharsets.UTF_8);
-            } catch (IOException | URISyntaxException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return HttpUtil.makeRequestAsyncUtf8(
+                () -> {
+                    URIBuilder builder = new URIBuilder("https://ps.pishock.com/PiShock/GetShockersByShareIds")
+                            .addParameter("UserId", String.valueOf(userId))
+                            .addParameter("Token", apiKey)
+                            .addParameter("api", "true");
+                    for (int shareId : shareIds) {
+                        builder.addParameter("shareIds", String.valueOf(shareId));
+                    }
+                    return builder.build().toURL();
+                },
+                null,
+                Map::of);
     }
 
     @Data

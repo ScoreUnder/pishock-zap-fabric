@@ -1,8 +1,8 @@
 package moe.score.pishockzap.backend.impls;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
 import lombok.Data;
 import lombok.NonNull;
 import moe.score.pishockzap.PishockZapMod;
@@ -13,7 +13,6 @@ import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.util.HttpUtil;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -71,17 +70,17 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
             userAgent = PishockZapMod.NAME + "/" + PishockZapMod.getVersion() + " (minecraft mod; github.com/ScoreUnder/pishock-zap-fabric)";
         }
         return Map.of(
-            "User-Agent", userAgent,
-            "Content-Type", "application/json",
-            "Open-Shock-Token", token);
+                "User-Agent", userAgent,
+                "Content-Type", "application/json",
+                "Open-Shock-Token", token);
     }
 
     @Override
     protected byte @Nullable [] getPostBody(List<Control> data) {
         return gson.toJson(Map.of(
-                "shocks", data,
-                "customName", config.getLogIdentifier()))
-            .getBytes(StandardCharsets.UTF_8);
+                        "shocks", data,
+                        "customName", config.getLogIdentifier()))
+                .getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
@@ -104,22 +103,17 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
     }
 
     public static CompletableFuture<List<String>> probeDeviceIds(String apiToken) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                var result = HttpUtil.makeRequestSync(API_MY_DEVICES_URL, null, getDefaultHeaders(apiToken));
-                //noinspection UnstableApiUsage
-                ResponseMessage<List<Hub>> response = gson.fromJson(
-                    new String(result, StandardCharsets.UTF_8),
-                    new TypeToken<ResponseMessage<List<Hub>>>() {
-                    }.getType());
-                if (response.data == null || (response.data.isEmpty() && !response.message.isBlank())) {
-                    throw new RuntimeException("Error from OpenShock API: " + response.message);
-                }
-                return response.data.stream().flatMap(h -> h.shockers.stream()).map(Shocker::getId).toList();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return HttpUtil.makeRequestAsyncUtf8(() -> API_MY_DEVICES_URL, null, () -> getDefaultHeaders(apiToken))
+                .thenApply(result -> {
+                    ResponseMessage<List<Hub>> response = gson.fromJson(
+                            result,
+                            new TypeToken<ResponseMessage<List<Hub>>>() {
+                            }.getType());
+                    if (response.data == null || (response.data.isEmpty() && !response.message.isBlank())) {
+                        throw new RuntimeException("Error from OpenShock API: " + response.message);
+                    }
+                    return response.data.stream().flatMap(h -> h.shockers.stream()).map(Shocker::getId).toList();
+                });
     }
 
     public record Control(String id, ControlType type, int intensity, int duration, boolean exclusive) {
