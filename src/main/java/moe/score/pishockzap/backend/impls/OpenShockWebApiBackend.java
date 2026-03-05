@@ -10,12 +10,12 @@ import moe.score.pishockzap.backend.BulkHttpRequestShockBackend;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
-import moe.score.pishockzap.util.HttpUtil;
 import org.jetbrains.annotations.Nullable;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.ByteBuffer;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,19 +24,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<OpenShockWebApiBackend.Control>> {
-    private static final URL API_URL;
-    private static final URL API_MY_DEVICES_URL;
+    private static final URI API_URI = URI.create("https://api.openshock.app/2/shockers/control");
+    private static final URI API_MY_DEVICES_URI = URI.create("https://api.openshock.app/1/shockers/own");
     private static final Gson gson = new Gson();
     private static String userAgent;
-
-    static {
-        try {
-            API_URL = new URL("https://api.openshock.app/2/shockers/control");
-            API_MY_DEVICES_URL = new URL("https://api.openshock.app/1/shockers/own");
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public OpenShockWebApiBackend(PishockZapConfig config, Executor executor) {
         super(config, executor);
@@ -55,8 +46,8 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
     }
 
     @Override
-    protected @NonNull URL getUrl(List<Control> data) {
-        return API_URL;
+    protected @NonNull URI getUri(List<Control> data) {
+        return API_URI;
     }
 
     @Override
@@ -76,18 +67,16 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
     }
 
     @Override
-    protected byte @Nullable [] getPostBody(List<Control> data) {
+    protected @Nullable String getPostBody(List<Control> data) {
         return gson.toJson(Map.of(
-                        "shocks", data,
-                        "customName", config.getLogIdentifier()))
-                .getBytes(StandardCharsets.UTF_8);
+                "shocks", data,
+                "customName", config.getLogIdentifier()));
     }
 
     @Override
-    protected void onResponse(List<Control> data, byte[] response) {
-        var result = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(response)).toString();
-        if (!result.contains("Successfully sent control messages")) {
-            logger.warning("OpenShock API call failed; response: " + result);
+    protected void onResponse(List<Control> data, @NonNull String response) {
+        if (!response.contains("Successfully sent control messages")) {
+            logger.warning("OpenShock API call failed; response: " + response);
         }
     }
 
@@ -103,10 +92,17 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
     }
 
     public static CompletableFuture<List<String>> probeDeviceIds(String apiToken) {
-        return HttpUtil.makeRequestAsyncUtf8(() -> API_MY_DEVICES_URL, null, () -> getDefaultHeaders(apiToken))
+        var executor = new CompletableFuture<Void>().defaultExecutor();
+        @SuppressWarnings("resource")
+        var httpClient = HttpClient.newBuilder().executor(executor).build();
+        var req = HttpRequest.newBuilder(API_MY_DEVICES_URI);
+        for (var header : getDefaultHeaders(apiToken).entrySet()) {
+            req.setHeader(header.getKey(), header.getValue());
+        }
+        return httpClient.sendAsync(req.build(), HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
                 .thenApply(result -> {
                     ResponseMessage<List<Hub>> response = gson.fromJson(
-                            result,
+                            result.body(),
                             new TypeToken<ResponseMessage<List<Hub>>>() {
                             }.getType());
                     if (response.data == null || (response.data.isEmpty() && !response.message.isBlank())) {

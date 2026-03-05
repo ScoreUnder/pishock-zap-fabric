@@ -51,7 +51,7 @@ public class PishockZapMod implements ClientModInitializer {
     @Getter
     private final PishockZapConfig config = new PishockZapConfig();
     private final PlayerHpWatcher playerHpWatcher = new PlayerHpWatcher();
-    private final ExecutorService apiExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService apiExecutor = Executors.newCachedThreadPool();
     @Getter(AccessLevel.PACKAGE)
     private final ZapController zapController = new ZapController(new PiShockWebApiV1Backend(config, apiExecutor), config);
 

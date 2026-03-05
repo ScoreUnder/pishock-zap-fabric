@@ -165,7 +165,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         if (piShockShareCodesField instanceof ListEntryExt piShockSerialDeviceIdsExt) {
             helper.addActionButton(
                 "api.web_v1.add_my_ids",
-                () -> PiShockWebApiV1Backend.probeShareCodes(piShockUsernameEntry.getValue(), piShockApiKeyEntry.getValue()),
+                () -> new PiShockWebApiV1Backend.HttpBackend().probeShareCodes(piShockUsernameEntry.getValue(), piShockApiKeyEntry.getValue()),
                 piShockSerialDeviceIdsExt::pishockZap$addListEntries);
         }
 

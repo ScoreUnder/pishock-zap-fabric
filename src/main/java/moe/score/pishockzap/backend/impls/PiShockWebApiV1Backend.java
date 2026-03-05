@@ -13,15 +13,15 @@ import lombok.NonNull;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.SimpleHttpRequestShockBackend;
 import moe.score.pishockzap.config.PishockZapConfig;
-import moe.score.pishockzap.util.HttpUtil;
 import moe.score.pishockzap.util.TriState;
 import org.apache.http.client.utils.URIBuilder;
 import org.jetbrains.annotations.Nullable;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
-import java.nio.ByteBuffer;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -29,19 +29,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String, PiShockWebApiV1Backend.ShockerOperation> {
-    private static final @NonNull URL API_URL;
+    private static final @NonNull URI API_URI = URI.create("https://do.pishock.com/api/apioperate");
     private static final Map<String, String> API_HEADERS = ImmutableMap.of("Content-Type", "application/json");
     private static final Gson gson = new Gson();
     private static final Gson pascalCaseGson = new GsonBuilder()
             .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE).create();
-
-    static {
-        try {
-            API_URL = URI.create("https://do.pishock.com/api/apioperate").toURL();
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public PiShockWebApiV1Backend(PishockZapConfig config, Executor executor) {
         super(config, executor);
@@ -54,8 +46,8 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
     }
 
     @Override
-    protected @NonNull URL getUrl(ShockerOperation data) {
-        return API_URL;
+    protected @NonNull URI getUri(ShockerOperation data) {
+        return API_URI;
     }
 
     @Override
@@ -64,19 +56,17 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
     }
 
     @Override
-    protected byte @Nullable [] getPostBody(ShockerOperation data) {
-        return pascalCaseGson.toJson(data).getBytes(StandardCharsets.UTF_8);
+    protected @Nullable String getPostBody(ShockerOperation data) {
+        return pascalCaseGson.toJson(data);
     }
 
     @Override
-    protected void onResponse(ShockerOperation data, byte[] response) {
-        var responseStr = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(response)).toString();
-
+    protected void onResponse(ShockerOperation data, @NonNull String response) {
         // Test if successful (not reported in status code)
         // "Operation Succeeded." is the success message for v1 firmware
         // "Operation Attempted." is the success message for v3 firmware
-        if (!responseStr.contains("Operation Succeeded") && !responseStr.contains("Operation Attempted")) {
-            logger.warning("PiShock API call failed; response: " + responseStr);
+        if (!response.contains("Operation Succeeded") && !response.contains("Operation Attempted")) {
+            logger.warning("PiShock API call failed; response: " + response);
         }
     }
 
@@ -129,67 +119,101 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
         return Math.round(durationMs);
     }
 
-    public static CompletableFuture<List<String>> probeShareCodes(String username, String apiKey) {
-        return getUserProfile(username, apiKey).thenComposeAsync(userProfileResponse -> {
-            var profile = pascalCaseGson.fromJson(userProfileResponse, UserProfile.class);
+    public static class HttpBackend {
+        private final Executor executor;
+        private final HttpClient httpClient;
 
-            return getShareCodesByOwner(apiKey, profile.userId).thenComposeAsync(shareIdsResponse -> {
-                Map<String, List<Integer>> shareIdsMap = gson.fromJson(shareIdsResponse,
-                        new TypeToken<Map<String, List<Integer>>>() {
-                        }.getType());
-                List<Integer> myShareIds = shareIdsMap.get(profile.username);
-                List<Integer> shareIds = myShareIds == null || myShareIds.isEmpty()
-                        ? shareIdsMap.values().stream().flatMap(List::stream).toList()
-                        : shareIdsMap.get(profile.username);
+        public HttpBackend() {
+            this(new CompletableFuture<Void>().defaultExecutor(), HttpClient.newBuilder().build());
+        }
 
-                return getShockersByShareIds(apiKey, profile.userId, shareIds);
-            });
-        }).thenApplyAsync(shockersResponse -> {
-            Map<String, List<ShareCodeInfo>> shockersMap = gson.fromJson(shockersResponse,
-                    new TypeToken<Map<String, List<ShareCodeInfo>>>() {
-                    }.getType());
-            return shockersMap.values().stream()
-                    .flatMap(List::stream)
-                    .map(info -> info.shareCode)
-                    .toList();
-        });
-    }
+        public HttpBackend(@NonNull Executor executor, @NonNull HttpClient client) {
+            this.executor = executor;
+            this.httpClient = client;
+        }
 
-    private static @NonNull CompletableFuture<String> getUserProfile(String username, String apiKey) {
-        return HttpUtil.makeRequestAsyncUtf8(
-                () -> new URIBuilder("https://auth.pishock.com/Auth/GetUserIfAPIKeyValid")
-                        .addParameter("apikey", apiKey)
-                        .addParameter("username", username)
-                        .build().toURL(),
-                null,
-                Map::of);
-    }
+        public CompletableFuture<List<String>> probeShareCodes(String username, String apiKey) {
+            return getUserProfile(username, apiKey).thenComposeAsync(profile ->
+                            getShareCodesByOwner(apiKey, profile.userId).thenComposeAsync(shareIdsMap -> {
+                                List<Integer> myShareIds = shareIdsMap.get(profile.username);
+                                List<Integer> shareIds = myShareIds == null || myShareIds.isEmpty()
+                                        ? shareIdsMap.values().stream().flatMap(List::stream).toList()
+                                        : shareIdsMap.get(profile.username);
 
-    private static @NonNull CompletableFuture<String> getShareCodesByOwner(String apiKey, int userId) {
-        return HttpUtil.makeRequestAsyncUtf8(
-                () -> new URIBuilder("https://ps.pishock.com/PiShock/GetShareCodesByOwner")
-                        .addParameter("UserId", String.valueOf(userId))
-                        .addParameter("Token", apiKey)
-                        .addParameter("api", "true")
-                        .build().toURL(),
-                null,
-                Map::of);
-    }
+                                return getShockersByShareIds(apiKey, profile.userId, shareIds);
+                            }, executor), executor)
+                    .thenApplyAsync(shockersMap -> shockersMap.values().stream()
+                            .flatMap(List::stream)
+                            .map(info -> info.shareCode)
+                            .toList(), executor);
+        }
 
-    private static @NonNull CompletableFuture<String> getShockersByShareIds(String apiKey, int userId, List<Integer> shareIds) {
-        return HttpUtil.makeRequestAsyncUtf8(
-                () -> {
-                    URIBuilder builder = new URIBuilder("https://ps.pishock.com/PiShock/GetShockersByShareIds")
-                            .addParameter("UserId", String.valueOf(userId))
-                            .addParameter("Token", apiKey)
-                            .addParameter("api", "true");
-                    for (int shareId : shareIds) {
-                        builder.addParameter("shareIds", String.valueOf(shareId));
-                    }
-                    return builder.build().toURL();
-                },
-                null,
-                Map::of);
+        private CompletableFuture<UserProfile> getUserProfile(String username, String apiKey) {
+            return CompletableFuture.supplyAsync(() -> {
+                        try {
+                            return HttpRequest.newBuilder(new URIBuilder("https://auth.pishock.com/Auth/GetUserIfAPIKeyValid")
+                                    .addParameter("apikey", apiKey)
+                                    .addParameter("username", username)
+                                    .build()).build();
+                        } catch (URISyntaxException e) {
+                            throw new RuntimeException(e);
+                        }
+                    },
+                    executor
+            ).thenComposeAsync(
+                    req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
+                    executor
+            ).thenApplyAsync(resp -> pascalCaseGson.fromJson(resp.body(), UserProfile.class), executor);
+        }
+
+        private CompletableFuture<Map<String, List<Integer>>> getShareCodesByOwner(String apiKey, int userId) {
+            return CompletableFuture.supplyAsync(() -> {
+                        try {
+                            return HttpRequest.newBuilder(new URIBuilder("https://ps.pishock.com/PiShock/GetShareCodesByOwner")
+                                    .addParameter("UserId", String.valueOf(userId))
+                                    .addParameter("Token", apiKey)
+                                    .addParameter("api", "true")
+                                    .build()).build();
+                        } catch (URISyntaxException e) {
+                            throw new RuntimeException(e);
+                        }
+                    },
+                    executor
+            ).thenComposeAsync(
+                    req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
+                    executor
+            ).thenApplyAsync(
+                    resp -> gson.fromJson(resp.body(),
+                            new TypeToken<Map<String, List<Integer>>>() {
+                            }.getType()),
+                    executor);
+        }
+
+        private @NonNull CompletableFuture<Map<String, List<ShareCodeInfo>>> getShockersByShareIds(String apiKey, int userId, List<Integer> shareIds) {
+            return CompletableFuture.supplyAsync(
+                    () -> {
+                        try {
+                            URIBuilder builder = new URIBuilder("https://ps.pishock.com/PiShock/GetShockersByShareIds")
+                                    .addParameter("UserId", String.valueOf(userId))
+                                    .addParameter("Token", apiKey)
+                                    .addParameter("api", "true");
+                            for (int shareId : shareIds) {
+                                builder.addParameter("shareIds", String.valueOf(shareId));
+                            }
+                            return HttpRequest.newBuilder(builder.build()).build();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }, executor
+            ).thenComposeAsync(
+                    req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
+                    executor
+            ).thenApplyAsync(
+                    resp -> gson.fromJson(resp.body(),
+                            new TypeToken<Map<String, List<ShareCodeInfo>>>() {
+                            }.getType()),
+                    executor);
+        }
     }
 
     @Data
