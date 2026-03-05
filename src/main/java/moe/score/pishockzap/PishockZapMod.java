@@ -65,8 +65,7 @@ public class PishockZapMod implements ClientModInitializer {
         try (BufferedWriter configWriter = Files.newBufferedWriter(configFile)) {
             gson.toJson(configMap, configWriter);
         } catch (IOException e) {
-            logger.warning("Failed to save config file, exception details follow");
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Failed to save config file, exception details follow", e);
         }
 
         applyConfigChanges();
@@ -109,8 +108,7 @@ public class PishockZapMod implements ClientModInitializer {
         try {
             configMap = gson.fromJson(Files.newBufferedReader(configFile), Map.class);
         } catch (Exception e) {
-            logger.warning("Failed to load config file, exception details follow");
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Failed to load config file, exception details follow", e);
             return;
         }
 
