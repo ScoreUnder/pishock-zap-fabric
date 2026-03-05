@@ -28,12 +28,12 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import static moe.score.pishockzap.util.Gsons.gson;
+import static moe.score.pishockzap.util.Gsons.pascalCaseGson;
+
 public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String, PiShockWebApiV1Backend.ShockerOperation> {
     private static final @NonNull URI API_URI = URI.create("https://do.pishock.com/api/apioperate");
     private static final Map<String, String> API_HEADERS = ImmutableMap.of("Content-Type", "application/json");
-    private static final Gson gson = new Gson();
-    private static final Gson pascalCaseGson = new GsonBuilder()
-            .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE).create();
 
     public PiShockWebApiV1Backend(PishockZapConfig config, Executor executor) {
         super(config, executor);

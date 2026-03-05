@@ -22,11 +22,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import static moe.score.pishockzap.util.Gsons.gson;
+
 public class PiShockSerialBackend extends SafeShockBackend {
     public static final int PISHOCK_SERIAL_BAUD_RATE = 115200;
     private static WeakReference<PiShockSerialBackend> INSTANCE;
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
-    private static final Gson gson = new Gson();
     private final @NonNull Executor executor;
     private String lastPortName;
     private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();

@@ -12,9 +12,9 @@ import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
-public class WebHookBackend extends BulkHttpRequestShockBackend<Map<String, Object>> {
-    private static final Gson gson = new Gson();
+import static moe.score.pishockzap.util.Gsons.gson;
 
+public class WebHookBackend extends BulkHttpRequestShockBackend<Map<String, Object>> {
     public WebHookBackend(PishockZapConfig config, Executor executor) {
         super(config, executor);
     }

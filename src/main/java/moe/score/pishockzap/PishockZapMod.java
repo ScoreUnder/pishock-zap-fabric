@@ -33,6 +33,8 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static moe.score.pishockzap.util.Gsons.gson;
+
 public class PishockZapMod implements ClientModInitializer {
     public static final String NAME = "PiShock-Zap";
     public static final String ID = "pishock-zap";
@@ -60,7 +62,6 @@ public class PishockZapMod implements ClientModInitializer {
         Map<String, Object> configMap = new HashMap<>();
         config.copyToConfig(configMap);
 
-        Gson gson = new Gson();
         try (BufferedWriter configWriter = Files.newBufferedWriter(configFile)) {
             gson.toJson(configMap, configWriter);
         } catch (IOException e) {
@@ -104,7 +105,6 @@ public class PishockZapMod implements ClientModInitializer {
             return;
         }
 
-        Gson gson = new Gson();
         Map<String, Object> configMap;
         try {
             configMap = gson.fromJson(Files.newBufferedReader(configFile), Map.class);

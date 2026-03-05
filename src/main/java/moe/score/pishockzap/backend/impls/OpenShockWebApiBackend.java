@@ -23,10 +23,11 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import static moe.score.pishockzap.util.Gsons.gson;
+
 public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<OpenShockWebApiBackend.Control>> {
     private static final URI API_URI = URI.create("https://api.openshock.app/2/shockers/control");
     private static final URI API_MY_DEVICES_URI = URI.create("https://api.openshock.app/1/shockers/own");
-    private static final Gson gson = new Gson();
     private static String userAgent;
 
     public OpenShockWebApiBackend(PishockZapConfig config, Executor executor) {
