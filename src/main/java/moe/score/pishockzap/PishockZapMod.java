@@ -1,6 +1,5 @@
 package moe.score.pishockzap;
 
-import com.google.gson.Gson;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -117,22 +116,14 @@ public class PishockZapMod implements ClientModInitializer {
         applyConfigChanges();
     }
 
-    public void onPlayerHpChange() {
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
-        if (player == null || player.isSpectator() || player.isCreative()) {
+    public void onPlayerHpChange(ClientPlayerEntity player) {
+        PlayerHp hpInfo = getPlayerHp(player);
+        float damage = playerHpWatcher.updatePlayerHpAndGetDamage(player, hpInfo.hp());
+
+        if (player.isSpectator() || player.isCreative()) {
             // Don't zap spectators or creative players
-            // Also, player really shouldn't be null here as it's being called while the player is ticked,
-            // but better to be safe than crashy.
-            playerHpWatcher.resetPlayer();
             return;
         }
-
-        // HP is a float, and the game uses ceil() when displaying it.
-        // Death is when HP <= 0.0, so if the HP is 0.000001, the player
-        // is still alive so rounding that down is not appropriate.
-        PlayerHp hpInfo = getPlayerHp(player);
-
-        float damage = playerHpWatcher.updatePlayerHpAndGetDamage(player, hpInfo.hp());
 
         zapController.queueShockForDamage(hpInfo.hp(), hpInfo.maxHealth(), damage);
     }
@@ -141,6 +132,9 @@ public class PishockZapMod implements ClientModInitializer {
         float hp = player.getHealth();
         float maxHealth = player.getMaxHealth();
         if (!config.isFractionalDamage()) {
+            // HP is a float, and the game uses ceil() when displaying it.
+            // Death is when HP <= 0.0, so if the HP is 0.000001, the player
+            // is still alive so rounding that down is not appropriate.
             hp = (float) Math.ceil(hp);
             maxHealth = (float) Math.ceil(maxHealth);
         }
