@@ -315,6 +315,18 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         apiCategory.addEntry(openShockApiCategory.build());
 
+        var openShockSerialApiCategory = entryBuilder
+            .startSubCategory(Translation.of("title.pishock-zap.config.api.openshock.serial"))
+            .setExpanded(true)
+            .setDisplayRequirement(() -> DefaultShockBackends.OPENSHOCK_SERIAL.equals(apiTypeSwitcher.getValue()));
+        helper.setCategory(openShockSerialApiCategory);
+
+        openShockSerialApiCategory.add(entryBuilder
+            .startTextDescription(Translation.of("description.pishock-zap.config.api.openshock.serial"))
+            .build());
+
+        apiCategory.addEntry(openShockSerialApiCategory.build());
+
         configBuilder.setSavingRunnable(mod::saveConfig);
 
         return configBuilder.build();

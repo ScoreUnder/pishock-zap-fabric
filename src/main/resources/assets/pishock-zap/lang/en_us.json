@@ -61,6 +61,8 @@
   "title.pishock-zap.config.api.openshock.device_ids": "Device IDs",
   "title.pishock-zap.config.api.openshock.add_my_ids": "Fetch IDs automatically",
 
+  "title.pishock-zap.config.api.openshock.serial": "OpenShock Serial API",
+
   "description.pishock-zap.config.api_type": "It is recommended to use the %1$s API unless you have a specific reason to use another API type.",
 
   "description.pishock-zap.config.api.web_v1": "You can find your username and API key on the %1$s. Share codes are available from the %2$s (click the \"share\" button to generate a share code).",
@@ -74,6 +76,8 @@
 
   "description.pishock-zap.config.api.webhook": "Advanced users only. This calls out to a webhook URL with a JSON payload similar to the below:\n\n%1$s\n\nThis allows you to integrate with your own custom systems.",
   "description.pishock-zap.config.api.webhook.payload": "{\n  \"operation\": %1$s,\n  \"intensity\": %2$s,\n  \"duration\": %3$s,\n  \"distribution\": %4$s\n}",
+
+  "description.pishock-zap.config.api.openshock.serial": "This config screen is in progress :) right now it takes device IDs from the PiShock Serial API and treats them all as CaiXianLin shockers, so configure there and switch back to this.",
 
   "tooltip.pishock-zap.config.general.enabled": "Enable/disable the mod",
   "tooltip.pishock-zap.config.general.vibration_only": "Only vibrate the device, don't shock, even on death.\nThis can be used to test the mod or simply\nprovide a less intense experience.\nFor example, if you want to check your share codes work.",
@@ -151,6 +155,7 @@
   "enum.pishock-zap.config.api_type.serial": "PiShock Serial",
   "enum.pishock-zap.config.api_type.webhook": "Custom Webhook",
   "enum.pishock-zap.config.api_type.openshock": "OpenShock Web",
+  "enum.pishock-zap.config.api_type.openshock.serial": "OpenShock Serial",
 
   "error.pishock-zap.config.api.share_codes.empty": "Need at least one share code",
   "error.pishock-zap.config.api.share_codes.entry.empty": "Share code cannot be empty",

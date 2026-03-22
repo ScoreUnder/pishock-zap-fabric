@@ -1,42 +1,30 @@
 package moe.score.pishockzap.backend.impls;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.google.gson.Gson;
-import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import moe.score.pishockzap.PishockZapMod;
+import lombok.RequiredArgsConstructor;
 import moe.score.pishockzap.backend.OpType;
-import moe.score.pishockzap.backend.PiShockUtils;
-import moe.score.pishockzap.backend.SafeShockBackend;
+import moe.score.pishockzap.backend.SerialBackend;
+import moe.score.pishockzap.backend.model.pishock.V2OperationType;
 import moe.score.pishockzap.config.PishockZapConfig;
-import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.util.TriState;
-import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 import static moe.score.pishockzap.util.Gsons.gson;
 
-public class PiShockSerialBackend extends SafeShockBackend {
-    public static final int PISHOCK_SERIAL_BAUD_RATE = 115200;
-    private static WeakReference<PiShockSerialBackend> INSTANCE;
-    private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
-    private final @NonNull Executor executor;
-    private String lastPortName;
-    private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
-    private volatile @Nullable SerialPort commPort;
-    private volatile @Nullable Writer jsonWriter = null;
-
+public class PiShockSerialBackend extends SerialBackend<Integer> {
     public PiShockSerialBackend(@NonNull PishockZapConfig config, @NonNull Executor executor) {
-        super(config);
-        this.executor = executor;
+        super(config, executor);
     }
 
     @Override
@@ -47,30 +35,6 @@ public class PiShockSerialBackend extends SafeShockBackend {
     @Override
     public float getMaxDuration() {
         return 2147483.5f;
-    }
-
-    @Override
-    protected void safePerformOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
-        List<Integer> shockers = config.getDeviceIds();
-        if (shockers.isEmpty()) {
-            logger.warning("No PiShock shocker IDs configured");
-            return;
-        }
-
-        boolean[] shocks = distributor.pickShockers(distribution, shockers.size());
-
-        var lines = new ArrayList<String>();
-        for (int i = 0; i < shocks.length; i++) {
-            if (!shocks[i]) continue;
-            int deviceId = shockers.get(i);
-
-            Map<String, Object> data = getOperationData(op, intensity, duration, deviceId);
-            String line = convertToJson(data);
-            lines.add(line);
-        }
-        if (!lines.isEmpty()) {
-            doApiCallOnThread(lines);
-        }
     }
 
     @Override
@@ -91,17 +55,25 @@ public class PiShockSerialBackend extends SafeShockBackend {
         return TriState.TRUE;
     }
 
-    private @NonNull Map<String, Object> getOperationData(@NonNull OpType op, int intensity, float duration, int deviceId) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("cmd", "operate");
-        Map<String, Object> params = new HashMap<>();
-        data.put("value", params);
+    @Override
+    protected List<Integer> getDevices() {
+        return config.getDeviceIds();
+    }
 
-        params.put("id", deviceId);
-        params.put("op", op.firmwareCode);
-        params.put("intensity", intensity);
-        params.put("duration", transformDuration(duration));
-        return data;
+    @Override
+    protected @NonNull String getOperationData(@NonNull OpType op, int intensity, float duration, Integer deviceId) {
+        var operateCommand = new OperateCommand(new OperatePayload(deviceId, V2OperationType.of(op), intensity, transformDuration(duration)));
+        return gson.toJson(operateCommand);
+    }
+
+    @RequiredArgsConstructor
+    @SuppressWarnings("unused")
+    public static class OperateCommand {
+        private final String cmd = "operate";
+        private final OperatePayload value;
+    }
+
+    public record OperatePayload(int id, V2OperationType op, int intensity, int duration) {
     }
 
     /**
@@ -116,90 +88,18 @@ public class PiShockSerialBackend extends SafeShockBackend {
         return Math.round(duration * 1000.0f);
     }
 
-    private static @NonNull SerialPort createAndOpenPort(String portName) {
-        SerialPort commPort = SerialPort.getCommPort(portName);
-        commPort.setBaudRate(PISHOCK_SERIAL_BAUD_RATE);
-        commPort.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING | SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 1000, 0);
-        commPort.openPort();
-        return commPort;
-    }
-
-    private @NonNull Writer openWriter() {
-        var instance = INSTANCE;
-        if (instance == null || instance.get() != this) {
-            INSTANCE = new WeakReference<>(this);
-        }
-        if (!Objects.equals(lastPortName, config.getSerialPort())) {
-            lastPortName = config.getSerialPort();
-            close();
-        }
-        Writer jsonWriter = this.jsonWriter;
-        if (jsonWriter != null) return jsonWriter;
-
-        var commPort = this.commPort = createAndOpenPort(lastPortName);
-        jsonWriter = this.jsonWriter = new OutputStreamWriter(commPort.getOutputStream());
-        return jsonWriter;
-    }
-
-    private String convertToJson(@NonNull Map<String, Object> data) {
-        return gson.toJson(data);
-    }
-
-    private void writeLines(@NonNull Iterable<String> data) throws IOException {
-        @SuppressWarnings("resource") Writer jsonWriter = openWriter();
-        for (String line : data) {
-            jsonWriter.write(line);
-            jsonWriter.write('\n');
-        }
-        jsonWriter.flush();
-    }
-
-    /**
-     * Perform a PiShock API call on a separate thread.
-     *
-     * @param lines data to send
-     */
-    private void doApiCallOnThread(@NonNull Iterable<String> lines) {
-        executor.execute(() -> {
-            try {
-                writeLines(lines);
-            } catch (Exception e) {
-                logger.warning("PiShock API call failed; exception thrown");
-                e.printStackTrace();
-
-                close();
-            }
-        });
-    }
-
-    @Override
-    public void close() {
-        var commPort = this.commPort;
-        if (commPort != null) {
-            this.commPort = null;
-            this.jsonWriter = null;
-            commPort.closePort();
-        }
-    }
-
-    @NonNull
-    public static Iterable<String> getSerialPorts() {
-        return Stream.of(SerialPort.getCommPorts()).map(SerialPort::getSystemPortPath)::iterator;
-    }
-
     @NonNull
     public static CompletableFuture<List<Integer>> probeDeviceIds(String serialPortAddress) {
-        WeakReference<PiShockSerialBackend> instanceRef = INSTANCE;
-        PiShockSerialBackend existingInstance = instanceRef == null ? null : instanceRef.get();
+        WeakReference<SerialBackend<?>> instanceRef = SerialBackend.INSTANCE;
+        SerialBackend<?> existingInstance = instanceRef == null ? null : instanceRef.get();
         boolean serialPortIsMine;
-        SerialPort port;
-        if (existingInstance == null || !Objects.equals(existingInstance.lastPortName, serialPortAddress) || existingInstance.commPort == null) {
+        SerialPort port = existingInstance == null ? null : existingInstance.reuseThisSerialPort(serialPortAddress);
+        if (port == null) {
             System.out.println("Opening my own serial port");
             port = createAndOpenPort(serialPortAddress);
             serialPortIsMine = true;
         } else {
             System.out.println("Reusing a serial port");
-            port = Objects.requireNonNull(existingInstance.commPort);
             serialPortIsMine = false;
         }
 
@@ -223,7 +123,7 @@ public class PiShockSerialBackend extends SafeShockBackend {
                     if (line.startsWith(prefix)) {
                         var terminalInfo = gson.fromJson(line.substring(prefix.length()), TerminalInfo.class);
                         result.complete(
-                            terminalInfo.shockers.stream().map(Shocker::getId).toList());
+                                terminalInfo.shockers.stream().map(s -> s.id).toList());
                     }
                 }
             } catch (Exception e) {
@@ -254,7 +154,7 @@ public class PiShockSerialBackend extends SafeShockBackend {
         return result;
     }
 
-    @Data
+    @NoArgsConstructor
     private static class TerminalInfo {
         String version;
         int type;
@@ -276,14 +176,14 @@ public class PiShockSerialBackend extends SafeShockBackend {
         int ownerId;
     }
 
-    @Data
+    @NoArgsConstructor
     private static class Shocker {
         int id;
         int type;
         boolean paused;
     }
 
-    @Data
+    @NoArgsConstructor
     private static class Network {
         String ssid;
         String password;
