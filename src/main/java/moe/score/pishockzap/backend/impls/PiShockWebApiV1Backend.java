@@ -1,13 +1,9 @@
 package moe.score.pishockzap.backend.impls;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import moe.score.pishockzap.backend.OpType;
@@ -216,7 +212,7 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
         }
     }
 
-    @Data
+    @NoArgsConstructor
     private static class UserProfile {
         int userId;
         String username;
@@ -233,7 +229,7 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
         Object accessPermissions;
     }
 
-    @Data
+    @NoArgsConstructor
     private static class ApiKey {
         @SerializedName("UserAPIKeyId")
         int userApiKeyId;
@@ -246,7 +242,7 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
         Object scopes;
     }
 
-    @Data
+    @NoArgsConstructor
     private static class ShareCodeInfo {
         int shareId;
         int clientId;
@@ -262,7 +258,6 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
         String shareCode;
     }
 
-    @Data
     @NoArgsConstructor
     @AllArgsConstructor
     protected static class ShockerOperation {

@@ -1,9 +1,9 @@
 package moe.score.pishockzap.backend.impls;
 
-import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.backend.BulkHttpRequestShockBackend;
@@ -109,11 +109,17 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
                     if (response.data == null || (response.data.isEmpty() && !response.message.isBlank())) {
                         throw new RuntimeException("Error from OpenShock API: " + response.message);
                     }
-                    return response.data.stream().flatMap(h -> h.shockers.stream()).map(Shocker::getId).toList();
+                    return response.data.stream().flatMap(h -> h.shockers.stream()).map(s -> s.id).toList();
                 });
     }
 
-    public record Control(String id, ControlType type, int intensity, int duration, boolean exclusive) {
+    @AllArgsConstructor
+    public static class Control {
+        String id;
+        ControlType type;
+        int intensity;
+        int duration;
+        boolean exclusive;
     }
 
     public enum ControlType {
@@ -131,13 +137,13 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
         }
     }
 
-    @Data
+    @NoArgsConstructor
     public static class ResponseMessage<T> {
         String message;
         T data;
     }
 
-    @Data
+    @NoArgsConstructor
     public static class Hub {
         List<Shocker> shockers = List.of();
         String id;
@@ -145,7 +151,7 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
         String createdOn;
     }
 
-    @Data
+    @NoArgsConstructor
     public static class Shocker {
         String name;
         boolean isPaused;
