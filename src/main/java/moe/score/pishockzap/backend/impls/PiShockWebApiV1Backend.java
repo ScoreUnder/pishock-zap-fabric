@@ -19,6 +19,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -30,6 +31,13 @@ import static moe.score.pishockzap.util.Gsons.pascalCaseGson;
 public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String, PiShockWebApiV1Backend.ShockerOperation> {
     private static final @NonNull URI API_URI = URI.create("https://do.pishock.com/api/apioperate");
     private static final Map<String, String> API_HEADERS = ImmutableMap.of("Content-Type", "application/json");
+    private static final EnumMap<OpType, Integer> API_CODE_BY_OP = new EnumMap<>(OpType.class);
+
+    static {
+        API_CODE_BY_OP.put(OpType.SHOCK, 0);
+        API_CODE_BY_OP.put(OpType.VIBRATE, 1);
+        API_CODE_BY_OP.put(OpType.BEEP, 2);
+    }
 
     public PiShockWebApiV1Backend(PishockZapConfig config, Executor executor) {
         super(config, executor);
@@ -38,7 +46,7 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
     @Override
     protected ShockerOperation generateDataForOperation(String shareCode, @NonNull OpType op, int intensity, float duration) {
         return new ShockerOperation(config.getUsername(), shareCode, config.getLogIdentifier(), config.getApiKey(),
-                op.code, intensity, transformDuration(duration));
+                API_CODE_BY_OP.get(op), intensity, transformDuration(duration));
     }
 
     @Override
