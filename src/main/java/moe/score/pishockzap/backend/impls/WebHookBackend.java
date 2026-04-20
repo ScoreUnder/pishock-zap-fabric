@@ -8,16 +8,13 @@ import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import org.jetbrains.annotations.Nullable;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
-public class WebHookBackend extends BulkHttpRequestShockBackend<Map<String, Object>> {
-    private static final Gson gson = new Gson();
+import static moe.score.pishockzap.util.Gsons.gson;
 
+public class WebHookBackend extends BulkHttpRequestShockBackend<Map<String, Object>> {
     public WebHookBackend(PishockZapConfig config, Executor executor) {
         super(config, executor);
     }
@@ -25,15 +22,15 @@ public class WebHookBackend extends BulkHttpRequestShockBackend<Map<String, Obje
     @Override
     protected Map<String, Object> generateDataForOperation(ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
         return Map.of(
-            "operation", op.name(),
-            "intensity", intensity,
-            "duration", duration,
-            "distribution", distribution.name());
+                "operation", op.name(),
+                "intensity", intensity,
+                "duration", duration,
+                "distribution", distribution.name());
     }
 
     @Override
-    protected @NonNull URL getUrl(Map<String, Object> data) throws MalformedURLException {
-        return new URL(config.getCustomWebhookUrl());
+    protected @NonNull URI getUri(Map<String, Object> data) {
+        return URI.create(config.getCustomWebhookUrl());
     }
 
     @Override
@@ -42,21 +39,21 @@ public class WebHookBackend extends BulkHttpRequestShockBackend<Map<String, Obje
     }
 
     @Override
-    protected byte @Nullable [] getPostBody(Map<String, Object> data) {
-        return gson.toJson(data).getBytes(StandardCharsets.UTF_8);
+    protected @Nullable String getPostBody(Map<String, Object> data) {
+        return gson.toJson(data);
     }
 
     @Override
-    protected void onResponse(Map<String, Object> data, byte[] response) {
-        logger.info("Custom Webhook call successful, request: " + gson.toJson(data) + "\nresponse: " + StandardCharsets.UTF_8.decode(ByteBuffer.wrap(response)));
+    protected void onResponse(Map<String, Object> data, @NonNull String response) {
+        logger.info("Custom Webhook call successful, request: " + gson.toJson(data) + "\nresponse: " + response);
     }
 
     @Override
     public boolean isConfigured() {
         try {
-            getUrl(Map.of());
+            getUri(Map.of());
             return true;
-        } catch (MalformedURLException e) {
+        } catch (IllegalArgumentException e) {
             return false;
         }
     }

@@ -1,22 +1,21 @@
 package moe.score.pishockzap.backend.impls;
 
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
-import lombok.Data;
+import com.google.gson.reflect.TypeToken;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.backend.BulkHttpRequestShockBackend;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
-import moe.score.pishockzap.util.HttpUtil;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.ByteBuffer;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,20 +23,12 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<OpenShockWebApiBackend.Control>> {
-    private static final URL API_URL;
-    private static final URL API_MY_DEVICES_URL;
-    private static final Gson gson = new Gson();
-    private static String userAgent;
+import static moe.score.pishockzap.util.Gsons.gson;
 
-    static {
-        try {
-            API_URL = new URL("https://api.openshock.app/2/shockers/control");
-            API_MY_DEVICES_URL = new URL("https://api.openshock.app/1/shockers/own");
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<OpenShockWebApiBackend.Control>> {
+    private static final URI API_URI = URI.create("https://api.openshock.app/2/shockers/control");
+    private static final URI API_MY_DEVICES_URI = URI.create("https://api.openshock.app/1/shockers/own");
+    private static String userAgent;
 
     public OpenShockWebApiBackend(PishockZapConfig config, Executor executor) {
         super(config, executor);
@@ -56,8 +47,8 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
     }
 
     @Override
-    protected @NonNull URL getUrl(List<Control> data) {
-        return API_URL;
+    protected @NonNull URI getUri(List<Control> data) {
+        return API_URI;
     }
 
     @Override
@@ -71,24 +62,22 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
             userAgent = PishockZapMod.NAME + "/" + PishockZapMod.getVersion() + " (minecraft mod; github.com/ScoreUnder/pishock-zap-fabric)";
         }
         return Map.of(
-            "User-Agent", userAgent,
-            "Content-Type", "application/json",
-            "Open-Shock-Token", token);
+                "User-Agent", userAgent,
+                "Content-Type", "application/json",
+                "Open-Shock-Token", token);
     }
 
     @Override
-    protected byte @Nullable [] getPostBody(List<Control> data) {
+    protected @Nullable String getPostBody(List<Control> data) {
         return gson.toJson(Map.of(
                 "shocks", data,
-                "customName", config.getLogIdentifier()))
-            .getBytes(StandardCharsets.UTF_8);
+                "customName", config.getLogIdentifier()));
     }
 
     @Override
-    protected void onResponse(List<Control> data, byte[] response) {
-        var result = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(response)).toString();
-        if (!result.contains("Successfully sent control messages")) {
-            logger.warning("OpenShock API call failed; response: " + result);
+    protected void onResponse(List<Control> data, @NonNull String response) {
+        if (!response.contains("Successfully sent control messages")) {
+            logger.warning("OpenShock API call failed; response: " + response);
         }
     }
 
@@ -104,25 +93,33 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
     }
 
     public static CompletableFuture<List<String>> probeDeviceIds(String apiToken) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                var result = HttpUtil.makeRequestSync(API_MY_DEVICES_URL, null, getDefaultHeaders(apiToken));
-                //noinspection UnstableApiUsage
-                ResponseMessage<List<Hub>> response = gson.fromJson(
-                    new String(result, StandardCharsets.UTF_8),
-                    new TypeToken<ResponseMessage<List<Hub>>>() {
-                    }.getType());
-                if (response.data == null || (response.data.isEmpty() && !response.message.isBlank())) {
-                    throw new RuntimeException("Error from OpenShock API: " + response.message);
-                }
-                return response.data.stream().flatMap(h -> h.shockers.stream()).map(Shocker::getId).toList();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        var executor = new CompletableFuture<Void>().defaultExecutor();
+        @SuppressWarnings("resource")
+        var httpClient = HttpClient.newBuilder().executor(executor).build();
+        var req = HttpRequest.newBuilder(API_MY_DEVICES_URI);
+        for (var header : getDefaultHeaders(apiToken).entrySet()) {
+            req.setHeader(header.getKey(), header.getValue());
+        }
+        return httpClient.sendAsync(req.build(), HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
+                .thenApply(result -> {
+                    ResponseMessage<List<Hub>> response = gson.fromJson(
+                            result.body(),
+                            new TypeToken<ResponseMessage<List<Hub>>>() {
+                            }.getType());
+                    if (response.data == null || (response.data.isEmpty() && !response.message.isBlank())) {
+                        throw new RuntimeException("Error from OpenShock API: " + response.message);
+                    }
+                    return response.data.stream().flatMap(h -> h.shockers.stream()).map(s -> s.id).toList();
+                });
     }
 
-    public record Control(String id, ControlType type, int intensity, int duration, boolean exclusive) {
+    @AllArgsConstructor
+    public static class Control {
+        String id;
+        ControlType type;
+        int intensity;
+        int duration;
+        boolean exclusive;
     }
 
     public enum ControlType {
@@ -140,13 +137,13 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
         }
     }
 
-    @Data
+    @NoArgsConstructor
     public static class ResponseMessage<T> {
         String message;
         T data;
     }
 
-    @Data
+    @NoArgsConstructor
     public static class Hub {
         List<Shocker> shockers = List.of();
         String id;
@@ -154,7 +151,7 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
         String createdOn;
     }
 
-    @Data
+    @NoArgsConstructor
     public static class Shocker {
         String name;
         boolean isPaused;
