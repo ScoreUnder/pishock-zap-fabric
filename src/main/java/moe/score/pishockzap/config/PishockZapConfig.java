@@ -1,6 +1,7 @@
 package moe.score.pishockzap.config;
 
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.ints.*;
 import lombok.Data;
 import lombok.NonNull;
 import moe.score.pishockzap.DefaultShockBackends;
@@ -104,8 +105,17 @@ public class PishockZapConfig {
     /// OpenShock shocker IDs
     private @NonNull List<String> openShockShockerIds = List.of("badc0def-ffff-ffff-ffff-badc0defffff");
 
+    /// PiShock (WebSocket backend) user ID
+    private int psUserId = -1;
+    /// PiShock (WebSocket backend) hub/shocker mapping
+    private Int2ObjectMap<IntList> psHubShockers = new Int2ObjectArrayMap<>(new int[]{1234}, new Object[]{IntImmutableList.of(12345)});
+
     private boolean fieldIsListOfInteger(@NonNull Field field) {
         return field.getName().equals("deviceIds");
+    }
+
+    private boolean fieldIsMapOfIntToListOfInt(@NonNull Field field) {
+        return field.getName().equals("psHubShockers");
     }
 
     private void setSingleConfigField(@NonNull Field field, @NonNull Method setter, @NonNull Object value) {
@@ -120,13 +130,31 @@ public class PishockZapConfig {
             } else if (type.isAssignableFrom(List.class) && fieldIsListOfInteger(field)) {
                 // noinspection unchecked -- gets checked pretty damn quickly
                 value = ((List<Number>) value).stream().map(Number::intValue).collect(Collectors.toList());
+            } else if (type.isAssignableFrom(Int2ObjectArrayMap.class) && fieldIsMapOfIntToListOfInt(field) && value instanceof Map<?, ?> m) {
+                value = mapToInt2IntListMap(m);
             }
             setter.invoke(this, value);
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException | NumberFormatException e) {
             e.printStackTrace();
         } catch (IllegalArgumentException | ClassCastException e) {
             System.err.printf("Config value %s is not of type %s (got %s)%n", field.getName(), field.getType().getName(), value.getClass().getName());
         }
+    }
+
+    private static @NonNull Int2ObjectArrayMap<Object> mapToInt2IntListMap(Map<?, ?> m) {
+        var newValue = new Int2ObjectArrayMap<>(m.size());
+        for (var entry : m.entrySet()) {
+            // JSON keys are always strings
+            var mapKey = (String) entry.getKey();
+            var mapValue = (List<?>) entry.getValue();
+            var mapKeyInt = Integer.parseInt(mapKey);
+            var mapValueIntList = new IntArrayList(mapValue.size());
+            for (var integer : mapValue) {
+                mapValueIntList.add(((Number) integer).intValue());
+            }
+            newValue.put(mapKeyInt, mapValueIntList);
+        }
+        return newValue;
     }
 
     private @NonNull Map<String, Object> performConfigMigrations(@NonNull Map<String, Object> config) {

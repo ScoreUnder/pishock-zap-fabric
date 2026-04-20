@@ -152,7 +152,7 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
                             .toList(), executor);
         }
 
-        private CompletableFuture<UserProfile> getUserProfile(String username, String apiKey) {
+        public CompletableFuture<UserProfile> getUserProfile(String username, String apiKey) {
             return CompletableFuture.supplyAsync(() -> {
                         try {
                             return HttpRequest.newBuilder(new URIBuilder("https://auth.pishock.com/Auth/GetUserIfAPIKeyValid")
@@ -218,64 +218,102 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
                             }.getType()),
                     executor);
         }
+
+        public @NonNull CompletableFuture<List<UserDevice>> getUserDevices(int userId, String apiKey) {
+            return CompletableFuture.supplyAsync(() -> {
+                    try {
+                        return HttpRequest.newBuilder(new URIBuilder("https://ps.pishock.com/PiShock/GetUserDevices")
+                            .addParameter("UserId", String.valueOf(userId))
+                            .addParameter("Token", apiKey)
+                            .addParameter("api", "true")
+                            .build()).build();
+                    } catch (URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                executor
+            ).thenComposeAsync(
+                req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
+                executor
+            ).thenApplyAsync(resp -> gson.fromJson(resp.body(),
+                    new TypeToken<List<UserDevice>>() {
+                    }.getType()),
+                executor);
+        }
     }
 
     @NoArgsConstructor
-    private static class UserProfile {
-        int userId;
-        String username;
-        String lastLogin;
-        String password;
+    public static class UserProfile {
+        public int userId;
+        public String username;
+        public String lastLogin;
+        public String password;
         @SerializedName("IPAddress")
-        String ipAddress;
-        Object sessions;
-        Object emails;
+        public String ipAddress;
+        public Object sessions;
+        public Object emails;
         @SerializedName("APIKeys")
-        List<ApiKey> apiKeys;
-        Object oAuthLinks;
-        Object images;
-        Object accessPermissions;
+        public List<ApiKey> apiKeys;
+        public Object oAuthLinks;
+        public Object images;
+        public Object accessPermissions;
     }
 
     @NoArgsConstructor
     private static class ApiKey {
         @SerializedName("UserAPIKeyId")
-        int userApiKeyId;
-        Object user;
+        public int userApiKeyId;
+        public Object user;
         @SerializedName("APIKey")
-        String apiKey;
-        String name;
-        String expiry;
-        String generated;
-        Object scopes;
+        public String apiKey;
+        public String name;
+        public String expiry;
+        public String generated;
+        public Object scopes;
     }
 
     @NoArgsConstructor
     private static class ShareCodeInfo {
-        int shareId;
-        int clientId;
-        int shockerId;
-        String shockerName;
-        boolean isPaused;
-        int maxIntensity;
-        boolean canContinuous;
-        boolean canShock;
-        boolean canVibrate;
-        boolean canBeep;
-        boolean canLog;
-        String shareCode;
+        public int shareId;
+        public int clientId;
+        public int shockerId;
+        public String shockerName;
+        public boolean isPaused;
+        public int maxIntensity;
+        public boolean canContinuous;
+        public boolean canShock;
+        public boolean canVibrate;
+        public boolean canBeep;
+        public boolean canLog;
+        public String shareCode;
     }
 
     @NoArgsConstructor
     @AllArgsConstructor
     protected static class ShockerOperation {
-        String username;
-        String code;
-        String name;
+        public String username;
+        public String code;
+        public String name;
         @SerializedName("Apikey")
-        String apiKey;
-        int op;
-        int intensity;
-        int duration;
+        public String apiKey;
+        public int op;
+        public int intensity;
+        public int duration;
+    }
+
+    @NoArgsConstructor
+    public static class UserDevice {
+        public int clientId;
+        public String name;
+        public int userId;
+        public String username;
+        public List<Shocker> shockers;
+    }
+
+    @NoArgsConstructor
+    public static class Shocker {
+        public String name;
+        public int shockerId;
+        public boolean isPaused;
     }
 }

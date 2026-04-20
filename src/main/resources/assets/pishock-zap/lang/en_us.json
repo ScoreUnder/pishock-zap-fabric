@@ -63,6 +63,14 @@
 
   "title.pishock-zap.config.api.openshock.serial": "OpenShock Serial API",
 
+  "title.pishock-zap.config.api.pishock.websocket": "PiShock WebSocket API",
+  "title.pishock-zap.config.api.pishock.websocket.devices": "Devices",
+  "title.pishock-zap.config.api.pishock.websocket.devices.entry": "PiShock Hub",
+  "title.pishock-zap.config.api.pishock.websocket.devices.entry.id": "PiShock Hub ID",
+  "title.pishock-zap.config.api.pishock.websocket.devices.entry.devices": "Shocker IDs",
+  "title.pishock-zap.config.api.pishock.websocket.user_id": "User ID",
+  "title.pishock-zap.config.api.pishock.websocket.fetch_ids": "Fetch IDs and devices",
+
   "description.pishock-zap.config.api_type": "It is recommended to use the %1$s API unless you have a specific reason to use another API type.",
 
   "description.pishock-zap.config.api.web_v1": "You can find your username and API key on the %1$s. Share codes are available from the %2$s (click the \"share\" button to generate a share code).",
@@ -126,6 +134,10 @@
   "tooltip.pishock-zap.config.api.openshock.device_ids": "The IDs of the shockers to use (not share codes!)",
   "tooltip.pishock-zap.config.api.openshock.add_my_ids": "Use your API token to automatically\nfetch device IDs from the server",
 
+  "tooltip.pishock-zap.config.api.pishock.websocket.devices": "PiShock hubs and their associated shockers",
+  "tooltip.pishock-zap.config.api.pishock.websocket.user_id": "The numeric user ID of your PiShock account.\nI recommend you fetch this automatically.",
+  "tooltip.pishock-zap.config.api.pishock.websocket.fetch_ids": "Automatically fetch user ID, hub IDs, and shocker IDs.\nRequires API key and username to be set.",
+
   "label.pishock-zap.config.hp": "\u2764 %1$s%%",
   "label.pishock-zap.config.intensity": "\u26A1 %1$s%%",
   "label.pishock-zap.config.vibration_intensity": "\u2637 %1$s%%",
@@ -144,6 +156,10 @@
   "label.pishock-zap.config.api.openshock.add_my_ids.working": "In progress...",
   "label.pishock-zap.config.api.openshock.add_my_ids.error": "Error",
 
+  "label.pishock-zap.config.api.pishock.websocket.fetch_ids": "Go",
+  "label.pishock-zap.config.api.pishock.websocket.fetch_ids.working": "In progress...",
+  "label.pishock-zap.config.api.pishock.websocket.fetch_ids.error": "Error",
+
   "enum.pishock-zap.config.shock_distribution.first": "First device",
   "enum.pishock-zap.config.shock_distribution.last": "Last device",
   "enum.pishock-zap.config.shock_distribution.random": "One random device",
@@ -152,6 +168,7 @@
   "enum.pishock-zap.config.shock_distribution.all": "All devices",
 
   "enum.pishock-zap.config.api_type.web_v1": "PiShock Web",
+  "enum.pishock-zap.config.api_type.websocket": "PiShock WebSocket",
   "enum.pishock-zap.config.api_type.serial": "PiShock Serial",
   "enum.pishock-zap.config.api_type.webhook": "Custom Webhook",
   "enum.pishock-zap.config.api_type.openshock": "OpenShock Web",

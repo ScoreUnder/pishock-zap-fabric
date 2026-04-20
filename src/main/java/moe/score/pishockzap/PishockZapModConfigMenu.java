@@ -2,15 +2,14 @@ package moe.score.pishockzap;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
+import it.unimi.dsi.fastutil.ints.*;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
-import me.shedaniel.clothconfig2.gui.entries.IntegerListListEntry;
-import me.shedaniel.clothconfig2.gui.entries.StringListEntry;
-import me.shedaniel.clothconfig2.gui.entries.StringListListEntry;
+import me.shedaniel.clothconfig2.gui.entries.*;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.ShockBackendRegistry;
@@ -28,12 +27,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 import java.util.stream.Collectors;
@@ -327,9 +324,87 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         apiCategory.addEntry(openShockSerialApiCategory.build());
 
+        var piShockWebSocketApiCategory = entryBuilder
+            .startSubCategory(Translation.of("title.pishock-zap.config.api.pishock.websocket"))
+            .setExpanded(true)
+            .setDisplayRequirement(() -> DefaultShockBackends.PISHOCK_WEBSOCKET.equals(apiTypeSwitcher.getValue()));
+        helper.setCategory(piShockWebSocketApiCategory);
+
+        helper.add(piShockUsernameEntry);
+        helper.add(piShockApiKeyEntry);
+        helper.add(logIdentifierField);
+
+        var hubDeviceIdListEntry = new NestedListListEntry<Pair<Integer, IntList>, MultiElementListEntry<Pair<Integer, IntList>>>(
+            Translation.of("title.pishock-zap.config.api.pishock.websocket.devices"),
+            hubShockerMapToList(config.getPsHubShockers()),
+            true,
+            () -> Optional.of(new Text[]{Translation.of("tooltip.pishock-zap.config.api.pishock.websocket.devices")}),
+            list -> {
+                var result = new Int2ObjectArrayMap<IntList>();
+                for (var pair : list) {
+                    result.put(pair.getLeft().intValue(), pair.getRight());
+                }
+                config.setPsHubShockers(result);
+            },
+            () -> hubShockerMapToList(defaultConfig.getPsHubShockers()),
+            entryBuilder.getResetButtonKey(),
+            true,
+            true,
+            (elem, nestedListListEntry) -> {
+                if (elem == null) {
+                    elem = Pair.of(0, new IntArrayList(new int[]{0}));
+                }
+                return new MultiElementListEntry<>(Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry"), elem,
+                    List.of(
+                        entryBuilder.startIntField(Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry.id"), elem.getLeft()).build(),
+                        entryBuilder.startIntList(Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry.devices"), elem.getRight()).build()),
+                    true);
+            }
+        );
+
+        var websocketUserIdEntry = helper.makeIntField("api.pishock.websocket.user_id",
+            PishockZapConfig::getPsUserId,
+            PishockZapConfig::setPsUserId,
+            value -> Optional.empty());
+
+        helper.addActionButton("api.pishock.websocket.fetch_ids",
+            () -> {
+                var backend = new PiShockWebApiV1Backend.HttpBackend();
+                var apiKey = piShockApiKeyEntry.getValue();
+                return backend.getUserProfile(piShockUsernameEntry.getValue(), apiKey)
+                    .thenComposeAsync(profile ->
+                        backend.getUserDevices(profile.userId, apiKey)
+                            .thenApply(devices -> Pair.of(profile, devices)));
+            },
+            result -> {
+                var profile = result.getLeft();
+                var devices = result.getRight();
+
+                //noinspection deprecation
+                websocketUserIdEntry.setValue(Integer.toString(profile.userId));
+
+                //noinspection ConstantValue
+                if ((Object)hubDeviceIdListEntry instanceof ListEntryExt ext) {
+                    ext.pishockZap$addListEntries(devices.stream()
+                        .map(d -> Pair.of(d.clientId, IntImmutableList.toList(d.shockers.stream()
+                            .mapToInt(s -> s.shockerId)))).toList());
+                }
+            });
+
+        helper.add(websocketUserIdEntry);
+        helper.add(hubDeviceIdListEntry);
+
+        apiCategory.addEntry(piShockWebSocketApiCategory.build());
+
         configBuilder.setSavingRunnable(mod::saveConfig);
 
         return configBuilder.build();
+    }
+
+    private static @NonNull List<Pair<Integer, IntList>> hubShockerMapToList(Int2ObjectMap<IntList> psHubShockers) {
+        return psHubShockers.int2ObjectEntrySet().stream()
+            .map(hub -> Pair.of(hub.getIntKey(), hub.getValue()))
+            .toList();
     }
 
     private static @NonNull Optional<Text> isShareCodeInvalid(@NonNull String shareCode) {
@@ -431,6 +506,22 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .build();
             add(field);
             return field;
+        }
+
+        public IntegerListEntry addIntField(String keyPart, Function<PishockZapConfig, Integer> get, BiConsumer<PishockZapConfig, Integer> set, Function<Integer, Optional<Text>> errorSupplier) {
+            var field = makeIntField(keyPart, get, set, errorSupplier);
+            add(field);
+            return field;
+        }
+
+        public @NonNull IntegerListEntry makeIntField(String keyPart, Function<PishockZapConfig, Integer> get, BiConsumer<PishockZapConfig, Integer> set, Function<Integer, Optional<Text>> errorSupplier) {
+            return entryBuilder
+                .startIntField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
+                .setSaveConsumer(v -> set.accept(config, v))
+                .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
+                .setDefaultValue(get.apply(defaultConfig))
+                .setErrorSupplier(errorSupplier)
+                .build();
         }
 
         public void addStringListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<String>> get, BiConsumer<PishockZapConfig, List<String>> set, Function<List<String>, Optional<Text>> errorSupplier, Function<String, Optional<Text>> cellErrorSupplier) {
