@@ -11,7 +11,7 @@ import moe.score.pishockzap.backend.model.pishock.V2OperationType;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.util.TriState;
-import org.apache.http.client.utils.URIBuilder;
+import moe.score.pishockzap.util.URIBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -97,14 +97,10 @@ public class PiShockWebSocketApiBackend extends SafeShockBackend {
     }
 
     private static URI getApiUri(String username, String apiKey) {
-        try {
-            return new URIBuilder(API_URI_BASE)
-                .addParameter("Username", username)
-                .addParameter("ApiKey", apiKey)
-                .build();
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException(e);
-        }
+        return new URIBuilder(API_URI_BASE)
+            .addParameter("Username", username)
+            .addParameter("ApiKey", apiKey)
+            .build();
     }
 
     private URI getApiUri() {
