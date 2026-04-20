@@ -70,7 +70,7 @@ public class PishockZapConfig {
     private boolean queueDifferent = true;
 
     /// The type of PiShock API to use
-    private @NonNull String apiType = DefaultShockBackends.PISHOCK_WEB_V1;
+    private @NonNull String apiType = DefaultShockBackends.PISHOCK_WEBSOCKET;
 
     /// Identifier for on-site logs
     private @NonNull String logIdentifier = "PiShock-Zap (Minecraft)";

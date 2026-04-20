@@ -124,7 +124,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         apiCategory.addEntry(entryBuilder.startTextDescription(
             Translation.of("description.pishock-zap.config.api_type",
-                Translation.of("enum.pishock-zap.config.api_type.web_v1").styled(style -> style.withBold(true))
+                Translation.of("enum.pishock-zap.config.api_type.websocket").styled(style -> style.withBold(true))
             )).build());
 
         var webV1Category = entryBuilder
@@ -132,6 +132,10 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .setExpanded(true)
             .setDisplayRequirement(() -> DefaultShockBackends.PISHOCK_WEB_V1.equals(apiTypeSwitcher.getValue()));
         helper.setCategory(webV1Category);
+
+        webV1Category.add(entryBuilder.startTextDescription(
+            Translation.of("description.pishock-zap.config.api.web_v1.deprecated")
+                .styled(style -> style.withBold(true).withColor(Formatting.RED))).build());
 
         var logIdentifierField = helper.addTextField("api.log_identifier", PishockZapConfig::getLogIdentifier, PishockZapConfig::setLogIdentifier);
 
@@ -310,6 +314,9 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         helper.add(openShockDeviceIdField);
         helper.add(logIdentifierField);
 
+        helper.add(entryBuilder.startTextDescription(
+            Translation.of("description.pishock-zap.config.api.openshock.disclaimer")).build());
+
         apiCategory.addEntry(openShockApiCategory.build());
 
         var openShockSerialApiCategory = entryBuilder
@@ -393,6 +400,9 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         helper.add(websocketUserIdEntry);
         helper.add(hubDeviceIdListEntry);
+
+        helper.add(entryBuilder.startTextDescription(
+            Translation.of("description.pishock-zap.config.api.websocket.disclaimer")).build());
 
         apiCategory.addEntry(piShockWebSocketApiCategory.build());
 
