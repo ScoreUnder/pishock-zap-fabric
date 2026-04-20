@@ -118,6 +118,7 @@ public class PishockZapConfig {
         return field.getName().equals("psHubShockers");
     }
 
+    @SuppressWarnings("unchecked")
     private void setSingleConfigField(@NonNull Field field, @NonNull Method setter, @NonNull Object value) {
         try {
             Class<?> type = field.getType();
@@ -128,7 +129,7 @@ public class PishockZapConfig {
             } else if ((type.isAssignableFrom(Float.class) || type.isAssignableFrom(float.class)) && value instanceof Number) {
                 value = ((Number) value).floatValue();
             } else if (type.isAssignableFrom(List.class) && fieldIsListOfInteger(field)) {
-                // noinspection unchecked -- gets checked pretty damn quickly
+                // Unchecked cast, but quickly checked when doing `Number::intValue`
                 value = ((List<Number>) value).stream().map(Number::intValue).collect(Collectors.toList());
             } else if (type.isAssignableFrom(Int2ObjectArrayMap.class) && fieldIsMapOfIntToListOfInt(field) && value instanceof Map<?, ?> m) {
                 value = mapToInt2IntListMap(m);
