@@ -1,106 +1,91 @@
 plugins {
     id 'base'
-	id 'fabric-loom' version "$loom_version"
-	id 'maven-publish'
-	id 'io.freefair.lombok' version '9.2.0'
+    id 'fabric-loom' version "$loom_version" apply false
+    id 'maven-publish'
+    id 'io.freefair.lombok' version '9.2.0' apply false
 }
 
-version = "${project.mod_version}+${project.minecraft_version}"
-group = project.maven_group
+tasks.register('collectJars', Copy) {
+    dependsOn subprojects.collect { it.tasks.named('remapJar') }
 
-base {
-	archivesName = project.archives_base_name
+    from subprojects.collect { it.tasks.named('remapJar') }
+    into layout.buildDirectory.dir('libs')
 }
 
-repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
-	mavenCentral()
-	maven { url = "https://maven.terraformersmc.com/" }
-	maven { url = "https://maven.shedaniel.me/" }
+tasks.named('build') {
+    dependsOn 'collectJars'
 }
 
-dependencies {
-	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+subprojects {
+    apply plugin: 'fabric-loom'
+    apply plugin: 'maven-publish'
+    apply plugin: 'io.freefair.lombok'
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	
-	// Uncomment the following line to enable the deprecated Fabric API modules. 
-	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
+    version = "${project.mod_version}+${project.minecraft_version}"
+    group = project.maven_group
 
-	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
+    base {
+        archivesName = project.archives_base_name
+    }
 
-	// modmenu
-	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+    repositories {
+        mavenCentral()
+        maven { url = "https://maven.terraformersmc.com/" }
+        maven { url = "https://maven.shedaniel.me/" }
+    }
 
-	// cloth-config
-	modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
-		exclude(group: "net.fabricmc.fabric-api")
-	}
+    dependencies {
+        minecraft "com.mojang:minecraft:${project.minecraft_version}"
+        mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+        modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+        modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+        modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+        modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+            exclude(group: "net.fabricmc.fabric-api")
+        }
+        implementation "com.fazecast:jSerialComm:[2.0.0,3.0.0)"
+        include "com.fazecast:jSerialComm:[2.0.0,3.0.0)"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:${project.junit_version}"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.junit_version}"
+        testImplementation "org.junit.jupiter:junit-jupiter-params:${project.junit_version}"
+        testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+    }
 
-	// JSerialComm (for serial communication)
-	implementation "com.fazecast:jSerialComm:[2.0.0,3.0.0)"
-	include "com.fazecast:jSerialComm:[2.0.0,3.0.0)"
+    processResources {
+        inputs.property "version", version
+        filesMatching("fabric.mod.json") {
+            expand "version": version
+        }
+    }
 
-    // JUnit 5
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${project.junit_version}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.junit_version}"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:${project.junit_version}"
-    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
-}
+    tasks.withType(JavaCompile).configureEach {
+        it.options.release = project.java_language_version.toInteger()
+    }
 
-processResources {
-	inputs.property "version", version
+    java {
+        withSourcesJar()
+        sourceCompatibility = JavaVersion.toVersion(project.java_language_version)
+        targetCompatibility = JavaVersion.toVersion(project.java_language_version)
+    }
 
-	filesMatching("fabric.mod.json") {
-		expand "version": version
-	}
-}
+    jar {
+        from("LICENSE") {
+            rename { "${it}_${archives_base_name}" }
+        }
+    }
 
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = project.java_language_version.toInteger()
-}
+    test {
+        useJUnitPlatform()
+    }
 
-java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
-	withSourcesJar()
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+            }
+        }
+    }
 
-	sourceCompatibility = JavaVersion.toVersion(project.java_language_version)
-	targetCompatibility = JavaVersion.toVersion(project.java_language_version)
-}
-
-jar {
-	from("LICENSE") {
-		rename { "${it}_${archives_base_name}"}
-	}
-}
-
-test {
-    useJUnitPlatform()
-}
-
-// configure the maven publication
-publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			from components.java
-		}
-	}
-
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
-	}
+    sourceSets.main.java.srcDirs += [rootProject.file('common/src/main/java')]
+    sourceSets.main.resources.srcDirs += [rootProject.file('common/src/main/resources')]
 }

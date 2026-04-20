@@ -8,3 +8,6 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
+rootProject.name = 'pishock-zap'
+include 'mc1.21.9'
