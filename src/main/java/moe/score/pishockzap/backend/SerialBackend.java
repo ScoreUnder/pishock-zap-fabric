@@ -1,0 +1,133 @@
+package moe.score.pishockzap.backend;
+
+import com.fazecast.jSerialComm.SerialPort;
+import lombok.NonNull;
+import moe.score.pishockzap.PishockZapMod;
+import moe.score.pishockzap.config.PishockZapConfig;
+import moe.score.pishockzap.config.ShockDistribution;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+
+public abstract class SerialBackend<D> extends SafeShockBackend {
+    public static final int PISHOCK_SERIAL_BAUD_RATE = 115200;
+    protected static WeakReference<SerialBackend<?>> INSTANCE;
+    protected final Logger logger = Logger.getLogger(PishockZapMod.NAME);
+    private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
+    private final @NonNull Executor executor;
+    protected String lastPortName;
+    protected volatile @Nullable SerialPort commPort;
+    protected volatile @Nullable Writer jsonWriter = null;
+
+    public SerialBackend(@NonNull PishockZapConfig config, @NonNull Executor executor) {
+        super(config);
+        this.executor = executor;
+    }
+
+    @Override
+    protected void safePerformOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
+        var shockers = getDevices();
+        if (shockers.isEmpty()) {
+            logger.warning("No shock devices configured");
+            return;
+        }
+
+        boolean[] shocks = distributor.pickShockers(distribution, shockers.size());
+
+        var lines = new ArrayList<String>();
+        for (int i = 0; i < shocks.length; i++) {
+            if (!shocks[i]) continue;
+            var device = shockers.get(i);
+
+            lines.add(getOperationData(op, intensity, duration, device));
+        }
+        if (!lines.isEmpty()) {
+            doApiCallOnThread(lines);
+        }
+    }
+
+    protected abstract List<D> getDevices();
+
+    protected abstract String getOperationData(@NonNull OpType op, int intensity, float duration, D device);
+
+    public @Nullable SerialPort reuseThisSerialPort(String serialPortAddress) {
+        var commPort = this.commPort;
+        return Objects.equals(lastPortName, serialPortAddress) && commPort != null ? commPort : null;
+    }
+
+    protected static @NonNull SerialPort createAndOpenPort(String portName) {
+        SerialPort commPort = SerialPort.getCommPort(portName);
+        commPort.setBaudRate(PISHOCK_SERIAL_BAUD_RATE);
+        commPort.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING | SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 1000, 0);
+        commPort.openPort();
+        return commPort;
+    }
+
+    private @NonNull Writer openWriter() {
+        var instance = INSTANCE;
+        if (instance == null || instance.get() != this) {
+            INSTANCE = new WeakReference<>(this);
+        }
+        if (!Objects.equals(lastPortName, config.getSerialPort())) {
+            lastPortName = config.getSerialPort();
+            close();
+        }
+        Writer jsonWriter = this.jsonWriter;
+        if (jsonWriter != null) return jsonWriter;
+
+        var commPort = this.commPort = createAndOpenPort(lastPortName);
+        jsonWriter = this.jsonWriter = new OutputStreamWriter(commPort.getOutputStream());
+        return jsonWriter;
+    }
+
+    private void writeLines(@NonNull Iterable<String> data) throws IOException {
+        @SuppressWarnings("resource") Writer jsonWriter = openWriter();
+        for (String line : data) {
+            jsonWriter.write(line);
+            jsonWriter.write('\n');
+        }
+        jsonWriter.flush();
+    }
+
+    /**
+     * Perform a serial API call on a separate thread.
+     *
+     * @param lines data to send
+     */
+    protected void doApiCallOnThread(@NonNull Iterable<String> lines) {
+        executor.execute(() -> {
+            try {
+                writeLines(lines);
+            } catch (Exception e) {
+                logger.warning("API call failed; exception thrown");
+                e.printStackTrace();
+
+                close();
+            }
+        });
+    }
+
+    @Override
+    public void close() {
+        var commPort = this.commPort;
+        if (commPort != null) {
+            this.commPort = null;
+            this.jsonWriter = null;
+            commPort.closePort();
+        }
+    }
+
+    @NonNull
+    public static Iterable<String> getSerialPorts() {
+        return Stream.of(SerialPort.getCommPorts()).map(SerialPort::getSystemPortPath)::iterator;
+    }
+}

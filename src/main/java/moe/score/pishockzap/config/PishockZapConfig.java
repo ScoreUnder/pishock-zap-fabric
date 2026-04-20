@@ -1,8 +1,10 @@
 package moe.score.pishockzap.config;
 
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.ints.*;
 import lombok.Data;
 import lombok.NonNull;
+import moe.score.pishockzap.DefaultShockBackends;
 import moe.score.pishockzap.PishockZapMod;
 
 import java.lang.reflect.Field;
@@ -18,7 +20,7 @@ import java.util.stream.Collectors;
 @Data
 public class PishockZapConfig {
     static final @NonNull String CONFIG_VERSION_KEY = "CONFIG_VERSION_DO_NOT_EDIT";
-    static final int CONFIG_VERSION = 2;
+    static final int CONFIG_VERSION = 3;
 
     /// Whether the mod is enabled at all
     private boolean enabled = false;
@@ -68,7 +70,7 @@ public class PishockZapConfig {
     private boolean queueDifferent = true;
 
     /// The type of PiShock API to use
-    private @NonNull ShockBackendType apiType = ShockBackendType.WEB_V1;
+    private @NonNull String apiType = DefaultShockBackends.PISHOCK_WEBSOCKET;
 
     /// Identifier for on-site logs
     private @NonNull String logIdentifier = "PiShock-Zap (Minecraft)";
@@ -103,8 +105,17 @@ public class PishockZapConfig {
     /// OpenShock shocker IDs
     private @NonNull List<String> openShockShockerIds = List.of("badc0def-ffff-ffff-ffff-badc0defffff");
 
+    /// PiShock (WebSocket backend) user ID
+    private int psUserId = -1;
+    /// PiShock (WebSocket backend) hub/shocker mapping
+    private Int2ObjectMap<IntList> psHubShockers = new Int2ObjectArrayMap<>(new int[]{1234}, new Object[]{IntImmutableList.of(12345)});
+
     private boolean fieldIsListOfInteger(@NonNull Field field) {
         return field.getName().equals("deviceIds");
+    }
+
+    private boolean fieldIsMapOfIntToListOfInt(@NonNull Field field) {
+        return field.getName().equals("psHubShockers");
     }
 
     private void setSingleConfigField(@NonNull Field field, @NonNull Method setter, @NonNull Object value) {
@@ -112,8 +123,6 @@ public class PishockZapConfig {
             Class<?> type = field.getType();
             if (type.isAssignableFrom(ShockDistribution.class)) {
                 value = ShockDistribution.valueOf((String) value);
-            } else if (type.isAssignableFrom(ShockBackendType.class)) {
-                value = ShockBackendType.valueOf((String) value);
             } else if ((type.isAssignableFrom(Integer.class) || type.isAssignableFrom(int.class)) && value instanceof Number) {
                 value = ((Number) value).intValue();
             } else if ((type.isAssignableFrom(Float.class) || type.isAssignableFrom(float.class)) && value instanceof Number) {
@@ -121,13 +130,31 @@ public class PishockZapConfig {
             } else if (type.isAssignableFrom(List.class) && fieldIsListOfInteger(field)) {
                 // noinspection unchecked -- gets checked pretty damn quickly
                 value = ((List<Number>) value).stream().map(Number::intValue).collect(Collectors.toList());
+            } else if (type.isAssignableFrom(Int2ObjectArrayMap.class) && fieldIsMapOfIntToListOfInt(field) && value instanceof Map<?, ?> m) {
+                value = mapToInt2IntListMap(m);
             }
             setter.invoke(this, value);
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException | NumberFormatException e) {
             e.printStackTrace();
         } catch (IllegalArgumentException | ClassCastException e) {
             System.err.printf("Config value %s is not of type %s (got %s)%n", field.getName(), field.getType().getName(), value.getClass().getName());
         }
+    }
+
+    private static @NonNull Int2ObjectArrayMap<Object> mapToInt2IntListMap(Map<?, ?> m) {
+        var newValue = new Int2ObjectArrayMap<>(m.size());
+        for (var entry : m.entrySet()) {
+            // JSON keys are always strings
+            var mapKey = (String) entry.getKey();
+            var mapValue = (List<?>) entry.getValue();
+            var mapKeyInt = Integer.parseInt(mapKey);
+            var mapValueIntList = new IntArrayList(mapValue.size());
+            for (var integer : mapValue) {
+                mapValueIntList.add(((Number) integer).intValue());
+            }
+            newValue.put(mapKeyInt, mapValueIntList);
+        }
+        return newValue;
     }
 
     private @NonNull Map<String, Object> performConfigMigrations(@NonNull Map<String, Object> config) {
@@ -157,7 +184,19 @@ public class PishockZapConfig {
         if (configVersion < 2) {
             // Migrate from localEnabled to API type enum
             if (config.get("localEnabled") instanceof Boolean localEnabled) {
-                config.put("apiType", localEnabled ? ShockBackendType.SERIAL.name() : ShockBackendType.WEB_V1.name());
+                config.put("apiType", localEnabled ? "SERIAL" : "WEB_V1");
+            }
+        }
+
+        if (configVersion < 3) {
+            // Migrate from API type enum to registry
+            if (config.get("apiType") instanceof String s) {
+                config.put("apiType", switch (s) {
+                    case "SERIAL" -> DefaultShockBackends.PISHOCK_SERIAL;
+                    case "WEBHOOK" -> DefaultShockBackends.WEBHOOK;
+                    case "OPENSHOCK" -> DefaultShockBackends.OPENSHOCK_WEB;
+                    default -> DefaultShockBackends.PISHOCK_WEB_V1;
+                });
             }
         }
 
