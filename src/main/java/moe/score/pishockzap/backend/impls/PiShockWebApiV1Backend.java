@@ -10,7 +10,7 @@ import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.SimpleHttpRequestShockBackend;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.util.TriState;
-import org.apache.http.client.utils.URIBuilder;
+import moe.score.pishockzap.util.URIBuilder;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
@@ -153,16 +153,11 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
         }
 
         public CompletableFuture<UserProfile> getUserProfile(String username, String apiKey) {
-            return CompletableFuture.supplyAsync(() -> {
-                        try {
-                            return HttpRequest.newBuilder(new URIBuilder("https://auth.pishock.com/Auth/GetUserIfAPIKeyValid")
-                                    .addParameter("apikey", apiKey)
-                                    .addParameter("username", username)
-                                    .build()).build();
-                        } catch (URISyntaxException e) {
-                            throw new RuntimeException(e);
-                        }
-                    },
+            return CompletableFuture.supplyAsync(() ->
+                    HttpRequest.newBuilder(new URIBuilder("https://auth.pishock.com/Auth/GetUserIfAPIKeyValid")
+                        .addParameter("apikey", apiKey)
+                        .addParameter("username", username)
+                        .build()).build(),
                     executor
             ).thenComposeAsync(
                     req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
@@ -171,17 +166,12 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
         }
 
         private CompletableFuture<Map<String, List<Integer>>> getShareCodesByOwner(String apiKey, int userId) {
-            return CompletableFuture.supplyAsync(() -> {
-                        try {
-                            return HttpRequest.newBuilder(new URIBuilder("https://ps.pishock.com/PiShock/GetShareCodesByOwner")
-                                    .addParameter("UserId", String.valueOf(userId))
-                                    .addParameter("Token", apiKey)
-                                    .addParameter("api", "true")
-                                    .build()).build();
-                        } catch (URISyntaxException e) {
-                            throw new RuntimeException(e);
-                        }
-                    },
+            return CompletableFuture.supplyAsync(() ->
+                    HttpRequest.newBuilder(new URIBuilder("https://ps.pishock.com/PiShock/GetShareCodesByOwner")
+                        .addParameter("UserId", String.valueOf(userId))
+                        .addParameter("Token", apiKey)
+                        .addParameter("api", "true")
+                        .build()).build(),
                     executor
             ).thenComposeAsync(
                     req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
@@ -195,42 +185,33 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
 
         private @NonNull CompletableFuture<Map<String, List<ShareCodeInfo>>> getShockersByShareIds(String apiKey, int userId, List<Integer> shareIds) {
             return CompletableFuture.supplyAsync(
-                    () -> {
-                        try {
-                            URIBuilder builder = new URIBuilder("https://ps.pishock.com/PiShock/GetShockersByShareIds")
-                                    .addParameter("UserId", String.valueOf(userId))
-                                    .addParameter("Token", apiKey)
-                                    .addParameter("api", "true");
-                            for (int shareId : shareIds) {
-                                builder.addParameter("shareIds", String.valueOf(shareId));
-                            }
-                            return HttpRequest.newBuilder(builder.build()).build();
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    }, executor
+                () -> {
+                    URIBuilder builder = new URIBuilder("https://ps.pishock.com/PiShock/GetShockersByShareIds")
+                        .addParameter("UserId", String.valueOf(userId))
+                        .addParameter("Token", apiKey)
+                        .addParameter("api", "true");
+                    for (int shareId : shareIds) {
+                        builder.addParameter("shareIds", String.valueOf(shareId));
+                    }
+                    return HttpRequest.newBuilder(builder.build()).build();
+                }, executor
             ).thenComposeAsync(
-                    req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
-                    executor
+                req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
+                executor
             ).thenApplyAsync(
-                    resp -> gson.fromJson(resp.body(),
-                            new TypeToken<Map<String, List<ShareCodeInfo>>>() {
-                            }.getType()),
-                    executor);
+                resp -> gson.fromJson(resp.body(),
+                    new TypeToken<Map<String, List<ShareCodeInfo>>>() {
+                    }.getType()),
+                executor);
         }
 
         public @NonNull CompletableFuture<List<UserDevice>> getUserDevices(int userId, String apiKey) {
-            return CompletableFuture.supplyAsync(() -> {
-                    try {
-                        return HttpRequest.newBuilder(new URIBuilder("https://ps.pishock.com/PiShock/GetUserDevices")
-                            .addParameter("UserId", String.valueOf(userId))
-                            .addParameter("Token", apiKey)
-                            .addParameter("api", "true")
-                            .build()).build();
-                    } catch (URISyntaxException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
+            return CompletableFuture.supplyAsync(() ->
+                    HttpRequest.newBuilder(new URIBuilder("https://ps.pishock.com/PiShock/GetUserDevices")
+                        .addParameter("UserId", String.valueOf(userId))
+                        .addParameter("Token", apiKey)
+                        .addParameter("api", "true")
+                        .build()).build(),
                 executor
             ).thenComposeAsync(
                 req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
