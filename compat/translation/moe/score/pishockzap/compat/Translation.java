@@ -31,8 +31,7 @@ public final class Translation {
 
     public static @NonNull MutableText addLink(@NonNull MutableText text, @NonNull String url, @NonNull Text tooltip) {
         return text.styled(style ->
-            style.withClickEvent(new ClickEvent.OpenUrl(URI.create(url)))
-                .withHoverEvent(new HoverEvent.ShowText(tooltip))
+            TextStyle.setHoverText(TextStyle.setUrlOnClick(style, url), tooltip)
                 .withUnderline(true)
                 .withColor(Formatting.BLUE)
         );
