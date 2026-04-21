@@ -41,9 +41,8 @@ enable it manually.
 
 ## Requirements
 
-- Minecraft 1.21 (see the [Releases page][releases] or other branches for
-  other versions)
-- Fabric Loader 0.15.11
+- A supported Minecraft version (see the [Releases page][releases])
+- Fabric or Quilt
 - Fabric API
 - Cloth Config
 - Mod Menu (optional but strongly recommended; gives access to the settings

@@ -52,9 +52,14 @@ subprojects {
     }
 
     processResources {
-        inputs.property "version", version
-        filesMatching("fabric.mod.json") {
-            expand "version": version
+        def props = [
+            "version": version,
+            "minecraft_version_compat": minecraft_version_compat,
+            "java_version": java_language_version,
+        ]
+        inputs.properties props
+        filesMatching(["fabric.mod.json", "*.mixins.json"]) {
+            expand props
         }
     }
 

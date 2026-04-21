@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import moe.score.pishockzap.backend.ShockBackendRegistry;
 import moe.score.pishockzap.backend.impls.NullBackend;
+import moe.score.pishockzap.compat.KeyBindingCompat;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.frontend.ZapController;
@@ -41,13 +42,12 @@ public class PishockZapMod implements ClientModInitializer {
     @Getter
     private static @Nullable PishockZapMod instance = null;
 
-    private static final KeyBinding.Category keyBindingCategory = KeyBinding.Category.create(Identifier.of("pishock-zap", "general"));
-    private static final KeyBinding keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+    private static final KeyBinding keyBinding = KeyBindingCompat.registerKeyBinding(
         "key.pishock-zap.toggle",
         InputUtil.Type.KEYSYM,
         GLFW.GLFW_KEY_F12,
-        keyBindingCategory
-    ));
+        "general"
+    );
 
     private final Logger logger = Logger.getLogger(NAME);
     private final Path configFile = FabricLoader.getInstance().getConfigDir().resolve(NAME.toLowerCase() + ".json");

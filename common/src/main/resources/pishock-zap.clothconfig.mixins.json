@@ -1,7 +1,7 @@
 {
 	"required": false,
 	"package": "moe.score.pishockzap.mixin.clothconfig",
-	"compatibilityLevel": "JAVA_17",
+	"compatibilityLevel": "JAVA_${java_version}",
 	"client": [
 		"BaseListEntryMixin"
 	],

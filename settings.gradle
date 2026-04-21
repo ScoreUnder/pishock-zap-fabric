@@ -10,4 +10,4 @@ pluginManagement {
 }
 
 rootProject.name = 'pishock-zap'
-include 'mc1.21.9'
+include 'mc1.18.2', 'mc1.21.9'
