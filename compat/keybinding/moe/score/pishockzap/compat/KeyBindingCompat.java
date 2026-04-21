@@ -1,18 +1,18 @@
 package moe.score.pishockzap.compat;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import moe.score.pishockzap.PishockZapMod;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.resources.ResourceLocation;
 
 public class KeyBindingCompat {
-    public static KeyBinding registerKeyBinding(String id, InputUtil.Type type, int code, String path) {
-        return KeyBindingHelper.registerKeyBinding(new KeyBinding(
+    public static KeyMapping registerKeyBinding(String id, InputConstants.Type type, int code, String path) {
+        return KeyBindingHelper.registerKeyBinding(new KeyMapping(
             id,
             type,
             code,
-            KeyBinding.Category.create(Identifier.of(PishockZapMod.ID, path))
+            KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath(PishockZapMod.ID, path))
         ));
     }
 }

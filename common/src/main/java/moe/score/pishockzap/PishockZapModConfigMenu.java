@@ -23,14 +23,16 @@ import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.mixin.pool.ListEntryExt;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 import java.util.stream.Collectors;
@@ -124,7 +126,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         apiCategory.addEntry(entryBuilder.startTextDescription(
             Translation.of("description.pishock-zap.config.api_type",
-                Translation.of("enum.pishock-zap.config.api_type.websocket").styled(style -> style.withBold(true))
+                Translation.of("enum.pishock-zap.config.api_type.websocket").withStyle(style -> style.withBold(true))
             )).build());
 
         var webV1Category = entryBuilder
@@ -135,7 +137,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         webV1Category.add(entryBuilder.startTextDescription(
             Translation.of("description.pishock-zap.config.api.web_v1.deprecated")
-                .styled(style -> style.withBold(true).withColor(Formatting.RED))).build());
+                .withStyle(style -> style.withBold(true).withColor(ChatFormatting.RED))).build());
 
         var logIdentifierField = helper.addTextField("api.log_identifier", PishockZapConfig::getLogIdentifier, PishockZapConfig::setLogIdentifier);
 
@@ -187,7 +189,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .build());
 
         var piShockSerialPortEntry = entryBuilder
-            .startDropdownMenu(Translation.of("title.pishock-zap.config.api.serial_port"), config.getSerialPort(), Function.identity(), Text::of)
+            .startDropdownMenu(Translation.of("title.pishock-zap.config.api.serial_port"), config.getSerialPort(), Function.identity(), Translation::raw)
             .setSelections(PiShockSerialBackend.getSerialPorts())
             .setSaveConsumer(config::setSerialPort)
             .setTooltip(Translation.of("tooltip.pishock-zap.config.api.serial_port"))
@@ -257,19 +259,19 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         webhookCategory.add(entryBuilder.startTextDescription(
             Translation.of("description.pishock-zap.config.api.webhook",
                 Translation.of("description.pishock-zap.config.api.webhook.payload",
-                    Translation.raw("\"" + OpType.SHOCK.name() + "\"").styled(style ->
-                        TextStyle.setHoverText(style.withColor(Formatting.LIGHT_PURPLE).withUnderline(true),
+                    Translation.raw("\"" + OpType.SHOCK.name() + "\"").withStyle(style ->
+                        TextStyle.setHoverText(style.withColor(ChatFormatting.LIGHT_PURPLE).withUnderlined(true),
                             Translation.of("tooltip.pishock-zap.config.api.webhook.payload.operation", allOpTypes))),
-                    Translation.raw("26").styled(style ->
-                        TextStyle.setHoverText(style.withColor(Formatting.LIGHT_PURPLE).withUnderline(true),
+                    Translation.raw("26").withStyle(style ->
+                        TextStyle.setHoverText(style.withColor(ChatFormatting.LIGHT_PURPLE).withUnderlined(true),
                             Translation.of("tooltip.pishock-zap.config.api.webhook.payload.intensity"))),
-                    Translation.raw("1.2").styled(style ->
-                        TextStyle.setHoverText(style.withColor(Formatting.LIGHT_PURPLE).withUnderline(true),
+                    Translation.raw("1.2").withStyle(style ->
+                        TextStyle.setHoverText(style.withColor(ChatFormatting.LIGHT_PURPLE).withUnderlined(true),
                             Translation.of("tooltip.pishock-zap.config.api.webhook.payload.duration"))),
-                    Translation.raw("\"" + ShockDistribution.RANDOM.name() + "\"").styled(style ->
-                        TextStyle.setHoverText(style.withColor(Formatting.LIGHT_PURPLE).withUnderline(true),
+                    Translation.raw("\"" + ShockDistribution.RANDOM.name() + "\"").withStyle(style ->
+                        TextStyle.setHoverText(style.withColor(ChatFormatting.LIGHT_PURPLE).withUnderlined(true),
                             Translation.of("tooltip.pishock-zap.config.api.webhook.payload.distribution", allShockDistributions)))
-                ).styled(style -> style.withColor(Formatting.GRAY))
+                ).withStyle(style -> style.withColor(ChatFormatting.GRAY))
             )).build());
 
         apiCategory.addEntry(webhookCategory.build());
@@ -345,7 +347,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             Translation.of("title.pishock-zap.config.api.pishock.websocket.devices"),
             hubShockerMapToList(config.getPsHubShockers()),
             true,
-            () -> Optional.of(new Text[]{Translation.of("tooltip.pishock-zap.config.api.pishock.websocket.devices")}),
+            () -> Optional.of(new Component[]{Translation.of("tooltip.pishock-zap.config.api.pishock.websocket.devices")}),
             list -> {
                 var result = new Int2ObjectArrayMap<IntList>();
                 for (var pair : list) {
@@ -391,7 +393,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 websocketUserIdEntry.setValue(Integer.toString(profile.userId));
 
                 //noinspection ConstantValue
-                if ((Object)hubDeviceIdListEntry instanceof ListEntryExt ext) {
+                if ((Object) hubDeviceIdListEntry instanceof ListEntryExt ext) {
                     ext.pishockZap$addListEntries(devices.stream()
                         .map(d -> Pair.of(d.clientId, IntImmutableList.toList(d.shockers.stream()
                             .mapToInt(s -> s.shockerId)))).toList());
@@ -417,7 +419,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .toList();
     }
 
-    private static @NonNull Optional<Text> isShareCodeInvalid(@NonNull String shareCode) {
+    private static @NonNull Optional<Component> isShareCodeInvalid(@NonNull String shareCode) {
         if (shareCode.isBlank())
             return Optional.of(Translation.of("error.pishock-zap.config.api.share_codes.entry.empty"));
         if (shareCode.length() < 10 || !shareCode.matches("[0-9A-F]+")) {
@@ -506,7 +508,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             return entry;
         }
 
-        public StringListEntry addTextField(String keyPart, Function<PishockZapConfig, String> get, BiConsumer<PishockZapConfig, String> set, Function<String, Optional<Text>> errorSupplier) {
+        public StringListEntry addTextField(String keyPart, Function<PishockZapConfig, String> get, BiConsumer<PishockZapConfig, String> set, Function<String, Optional<Component>> errorSupplier) {
             StringListEntry field = entryBuilder
                 .startStrField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
                 .setSaveConsumer(v -> set.accept(config, v))
@@ -518,13 +520,13 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             return field;
         }
 
-        public IntegerListEntry addIntField(String keyPart, Function<PishockZapConfig, Integer> get, BiConsumer<PishockZapConfig, Integer> set, Function<Integer, Optional<Text>> errorSupplier) {
+        public IntegerListEntry addIntField(String keyPart, Function<PishockZapConfig, Integer> get, BiConsumer<PishockZapConfig, Integer> set, Function<Integer, Optional<Component>> errorSupplier) {
             var field = makeIntField(keyPart, get, set, errorSupplier);
             add(field);
             return field;
         }
 
-        public @NonNull IntegerListEntry makeIntField(String keyPart, Function<PishockZapConfig, Integer> get, BiConsumer<PishockZapConfig, Integer> set, Function<Integer, Optional<Text>> errorSupplier) {
+        public @NonNull IntegerListEntry makeIntField(String keyPart, Function<PishockZapConfig, Integer> get, BiConsumer<PishockZapConfig, Integer> set, Function<Integer, Optional<Component>> errorSupplier) {
             return entryBuilder
                 .startIntField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
                 .setSaveConsumer(v -> set.accept(config, v))
@@ -534,11 +536,11 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .build();
         }
 
-        public void addStringListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<String>> get, BiConsumer<PishockZapConfig, List<String>> set, Function<List<String>, Optional<Text>> errorSupplier, Function<String, Optional<Text>> cellErrorSupplier) {
+        public void addStringListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<String>> get, BiConsumer<PishockZapConfig, List<String>> set, Function<List<String>, Optional<Component>> errorSupplier, Function<String, Optional<Component>> cellErrorSupplier) {
             add(makeStringListFieldNoDefault(keyPart, get, set, errorSupplier, cellErrorSupplier));
         }
 
-        public @NonNull StringListListEntry makeStringListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<String>> get, BiConsumer<PishockZapConfig, List<String>> set, Function<List<String>, Optional<Text>> errorSupplier, Function<String, Optional<Text>> cellErrorSupplier) {
+        public @NonNull StringListListEntry makeStringListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<String>> get, BiConsumer<PishockZapConfig, List<String>> set, Function<List<String>, Optional<Component>> errorSupplier, Function<String, Optional<Component>> cellErrorSupplier) {
             return entryBuilder
                 .startStrList(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
                 .setSaveConsumer(v -> set.accept(config, v))
@@ -550,11 +552,11 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 .build();
         }
 
-        public void addIntListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<Integer>> get, BiConsumer<PishockZapConfig, List<Integer>> set, Function<List<Integer>, Optional<Text>> errorSupplier, Function<Integer, Optional<Text>> cellErrorSupplier) {
+        public void addIntListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<Integer>> get, BiConsumer<PishockZapConfig, List<Integer>> set, Function<List<Integer>, Optional<Component>> errorSupplier, Function<Integer, Optional<Component>> cellErrorSupplier) {
             add(makeIntListFieldNoDefault(keyPart, get, set, errorSupplier, cellErrorSupplier));
         }
 
-        public @NonNull IntegerListListEntry makeIntListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<Integer>> get, BiConsumer<PishockZapConfig, List<Integer>> set, Function<List<Integer>, Optional<Text>> errorSupplier, Function<Integer, Optional<Text>> cellErrorSupplier) {
+        public @NonNull IntegerListListEntry makeIntListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<Integer>> get, BiConsumer<PishockZapConfig, List<Integer>> set, Function<List<Integer>, Optional<Component>> errorSupplier, Function<Integer, Optional<Component>> cellErrorSupplier) {
             return entryBuilder
                 .startIntList(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
                 .setSaveConsumer(v -> set.accept(config, v))
@@ -570,7 +572,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             add(ButtonListEntry.builder()
                 .setButtonText(Translation.of("label.pishock-zap.config." + keyPart))
                 .setFieldName(Translation.of("title.pishock-zap.config." + keyPart))
-                .setTooltipSupplier(() -> Optional.of(new Text[]{Translation.of("tooltip.pishock-zap.config." + keyPart)}))
+                .setTooltipSupplier(() -> Optional.of(new Component[]{Translation.of("tooltip.pishock-zap.config." + keyPart)}))
                 .setOnClickCallback(btn -> {
                     btn.setEditable(false);
                     btn.setButtonText(Translation.of("label.pishock-zap.config." + keyPart + ".working"));
@@ -596,7 +598,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                             btn.setEditable(true);
                             btn.setButtonText(Translation.of("label.pishock-zap.config." + keyPart + ".error"));
                         }
-                    }, MinecraftClient.getInstance());
+                    }, Minecraft.getInstance());
                 })
                 .build());
         }

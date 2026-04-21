@@ -1,8 +1,8 @@
 package moe.score.pishockzap.mixin.client;
 
 import moe.score.pishockzap.PishockZapMod;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PlayerHpMixin {
     @Inject(at = @At("RETURN"), method = "setHealth")
     private void checkHpDamage(float health, CallbackInfo info) {
-        var mcPlayer = MinecraftClient.getInstance().player;
+        var mcPlayer = Minecraft.getInstance().player;
         if (mcPlayer != (Object) this) {
             return;
         }

@@ -1,7 +1,7 @@
 package moe.score.pishockzap;
 
 import lombok.NonNull;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.lang.ref.WeakReference;
 

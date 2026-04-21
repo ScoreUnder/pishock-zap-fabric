@@ -1,39 +1,35 @@
 package moe.score.pishockzap.compat;
 
 import lombok.NonNull;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-
-import java.net.URI;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 public final class Translation {
     private Translation() {
     }
 
-    public static @NonNull MutableText of(@NonNull String key) {
-        return Text.translatable(key);
+    public static @NonNull MutableComponent of(@NonNull String key) {
+        return Component.translatable(key);
     }
 
-    public static @NonNull MutableText of(@NonNull String key, Object... args) {
-        return Text.translatable(key, args);
+    public static @NonNull MutableComponent of(@NonNull String key, Object... args) {
+        return Component.translatable(key, args);
     }
 
-    public static @NonNull MutableText raw(@NonNull String text) {
-        return Text.literal(text);
+    public static @NonNull MutableComponent raw(@NonNull String text) {
+        return Component.literal(text);
     }
 
-    public static @NonNull MutableText addLink(@NonNull MutableText text, @NonNull String url) {
-        return addLink(text, url, Text.of(url));
+    public static @NonNull MutableComponent addLink(@NonNull MutableComponent text, @NonNull String url) {
+        return addLink(text, url, Component.literal(url));
     }
 
-    public static @NonNull MutableText addLink(@NonNull MutableText text, @NonNull String url, @NonNull Text tooltip) {
-        return text.styled(style ->
+    public static @NonNull MutableComponent addLink(@NonNull MutableComponent text, @NonNull String url, @NonNull Component tooltip) {
+        return text.withStyle(style ->
             TextStyle.setHoverText(TextStyle.setUrlOnClick(style, url), tooltip)
-                .withUnderline(true)
-                .withColor(Formatting.BLUE)
+                .withUnderlined(true)
+                .withColor(ChatFormatting.BLUE)
         );
     }
 }

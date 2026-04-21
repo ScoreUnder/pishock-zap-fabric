@@ -1,5 +1,6 @@
 package moe.score.pishockzap;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -11,14 +12,11 @@ import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.frontend.ZapController;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.text.Style;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Style;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -42,9 +40,9 @@ public class PishockZapMod implements ClientModInitializer {
     @Getter
     private static @Nullable PishockZapMod instance = null;
 
-    private static final KeyBinding keyBinding = KeyBindingCompat.registerKeyBinding(
+    private static final KeyMapping keyBinding = KeyBindingCompat.registerKeyBinding(
         "key.pishock-zap.toggle",
-        InputUtil.Type.KEYSYM,
+        InputConstants.Type.KEYSYM,
         GLFW.GLFW_KEY_F12,
         "general"
     );
@@ -90,7 +88,7 @@ public class PishockZapMod implements ClientModInitializer {
         }
 
         // Update HP watcher, because rounding behavior might have changed
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
             PlayerHp hpInfo = getPlayerHp(player);
             playerHpWatcher.updatePlayerHpBypassIgnore(hpInfo.hp());
@@ -118,7 +116,7 @@ public class PishockZapMod implements ClientModInitializer {
         applyConfigChanges();
     }
 
-    public void onPlayerHpChange(ClientPlayerEntity player) {
+    public void onPlayerHpChange(LocalPlayer player) {
         PlayerHp hpInfo = getPlayerHp(player);
         float damage = playerHpWatcher.updatePlayerHpAndGetDamage(player, hpInfo.hp());
 
@@ -130,7 +128,7 @@ public class PishockZapMod implements ClientModInitializer {
         zapController.queueShockForDamage(hpInfo.hp(), hpInfo.maxHealth(), damage);
     }
 
-    private @NonNull PlayerHp getPlayerHp(ClientPlayerEntity player) {
+    private @NonNull PlayerHp getPlayerHp(LocalPlayer player) {
         float hp = player.getHealth();
         float maxHealth = player.getMaxHealth();
         if (!config.isFractionalDamage()) {
@@ -156,7 +154,7 @@ public class PishockZapMod implements ClientModInitializer {
 
     private void registerToggleHotkey() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (keyBinding.wasPressed()) {
+            while (keyBinding.consumeClick()) {
                 config.setEnabled(!config.isEnabled());
                 saveConfig();
 
@@ -164,7 +162,7 @@ public class PishockZapMod implements ClientModInitializer {
                 if (player != null) {
                     Style color = Style.EMPTY.withColor(config.isEnabled() ? 0x00FF00 : 0xFF0000);
                     String key = "message.pishock-zap.toggle." + (config.isEnabled() ? "on" : "off");
-                    player.sendMessage(Translation.of(key).fillStyle(color), false);
+                    player.displayClientMessage(Translation.of(key).setStyle(color), false);
                 }
             }
         });

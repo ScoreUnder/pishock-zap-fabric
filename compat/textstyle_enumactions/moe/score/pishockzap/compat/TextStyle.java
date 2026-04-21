@@ -1,15 +1,15 @@
 package moe.score.pishockzap.compat;
 
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.Style;
 
 public class TextStyle {
     private TextStyle() {
     }
 
-    public static Style setHoverText(Style style, Text text) {
+    public static Style setHoverText(Style style, Component text) {
         return style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, text));
     }
 

@@ -3,7 +3,7 @@ package moe.score.pishockzap.mixin.clothconfig;
 import me.shedaniel.clothconfig2.gui.entries.AbstractListListEntry;
 import me.shedaniel.clothconfig2.gui.entries.BaseListEntry;
 import moe.score.pishockzap.mixin.pool.ListEntryExt;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,12 +24,12 @@ public abstract class BaseListEntryMixin extends BaseListEntry implements ListEn
     @Unique
     private BiFunction pishockZap$createNewListEntry;
 
-    private BaseListEntryMixin(@NotNull Text fieldName, @Nullable Supplier tooltipSupplier, @Nullable Supplier defaultValue, @NotNull Function createNewInstance, @Nullable Consumer saveConsumer, Text resetButtonKey) {
+    private BaseListEntryMixin(@NotNull Component fieldName, @Nullable Supplier tooltipSupplier, @Nullable Supplier defaultValue, @NotNull Function createNewInstance, @Nullable Consumer saveConsumer, Component resetButtonKey) {
         super(fieldName, tooltipSupplier, defaultValue, createNewInstance, saveConsumer, resetButtonKey);
     }
 
     @Inject(method = "<init>", at = @At(value = "RETURN"))
-    private void saveSuperConstructor(Text fieldName, List value, boolean defaultExpanded, Supplier tooltipSupplier, Consumer saveConsumer, Supplier defaultValue, Text resetButtonKey, boolean requiresRestart, boolean deleteButtonEnabled, boolean insertInFront, BiFunction createNewCell, CallbackInfo ci) {
+    private void saveSuperConstructor(Component fieldName, List value, boolean defaultExpanded, Supplier tooltipSupplier, Consumer saveConsumer, Supplier defaultValue, Component resetButtonKey, boolean requiresRestart, boolean deleteButtonEnabled, boolean insertInFront, BiFunction createNewCell, CallbackInfo ci) {
         pishockZap$createNewListEntry = createNewCell;
     }
 

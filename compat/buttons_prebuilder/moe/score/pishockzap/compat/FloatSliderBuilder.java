@@ -5,23 +5,23 @@
 
 package moe.score.pishockzap.compat;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 import lombok.NonNull;
 import me.shedaniel.clothconfig2.gui.entries.IntegerSliderEntry;
 import me.shedaniel.clothconfig2.impl.builders.AbstractSliderFieldBuilder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public class FloatSliderBuilder extends AbstractSliderFieldBuilder<Float, IntegerSliderEntry, FloatSliderBuilder> {
     private final float floatScale;
 
-    public FloatSliderBuilder(@NonNull Text resetButtonKey, @NonNull Text fieldNameKey, float value, float min, float max, float floatScale) {
+    public FloatSliderBuilder(@NonNull Component resetButtonKey, @NonNull Component fieldNameKey, float value, float min, float max, float floatScale) {
         super(resetButtonKey, fieldNameKey);
         this.value = value;
         this.max = max;
@@ -29,18 +29,19 @@ public class FloatSliderBuilder extends AbstractSliderFieldBuilder<Float, Intege
         this.floatScale = floatScale;
     }
 
-    public FloatSliderBuilder(@NonNull Text resetButtonKey, @NonNull Text fieldNameKey, float value, float min, float max) {
+    public FloatSliderBuilder(@NonNull Component resetButtonKey, @NonNull Component fieldNameKey, float value, float min, float max) {
         this(resetButtonKey, fieldNameKey, value, min, max, 1000.0f);
     }
 
+    @SuppressWarnings({"deprecation", "UnstableApiUsage"})
     public @NonNull IntegerSliderEntry build() {
         IntegerSliderEntry entry = new IntegerSliderEntry(this.getFieldNameKey(), Math.round(this.min * floatScale), Math.round(this.max * floatScale), Math.round(this.value * floatScale), this.getResetButtonKey(), getDefaultValueScaled(), getSaveConsumerScaled(), null, this.isRequireRestart());
-        Function<Float, Text> textGetter = this.textGetter;
+        Function<Float, Component> textGetter = this.textGetter;
         if (textGetter != null) {
-            Function<Integer, Text> textGetterScaled = (value) -> textGetter.apply(value / floatScale);
+            Function<Integer, Component> textGetterScaled = (value) -> textGetter.apply(value / floatScale);
             entry.setTextGetter(textGetterScaled);
         } else {
-            entry.setTextGetter((value) -> Text.of(String.format("%.3f", value / floatScale)));
+            entry.setTextGetter((value) -> Translation.raw(String.format("%.3f", value / floatScale)));
         }
 
         entry.setTooltipSupplier(() -> this.getTooltipSupplier().apply(entry.getValue() / floatScale));
