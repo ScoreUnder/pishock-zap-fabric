@@ -4,9 +4,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.backend.OpType;
+import moe.score.pishockzap.backend.ShockBackend;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
-import moe.score.pishockzap.backend.ShockBackend;
 
 import java.util.logging.Logger;
 

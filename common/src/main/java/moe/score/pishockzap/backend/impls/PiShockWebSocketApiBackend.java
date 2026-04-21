@@ -14,7 +14,6 @@ import moe.score.pishockzap.util.TriState;
 import moe.score.pishockzap.util.URIBuilder;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.util.ArrayList;

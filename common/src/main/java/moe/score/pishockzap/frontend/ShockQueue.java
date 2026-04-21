@@ -4,10 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import moe.score.pishockzap.PishockZapMod;
-import moe.score.pishockzap.config.PishockZapConfig;
-import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.PiShockUtils;
+import moe.score.pishockzap.config.PishockZapConfig;
+import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.util.Either;
 
 import java.util.concurrent.BlockingQueue;

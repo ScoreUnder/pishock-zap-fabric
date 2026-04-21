@@ -1,6 +1,5 @@
 package moe.score.pishockzap.backend.impls;
 
-import com.google.gson.Gson;
 import lombok.NonNull;
 import moe.score.pishockzap.backend.BulkHttpRequestShockBackend;
 import moe.score.pishockzap.backend.OpType;
