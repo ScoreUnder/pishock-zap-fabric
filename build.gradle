@@ -1,14 +1,17 @@
 plugins {
     id 'base'
+    id 'net.fabricmc.fabric-loom' version "$loom_version" apply false
     id 'net.fabricmc.fabric-loom-remap' version "$loom_version" apply false
     id 'maven-publish'
     id 'io.freefair.lombok' version '9.2.0' apply false
 }
 
 tasks.register('collectJars', Copy) {
-    dependsOn subprojects.collect { it.tasks.named('remapJar') }
-
-    from subprojects.collect { it.tasks.named('remapJar') }
+    def jarTasks = subprojects.collect { sub ->
+        sub.tasks.findByName('remapJar') ? sub.tasks.named('remapJar') : sub.tasks.named('jar')
+    }
+    dependsOn jarTasks
+    from jarTasks
     into layout.buildDirectory.dir('libs')
 }
 
@@ -17,7 +20,7 @@ tasks.named('build') {
 }
 
 subprojects {
-    apply plugin: 'net.fabricmc.fabric-loom-remap'
+    apply plugin: "${project.loom_plugin}"
     apply plugin: 'maven-publish'
     apply plugin: 'io.freefair.lombok'
 
@@ -36,21 +39,26 @@ subprojects {
     }
 
     dependencies {
+        def modImpl = configurations.findByName('modImplementation') ? 'modImplementation' : 'implementation'
+        def modApi = configurations.findByName('modApi') ? 'modApi' : 'api'
+
         minecraft "com.mojang:minecraft:${project.minecraft_version}"
-        if (findProperty('yarn_mappings')) {
-            mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-        } else if (findProperty('parchment_mappings')) {
-            mappings loom.layered() {
-                officialMojangMappings()
-                parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:${project.parchment_mappings}@zip")
+        if (project.loom_plugin.endsWith("remap")) {
+            if (findProperty('yarn_mappings')) {
+                mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+            } else if (findProperty('parchment_mappings')) {
+                mappings loom.layered() {
+                    officialMojangMappings()
+                    parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:${project.parchment_mappings}@zip")
+                }
+            } else {
+                mappings loom.officialMojangMappings()
             }
-        } else {
-            mappings loom.officialMojangMappings()
         }
-        modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-        modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-        modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
-        modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+        "${modImpl}" "net.fabricmc:fabric-loader:${project.loader_version}"
+        "${modImpl}" "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+        "${modImpl}" "com.terraformersmc:modmenu:${project.modmenu_version}"
+        "${modApi}"("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
             exclude(group: "net.fabricmc.fabric-api")
         }
         implementation "com.fazecast:jSerialComm:[2.0.0,3.0.0)"

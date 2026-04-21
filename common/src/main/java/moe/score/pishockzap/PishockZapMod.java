@@ -7,6 +7,7 @@ import lombok.NonNull;
 import moe.score.pishockzap.backend.ShockBackendRegistry;
 import moe.score.pishockzap.backend.impls.NullBackend;
 import moe.score.pishockzap.compat.KeyBindingCompat;
+import moe.score.pishockzap.compat.PlayerCompat;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.frontend.ZapController;
@@ -162,7 +163,7 @@ public class PishockZapMod implements ClientModInitializer {
                 if (player != null) {
                     Style color = Style.EMPTY.withColor(config.isEnabled() ? 0x00FF00 : 0xFF0000);
                     String key = "message.pishock-zap.toggle." + (config.isEnabled() ? "on" : "off");
-                    player.displayClientMessage(Translation.of(key).setStyle(color), false);
+                    PlayerCompat.displayInChat(player, Translation.of(key).setStyle(color));
                 }
             }
         });
