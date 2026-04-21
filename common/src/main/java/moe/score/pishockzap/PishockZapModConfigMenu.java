@@ -2,7 +2,10 @@ package moe.score.pishockzap;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
@@ -10,22 +13,19 @@ import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.gui.entries.*;
-import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.ShockBackendRegistry;
 import moe.score.pishockzap.backend.impls.OpenShockWebApiBackend;
 import moe.score.pishockzap.backend.impls.PiShockSerialBackend;
 import moe.score.pishockzap.backend.impls.PiShockWebApiV1Backend;
-import moe.score.pishockzap.compat.ButtonListEntry;
-import moe.score.pishockzap.compat.FloatSliderBuilder;
-import moe.score.pishockzap.compat.TextStyle;
-import moe.score.pishockzap.compat.Translation;
+import moe.score.pishockzap.compat.*;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.mixin.pool.ListEntryExt;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.net.URL;
@@ -67,8 +67,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         var limitsCategory = configBuilder.getOrCreateCategory(Translation.of("title.pishock-zap.config.limits"));
 
-        var shockLimitsCategory = entryBuilder
-            .startSubCategory(Translation.of("title.pishock-zap.config.limits.shock_limits"));
+        var shockLimitsCategory = BuilderCompat
+            .subCategory(entryBuilder, Translation.of("title.pishock-zap.config.limits.shock_limits"));
         helper.setCategory(shockLimitsCategory);
 
         helper.addFloatSlider("limits.duration", "duration", PishockZapConfig::getDuration, PishockZapConfig::setDuration, 0.1f, PISHOCK_MAX_DURATION);
@@ -82,8 +82,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         shockLimitsCategory.setExpanded(true);
         limitsCategory.addEntry(shockLimitsCategory.build());
 
-        var damageThresholdsCategory = entryBuilder
-            .startSubCategory(Translation.of("title.pishock-zap.config.limits.damage_thresholds"));
+        var damageThresholdsCategory = BuilderCompat
+            .subCategory(entryBuilder, Translation.of("title.pishock-zap.config.limits.damage_thresholds"));
         helper.setCategory(damageThresholdsCategory);
 
         helper.addFloatSlider("limits.vibration_threshold", "hp", PishockZapConfig::getVibrationThreshold, PishockZapConfig::setVibrationThreshold, 0, 1, 100, 100);
@@ -93,8 +93,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         damageThresholdsCategory.setExpanded(true);
         limitsCategory.addEntry(damageThresholdsCategory.build());
 
-        var shockOnDeathCategory = entryBuilder
-            .startSubCategory(Translation.of("title.pishock-zap.config.limits.shock_on_death_category"));
+        var shockOnDeathCategory = BuilderCompat
+            .subCategory(entryBuilder, Translation.of("title.pishock-zap.config.limits.shock_on_death_category"));
         helper.setCategory(shockOnDeathCategory);
 
         helper.addBooleanSwitch("general.shock_on_death", PishockZapConfig::isShockOnDeath, PishockZapConfig::setShockOnDeath);
@@ -129,8 +129,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 Translation.of("enum.pishock-zap.config.api_type.websocket").withStyle(style -> style.withBold(true))
             )).build());
 
-        var webV1Category = entryBuilder
-            .startSubCategory(Translation.of("title.pishock-zap.config.api.web_v1"))
+        var webV1Category = BuilderCompat
+            .subCategory(entryBuilder, Translation.of("title.pishock-zap.config.api.web_v1"))
             .setExpanded(true)
             .setDisplayRequirement(() -> DefaultShockBackends.PISHOCK_WEB_V1.equals(apiTypeSwitcher.getValue()));
         helper.setCategory(webV1Category);
@@ -179,8 +179,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         apiCategory.addEntry(webV1Category.build());
 
-        SubCategoryBuilder localApiCategory = entryBuilder
-            .startSubCategory(Translation.of("title.pishock-zap.config.api.local"))
+        var localApiCategory = BuilderCompat
+            .subCategory(entryBuilder, Translation.of("title.pishock-zap.config.api.local"))
             .setExpanded(true)
             .setDisplayRequirement(() -> DefaultShockBackends.PISHOCK_SERIAL.equals(apiTypeSwitcher.getValue()));
         helper.setCategory(localApiCategory);
@@ -230,8 +230,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         apiCategory.addEntry(localApiCategory.build());
 
-        var webhookCategory = entryBuilder
-            .startSubCategory(Translation.of("title.pishock-zap.config.api.webhook"))
+        var webhookCategory = BuilderCompat
+            .subCategory(entryBuilder, Translation.of("title.pishock-zap.config.api.webhook"))
             .setExpanded(true)
             .setDisplayRequirement(() -> DefaultShockBackends.WEBHOOK.equals(apiTypeSwitcher.getValue()));
         helper.setCategory(webhookCategory);
@@ -276,8 +276,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         apiCategory.addEntry(webhookCategory.build());
 
-        var openShockApiCategory = entryBuilder
-            .startSubCategory(Translation.of("title.pishock-zap.config.api.openshock"))
+        var openShockApiCategory = BuilderCompat
+            .subCategory(entryBuilder, Translation.of("title.pishock-zap.config.api.openshock"))
             .setExpanded(true)
             .setDisplayRequirement(() -> DefaultShockBackends.OPENSHOCK_WEB.equals(apiTypeSwitcher.getValue()));
         helper.setCategory(openShockApiCategory);
@@ -321,8 +321,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         apiCategory.addEntry(openShockApiCategory.build());
 
-        var openShockSerialApiCategory = entryBuilder
-            .startSubCategory(Translation.of("title.pishock-zap.config.api.openshock.serial"))
+        var openShockSerialApiCategory = BuilderCompat
+            .subCategory(entryBuilder, Translation.of("title.pishock-zap.config.api.openshock.serial"))
             .setExpanded(true)
             .setDisplayRequirement(() -> DefaultShockBackends.OPENSHOCK_SERIAL.equals(apiTypeSwitcher.getValue()));
         helper.setCategory(openShockSerialApiCategory);
@@ -333,8 +333,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         apiCategory.addEntry(openShockSerialApiCategory.build());
 
-        var piShockWebSocketApiCategory = entryBuilder
-            .startSubCategory(Translation.of("title.pishock-zap.config.api.pishock.websocket"))
+        var piShockWebSocketApiCategory = BuilderCompat
+            .subCategory(entryBuilder, Translation.of("title.pishock-zap.config.api.pishock.websocket"))
             .setExpanded(true)
             .setDisplayRequirement(() -> DefaultShockBackends.PISHOCK_WEBSOCKET.equals(apiTypeSwitcher.getValue()));
         helper.setCategory(piShockWebSocketApiCategory);
@@ -395,8 +395,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 //noinspection ConstantValue
                 if ((Object) hubDeviceIdListEntry instanceof ListEntryExt ext) {
                     ext.pishockZap$addListEntries(devices.stream()
-                        .map(d -> Pair.of(d.clientId, IntImmutableList.toList(d.shockers.stream()
-                            .mapToInt(s -> s.shockerId)))).toList());
+                        .map(d -> Pair.of(d.clientId, IntArrayList.wrap(d.shockers.stream()
+                            .mapToInt(s -> s.shockerId).toArray()))).toList());
                 }
             });
 
@@ -611,7 +611,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             addEntry = category::addEntry;
         }
 
-        public void setCategory(SubCategoryBuilder category) {
+        public void setCategory(BuilderCompat.SubCategoryBuilderCompat category) {
             addEntry = category::add;
         }
     }

@@ -1,6 +1,6 @@
 package moe.score.pishockzap.util;
 
-public sealed interface Either<L, R> {
+public interface Either<L, R> {
     boolean isLeft();
 
     default boolean isRight() {

@@ -1,7 +1,10 @@
 package moe.score.pishockzap.config;
 
 import com.google.common.collect.ImmutableList;
-import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.Data;
 import lombok.NonNull;
 import moe.score.pishockzap.DefaultShockBackends;
@@ -108,7 +111,7 @@ public class PishockZapConfig {
     /// PiShock (WebSocket backend) user ID
     private int psUserId = -1;
     /// PiShock (WebSocket backend) hub/shocker mapping
-    private Int2ObjectMap<IntList> psHubShockers = new Int2ObjectArrayMap<>(new int[]{1234}, new Object[]{IntImmutableList.of(12345)});
+    private Int2ObjectMap<IntList> psHubShockers = new Int2ObjectArrayMap<>(new int[]{1234}, new Object[]{IntArrayList.wrap(new int[]{12345})});
 
     private boolean fieldIsListOfInteger(@NonNull Field field) {
         return field.getName().equals("deviceIds");
