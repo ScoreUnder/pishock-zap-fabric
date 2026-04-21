@@ -61,7 +61,7 @@ This approach is recommended for users who are not familiar with modding.
 2. Download and install [Prism Launcher].
 3. Open Prism Launcher and click "Add Instance".
 4. Create a new custom instance
-    * Choose a Minecraft version in the 1.21 series.
+    * Choose a Minecraft version
     * Choose either Fabric or Quilt as the mod loader, at the latest version.
     * Click OK.
 5. Right-click your newly-created instance and click "Edit".
