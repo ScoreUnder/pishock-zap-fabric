@@ -131,4 +131,8 @@ subprojects {
 
     sourceSets.main.java.srcDirs += compat_sources.split(',').collect { rootProject.file("compat/$it") } + [rootProject.file('common/src/main/java')]
     sourceSets.main.resources.srcDirs += compat_sources.split(',').collect { rootProject.file("compat/${it}_res") } + [rootProject.file('common/src/main/resources')]
+
+    if (project.java_language_version.toInteger() >= 17) {
+        sourceSets.test.java.srcDirs += [rootProject.file('common/src/test/java')]
+    }
 }
