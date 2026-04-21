@@ -10,7 +10,8 @@ import lombok.experimental.Accessors;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.backend.BulkHttpRequestShockBackend;
 import moe.score.pishockzap.backend.OpType;
-import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;import moe.score.pishockzap.config.PishockZapConfig;
+import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
+import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import org.jetbrains.annotations.Nullable;
 
