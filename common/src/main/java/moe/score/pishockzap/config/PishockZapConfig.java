@@ -1,6 +1,7 @@
 package moe.score.pishockzap.config;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.reflect.TypeToken;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -9,6 +10,8 @@ import lombok.Data;
 import lombok.NonNull;
 import moe.score.pishockzap.DefaultShockBackends;
 import moe.score.pishockzap.PishockZapMod;
+import moe.score.pishockzap.backend.model.openshock.ShockDevice;
+import moe.score.pishockzap.util.Gsons;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -113,12 +116,19 @@ public class PishockZapConfig {
     /// PiShock (WebSocket backend) hub/shocker mapping
     private Int2ObjectMap<IntList> psHubShockers = new Int2ObjectArrayMap<>(new int[]{1234}, new Object[]{IntArrayList.wrap(new int[]{12345})});
 
+    /// OpenShock devices for serial use
+    private @NonNull List<ShockDevice> openShockSerialDevices = List.of();
+
     private boolean fieldIsListOfInteger(@NonNull Field field) {
         return field.getName().equals("deviceIds");
     }
 
     private boolean fieldIsMapOfIntToListOfInt(@NonNull Field field) {
         return field.getName().equals("psHubShockers");
+    }
+
+    private boolean fieldIsListOfOpenShockDevice(@NonNull Field field) {
+        return field.getName().equals("openShockSerialDevices");
     }
 
     @SuppressWarnings("unchecked")
@@ -134,6 +144,9 @@ public class PishockZapConfig {
             } else if (type.isAssignableFrom(List.class) && fieldIsListOfInteger(field)) {
                 // Unchecked cast, but quickly checked when doing `Number::intValue`
                 value = ((List<Number>) value).stream().map(Number::intValue).collect(Collectors.toList());
+            } else if (type.isAssignableFrom(List.class) && fieldIsListOfOpenShockDevice(field)) {
+                value = Gsons.gson.fromJson(Gsons.gson.toJson(value), new TypeToken<List<ShockDevice>>() {
+                }.getType());
             } else if (type.isAssignableFrom(Int2ObjectArrayMap.class) && fieldIsMapOfIntToListOfInt(field) && value instanceof Map<?, ?> m) {
                 value = mapToInt2IntListMap(m);
             }

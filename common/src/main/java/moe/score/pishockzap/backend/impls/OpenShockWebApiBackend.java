@@ -3,12 +3,14 @@ package moe.score.pishockzap.backend.impls;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.experimental.Accessors;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.backend.BulkHttpRequestShockBackend;
 import moe.score.pishockzap.backend.OpType;
-import moe.score.pishockzap.config.PishockZapConfig;
+import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import org.jetbrains.annotations.Nullable;
 
@@ -93,6 +95,10 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
     }
 
     public static CompletableFuture<List<String>> probeDeviceIds(String apiToken) {
+        return probeDevices(apiToken).thenApply(ds -> ds.stream().map(d -> d.id).toList());
+    }
+
+    public static CompletableFuture<List<Shocker>> probeDevices(String apiToken) {
         var executor = new CompletableFuture<Void>().defaultExecutor();
         @SuppressWarnings("resource")
         var httpClient = HttpClient.newBuilder().executor(executor).build();
@@ -101,16 +107,16 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
             req.setHeader(header.getKey(), header.getValue());
         }
         return httpClient.sendAsync(req.build(), HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
-                .thenApply(result -> {
-                    ResponseMessage<List<Hub>> response = gson.fromJson(
-                            result.body(),
-                            new TypeToken<ResponseMessage<List<Hub>>>() {
-                            }.getType());
-                    if (response.data == null || (response.data.isEmpty() && !response.message.isBlank())) {
-                        throw new RuntimeException("Error from OpenShock API: " + response.message);
-                    }
-                    return response.data.stream().flatMap(h -> h.shockers.stream()).map(s -> s.id).toList();
-                });
+            .thenApply(result -> {
+                ResponseMessage<List<Hub>> response = gson.fromJson(
+                    result.body(),
+                    new TypeToken<ResponseMessage<List<Hub>>>() {
+                    }.getType());
+                if (response.data == null || (response.data.isEmpty() && !response.message.isBlank())) {
+                    throw new RuntimeException("Error from OpenShock API: " + response.message);
+                }
+                return response.data.stream().flatMap(h -> h.shockers.stream()).toList();
+            });
     }
 
     @AllArgsConstructor
@@ -152,12 +158,14 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
     }
 
     @NoArgsConstructor
+    @Getter
+    @Accessors(fluent = true)
     public static class Shocker {
         String name;
         boolean isPaused;
         String createdOn;
         String id;
         int rfId;
-        String model;
+        ShockCollarModel model;
     }
 }

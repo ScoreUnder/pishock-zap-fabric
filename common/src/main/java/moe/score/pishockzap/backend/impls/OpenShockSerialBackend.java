@@ -4,6 +4,8 @@ import com.google.gson.annotations.SerializedName;
 import lombok.NonNull;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.SerialBackend;
+import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
+import moe.score.pishockzap.backend.model.openshock.ShockDevice;
 import moe.score.pishockzap.config.PishockZapConfig;
 
 import java.util.List;
@@ -11,7 +13,7 @@ import java.util.concurrent.Executor;
 
 import static moe.score.pishockzap.util.Gsons.gson;
 
-public class OpenShockSerialBackend extends SerialBackend<OpenShockSerialBackend.ShockDevice> {
+public class OpenShockSerialBackend extends SerialBackend<ShockDevice> {
     public OpenShockSerialBackend(@NonNull PishockZapConfig config, @NonNull Executor executor) {
         super(config, executor);
     }
@@ -28,8 +30,7 @@ public class OpenShockSerialBackend extends SerialBackend<OpenShockSerialBackend
 
     @Override
     public boolean isConfigured() {
-        // TODO: sharing pishock's config
-        if (config.getDeviceIds().isEmpty()) {
+        if (getDevices().isEmpty()) {
             logger.warning("No shocker IDs configured");
             return false;
         }
@@ -42,13 +43,13 @@ public class OpenShockSerialBackend extends SerialBackend<OpenShockSerialBackend
 
     @Override
     protected List<ShockDevice> getDevices() {
-        return config.getDeviceIds().stream().map(i -> new ShockDevice(ShockCollarModel.CAIXIANLIN, i)).toList();
+        return config.getOpenShockSerialDevices();
     }
 
     @Override
     protected String getOperationData(@NonNull OpType op, int intensity, float duration, ShockDevice device) {
         var payload = new RfTransmitPayload(
-            device.model, device.id,
+            device.model(), device.id(),
             ShockerCommandType.of(op), intensity, Math.round(duration * 1000));
         // longest valid string without extra spacing:
         // "rftransmit {"model":"petrainer998dr","id":65535,"type":"vibrate","intensity":255,"durationMs":65535}"
@@ -59,19 +60,8 @@ public class OpenShockSerialBackend extends SerialBackend<OpenShockSerialBackend
         return sb.toString();
     }
 
-    public record ShockDevice(ShockCollarModel model, int id) {
-    }
-
     public record RfTransmitPayload(
         ShockCollarModel model, int id, ShockerCommandType type, int intensity, int durationMs) {
-    }
-
-    public enum ShockCollarModel {
-        @SerializedName("caixianlin") CAIXIANLIN,
-        @SerializedName("petrainer") PETRAINER,
-        @SerializedName("petrainer998dr") PETRAINER_998DR,
-        @SerializedName("wellturnt330") WELLTURN_T330,
-        @SerializedName("d80") D80,
     }
 
     public enum ShockerCommandType {

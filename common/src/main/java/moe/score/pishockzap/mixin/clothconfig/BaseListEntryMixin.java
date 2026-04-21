@@ -42,7 +42,7 @@ public abstract class BaseListEntryMixin extends BaseListEntry implements ListEn
     }
 
     @Override
-    public void pishockZap$addListEntries(Iterable<?> values) {
+    public void pishockZap$addListEntries(Iterable values) {
         for (var v : values)  {
             pishockZap$addListEntry(v);
         }

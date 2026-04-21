@@ -18,6 +18,8 @@ import moe.score.pishockzap.backend.ShockBackendRegistry;
 import moe.score.pishockzap.backend.impls.OpenShockWebApiBackend;
 import moe.score.pishockzap.backend.impls.PiShockSerialBackend;
 import moe.score.pishockzap.backend.impls.PiShockWebApiV1Backend;
+import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
+import moe.score.pishockzap.backend.model.openshock.ShockDevice;
 import moe.score.pishockzap.compat.*;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
@@ -29,10 +31,7 @@ import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 import java.util.stream.Collectors;
@@ -165,11 +164,14 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             return isShareCodeInvalid(shareCode);
         });
 
-        if (piShockShareCodesField instanceof ListEntryExt piShockSerialDeviceIdsExt) {
-            helper.addActionButton(
-                "api.web_v1.add_my_ids",
-                () -> new PiShockWebApiV1Backend.HttpBackend().probeShareCodes(piShockUsernameEntry.getValue(), piShockApiKeyEntry.getValue()),
-                piShockSerialDeviceIdsExt::pishockZap$addListEntries);
+        {
+            var piShockSerialDeviceIdsExt = ListEntryExt.of(piShockShareCodesField);
+            if (piShockSerialDeviceIdsExt != null) {
+                helper.addActionButton(
+                    "api.web_v1.add_my_ids",
+                    () -> new PiShockWebApiV1Backend.HttpBackend().probeShareCodes(piShockUsernameEntry.getValue(), piShockApiKeyEntry.getValue()),
+                    piShockSerialDeviceIdsExt::pishockZap$addListEntries);
+            }
         }
 
         helper.add(piShockShareCodesField);
@@ -219,11 +221,14 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             return Optional.empty();
         });
 
-        if (piShockSerialDeviceIdField instanceof ListEntryExt piShockSerialDeviceIdsExt) {
-            helper.addActionButton(
-                "api.local.add_my_ids",
-                () -> PiShockSerialBackend.probeDeviceIds(piShockSerialPortEntry.getValue()),
-                piShockSerialDeviceIdsExt::pishockZap$addListEntries);
+        {
+            var piShockSerialDeviceIdsExt = ListEntryExt.of(piShockSerialDeviceIdField);
+            if (piShockSerialDeviceIdsExt != null) {
+                helper.addActionButton(
+                    "api.local.add_my_ids",
+                    () -> PiShockSerialBackend.probeDeviceIds(piShockSerialPortEntry.getValue()),
+                    piShockSerialDeviceIdsExt::pishockZap$addListEntries);
+            }
         }
 
         helper.add(piShockSerialDeviceIdField);
@@ -306,11 +311,14 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             }
         );
 
-        if (openShockDeviceIdField instanceof ListEntryExt openShockDeviceIdsExt) {
-            helper.addActionButton(
-                "api.openshock.add_my_ids",
-                () -> OpenShockWebApiBackend.probeDeviceIds(openShockApiTokenField.getValue()),
-                openShockDeviceIdsExt::pishockZap$addListEntries);
+        {
+            var openShockDeviceIdsExt = ListEntryExt.of(openShockDeviceIdField);
+            if (openShockDeviceIdsExt != null) {
+                helper.addActionButton(
+                    "api.openshock.add_my_ids",
+                    () -> OpenShockWebApiBackend.probeDeviceIds(openShockApiTokenField.getValue()),
+                    openShockDeviceIdsExt::pishockZap$addListEntries);
+            }
         }
 
         helper.add(openShockDeviceIdField);
@@ -330,6 +338,49 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         openShockSerialApiCategory.add(entryBuilder
             .startTextDescription(Translation.of("description.pishock-zap.config.api.openshock.serial"))
             .build());
+
+        var openShockDeviceListEntry = new NestedListListEntry<ShockDevice, MultiElementListEntry<ShockDevice>>(
+            Translation.of("title.pishock-zap.config.api.openshock.serial.devices"),
+            config.getOpenShockSerialDevices(),
+            true,
+            () -> Optional.of(new Component[]{Translation.of("tooltip.pishock-zap.config.api.openshock.serial.devices")}),
+            config::setOpenShockSerialDevices,
+            defaultConfig::getOpenShockSerialDevices,
+            entryBuilder.getResetButtonKey(),
+            true,
+            true,
+            (elem, nestedListListEntry) -> {
+                if (elem == null) {
+                    elem = new ShockDevice(ShockCollarModel.CAIXIANLIN, 0);
+                }
+                return new MultiElementListEntry<>(Translation.of("title.pishock-zap.config.api.openshock.serial.devices.entry"), elem,
+                    List.of(
+                        entryBuilder.startIntField(Translation.of("title.pishock-zap.config.api.openshock.serial.devices.entry.id"), elem.id()).build(),
+                        createOpenShockCollarModelDropdown(entryBuilder, "api.openshock.serial.devices.entry.model", elem.model())),
+                    true);
+            }
+        );
+
+        {
+            var openShockDeviceListEntryExt = ListEntryExt.of(openShockDeviceListEntry);
+            if (openShockDeviceListEntryExt != null) {
+                var fetchOpenShockSerialDataCategory = BuilderCompat
+                    .subCategory(entryBuilder, Translation.of("title.pishock-zap.config.api.openshock.serial.fetch"));
+                helper.pushCategory(fetchOpenShockSerialDataCategory);
+
+                helper.add(openShockApiTokenField);
+                helper.addActionButton("api.openshock.serial.fetch.button",
+                    () -> OpenShockWebApiBackend.probeDevices(openShockApiTokenField.getValue()),
+                    result -> result.stream().map(s -> new ShockDevice(s.model(), s.rfId()))
+                        .forEachOrdered(openShockDeviceListEntryExt::pishockZap$addListEntry));
+
+                helper.popCategory();
+                helper.add(fetchOpenShockSerialDataCategory.build());
+            }
+        }
+
+        helper.add(piShockSerialPortEntry);
+        helper.add(openShockDeviceListEntry);
 
         apiCategory.addEntry(openShockSerialApiCategory.build());
 
@@ -392,10 +443,10 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 //noinspection deprecation
                 websocketUserIdEntry.setValue(Integer.toString(profile.userId));
 
-                //noinspection ConstantValue
-                if ((Object) hubDeviceIdListEntry instanceof ListEntryExt ext) {
+                var ext = ListEntryExt.of(hubDeviceIdListEntry);
+                if (ext != null) {
                     ext.pishockZap$addListEntries(devices.stream()
-                        .map(d -> Pair.of(d.clientId, IntArrayList.wrap(d.shockers.stream()
+                        .map(d -> Pair.<Integer, IntList>of(d.clientId, IntArrayList.wrap(d.shockers.stream()
                             .mapToInt(s -> s.shockerId).toArray()))).toList());
                 }
             });
@@ -437,6 +488,14 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .build();
     }
 
+    private static @NonNull AbstractConfigListEntry<ShockCollarModel> createOpenShockCollarModelDropdown(@NonNull ConfigEntryBuilder builder, String key, ShockCollarModel def) {
+        return builder.startEnumSelector(Translation.of("title.pishock-zap.config." + key), ShockCollarModel.class, def)
+            .setDefaultValue(def)
+            .setEnumNameProvider((value) -> Translation.raw(value.name()))
+            .setTooltip(Translation.of("tooltip.pishock-zap.config." + key))
+            .build();
+    }
+
     @Override
     public @NonNull ConfigScreenFactory<?> getModConfigScreenFactory() {
         return PishockZapModConfigMenu::createConfigScreen;
@@ -448,6 +507,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         private final PishockZapConfig defaultConfig;
         private final ConfigEntryBuilder entryBuilder;
         private Consumer<AbstractConfigListEntry<?>> addEntry;
+        private final List<Consumer<AbstractConfigListEntry<?>>> addEntryStack = new ArrayList<>();
 
         public void addBooleanSwitch(String keyPart, Function<PishockZapConfig, Boolean> get, BiConsumer<PishockZapConfig, Boolean> set) {
             add(entryBuilder
@@ -613,6 +673,17 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         public void setCategory(BuilderCompat.SubCategoryBuilderCompat category) {
             addEntry = category::add;
+        }
+
+        public void pushCategory(BuilderCompat.SubCategoryBuilderCompat category) {
+            if (addEntry != null)
+                addEntryStack.add(addEntry);
+
+            addEntry = category::add;
+        }
+
+        public void popCategory() {
+            addEntry = addEntryStack.remove(addEntryStack.size() - 1);
         }
     }
 }

@@ -62,6 +62,12 @@
   "title.pishock-zap.config.api.openshock.add_my_ids": "Fetch IDs automatically",
 
   "title.pishock-zap.config.api.openshock.serial": "OpenShock Serial API",
+  "title.pishock-zap.config.api.openshock.serial.devices": "Shockers",
+  "title.pishock-zap.config.api.openshock.serial.fetch": "Fetch devices from web (optional)",
+  "title.pishock-zap.config.api.openshock.serial.devices.entry": "Shocker",
+  "title.pishock-zap.config.api.openshock.serial.devices.entry.id": "Pairing ID",
+  "title.pishock-zap.config.api.openshock.serial.devices.entry.model": "Shock collar type",
+  "title.pishock-zap.config.api.openshock.serial.fetch.button": "Fetch shock devices",
 
   "title.pishock-zap.config.api.pishock.websocket": "PiShock WebSocket API",
   "title.pishock-zap.config.api.pishock.websocket.devices": "Devices",
@@ -79,7 +85,7 @@
   "description.pishock-zap.config.api.web_v1.deprecated": "This API type is deprecated; it appears to have been taken offline. You are free to try it, but it may not work.",
   "description.pishock-zap.config.api.web_v1.disclaimer": "This mod contacts the PiShock servers, and makes requests to them over the internet when a shock or vibrate operation is requested. This data is only sent to the PiShock API and is not shared with any other service.",
 
-  "description.pishock-zap.config.api.local": "Local Serial API is intended for advanced users only. It requires the PiShock device to be directly connected via USB to the computer running Minecraft. The advantage is that it provides near-instant feedback unlike the Web API which is constrained by network latency.",
+  "description.pishock-zap.config.api.local": "PiShock Local Serial API is intended for advanced users only. It requires the PiShock device to be directly connected via USB to the computer running Minecraft. The advantage is that it provides near-instant feedback unlike the Web API which is constrained by network latency.",
   "description.pishock-zap.config.api.local.device_ids": "Shocker IDs are short numeric identifiers available from the %1$s. You can find them by clicking on the settings icon in the bottom-center of each individual controller. This is not the same as your PiShock device ID.",
   "description.pishock-zap.config.api.local.device_ids.link": "PiShock controller page",
 
@@ -88,7 +94,7 @@
 
   "description.pishock-zap.config.api.openshock.disclaimer": "This mod contacts the OpenShock servers, and makes requests to them over the internet when a shock or vibrate operation is requested. This data is only sent to the OpenShock API and is not shared with any other service.",
 
-  "description.pishock-zap.config.api.openshock.serial": "This config screen is in progress :) right now it takes device IDs from the PiShock Serial API and treats them all as CaiXianLin shockers, so configure there and switch back to this.",
+  "description.pishock-zap.config.api.openshock.serial": "OpenShock Local Serial API is intended for advanced users only. It requires the OpenShock device to be directly connected via USB to the computer running Minecraft. In exchange, it provides near-instant response times and high configurability.",
 
   "description.pishock-zap.config.api.websocket.disclaimer": "This mod contacts the PiShock servers, and makes requests to them over the internet when a shock or vibrate operation is requested. This data is only sent to the PiShock API and is not shared with any other service.",
 
@@ -139,6 +145,10 @@
   "tooltip.pishock-zap.config.api.openshock.device_ids": "The IDs of the shockers to use (not share codes!)",
   "tooltip.pishock-zap.config.api.openshock.add_my_ids": "Use your API token to automatically\nfetch device IDs from the server",
 
+  "tooltip.pishock-zap.config.api.openshock.serial.devices": "Shock collar model and pairing IDs",
+  "tooltip.pishock-zap.config.api.openshock.serial.devices.entry.model": "The model of the shock collar",
+  "tooltip.pishock-zap.config.api.openshock.serial.fetch.button": "Use your API key to fetch all shock devices\nlisted on your OpenShock account",
+
   "tooltip.pishock-zap.config.api.pishock.websocket.devices": "PiShock hubs and their associated shockers",
   "tooltip.pishock-zap.config.api.pishock.websocket.user_id": "The numeric user ID of your PiShock account.\nI recommend you fetch this automatically.",
   "tooltip.pishock-zap.config.api.pishock.websocket.fetch_ids": "Automatically fetch user ID, hub IDs, and shocker IDs.\nRequires API key and username to be set.",
@@ -160,6 +170,10 @@
   "label.pishock-zap.config.api.openshock.add_my_ids": "Go",
   "label.pishock-zap.config.api.openshock.add_my_ids.working": "In progress...",
   "label.pishock-zap.config.api.openshock.add_my_ids.error": "Error",
+
+  "label.pishock-zap.config.api.openshock.serial.fetch.button": "Fetch",
+  "label.pishock-zap.config.api.openshock.serial.fetch.button.working": "In progress",
+  "label.pishock-zap.config.api.openshock.serial.fetch.button.error": "Error",
 
   "label.pishock-zap.config.api.pishock.websocket.fetch_ids": "Go",
   "label.pishock-zap.config.api.pishock.websocket.fetch_ids.working": "In progress...",
