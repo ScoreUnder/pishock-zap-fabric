@@ -22,21 +22,23 @@ In other words, it zaps you with a shock collar when you get hit.
 - Vibration/shock threshold
 - Vibration-only mode
 - Careful limit respecting with multiple layers of failsafe
-- Multiple share code support
+- Multiple shocker support, with built-in patterns to choose which ones get
+  activated for each shock
 - Millisecond-precise duration settings
 - Queues and combines damage events that occur in quick succession
 - Low-latency usage via local serial API (advanced users only; requires PiShock
-  to be connected directly to the computer running Minecraft)
+  or OpenShock hub to be connected directly to the computer running Minecraft)
 - Wide range of supported Minecraft versions
 - Third-party device support
   - Supports OpenShock (yes really!)
+  - Webhook so that you can connect it to your own custom software
+  - Extension points for other mods to add support for their own custom devices
 - An API for other mod developers to use!
 
 ## Before you use
 
 If you are struggling and need to switch it off ASAP, the fastest way is to
-simply exit the game unceremoniously. On Windows, this is Alt+F4. Test it out
-before you use it.
+exit the game. On Windows, this is Alt+F4. Test it out before you use it.
 
 There is also an in-game toggle hotkey which defaults to F12. Equally, configure
 this and check that it is working before you use it.
@@ -107,7 +109,7 @@ compare them and then note some more specific quirks of each.
 | Multiplayer                     | :white_check_mark: | :white_check_mark:     | :white_check_mark: | :white_check_mark:       | :white_check_mark:    | :white_check_mark:                           | :white_check_mark: |
 | Works on vanilla servers        | :white_check_mark: | :white_check_mark:     | :white_check_mark: | :x:                      | :white_check_mark:    | :x:                                          | :x:                |
 | Low-latency local serial API    | :white_check_mark: | :x:                    | :x:                | :x:                      | :x:                   | :x:                                          | :white_check_mark: |
-| Multiple share codes            | :white_check_mark: | :x:                    | :x:                | :x:                      | :x:                   | :x:                                          | :x:                |
+| Multiple simultaneous shockers  | :white_check_mark: | :x:                    | :x:                | :x:                      | :x:                   | :x:                                          | :x:                |
 | Vibration support               | :white_check_mark: | :white_check_mark:     | :x:                | :x:                      | :white_check_mark:    | :x:                                          | :x:                |
 | Vibration/shock threshold       | :white_check_mark: | :x:                    | :x:                | :x:                      | :x:                   | :x:                                          | :x:                |
 | API connectivity checks         | Sorta              | :white_check_mark:     | :x:                | :x:                      | :x:                   | :x:                                          | :white_check_mark: |
