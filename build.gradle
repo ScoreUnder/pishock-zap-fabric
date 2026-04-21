@@ -91,6 +91,6 @@ subprojects {
         }
     }
 
-    sourceSets.main.java.srcDirs += [rootProject.file('common/src/main/java')]
+    sourceSets.main.java.srcDirs += compat_sources.split(',').collect { rootProject.file("compat/$it") } + [rootProject.file('common/src/main/java')]
     sourceSets.main.resources.srcDirs += [rootProject.file('common/src/main/resources')]
 }
