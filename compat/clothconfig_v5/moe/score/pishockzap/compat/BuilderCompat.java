@@ -4,6 +4,7 @@ import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.gui.entries.SubCategoryListEntry;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
+import moe.score.pishockzap.compat.mixin.pool.HasDisplayRequirement;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,13 +21,18 @@ public class BuilderCompat {
 
     public static class SubCategoryBuilderCompat {
         private final SubCategoryBuilder builder;
+        private BooleanSupplier displayRequirement = () -> true;
 
         public SubCategoryBuilderCompat(SubCategoryBuilder builder) {
             this.builder = builder;
         }
 
         public @NotNull SubCategoryListEntry build() {
-            return builder.build();
+            var result = builder.build();
+            if (result instanceof HasDisplayRequirement displayReq) {
+                displayReq.pishockzap$setDisplayRequirement(displayRequirement);
+            }
+            return result;
         }
 
         public SubCategoryBuilderCompat setExpanded(boolean expanded) {
@@ -35,6 +41,7 @@ public class BuilderCompat {
         }
 
         public SubCategoryBuilderCompat setDisplayRequirement(BooleanSupplier requirement) {
+            this.displayRequirement = requirement;
             return this;
         }
 

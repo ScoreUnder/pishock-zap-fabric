@@ -81,6 +81,24 @@ subprojects {
         filesMatching(["fabric.mod.json", "*.mixins.json"]) {
             expand props
         }
+
+        doLast {
+            def resourcesDir = outputs.files.first()
+            def jsonFile = new File(resourcesDir, 'fabric.mod.json')
+            def json = new groovy.json.JsonSlurper().parse(jsonFile)
+
+            def modified = false
+            resourcesDir.eachFileRecurse { file ->
+                if (file.name.endsWith('.compat.client.mixins.json')) {
+                    modified = true
+                    json.mixins << [config: file.name, environment: 'client']
+                }
+            }
+
+            if (modified) {
+                jsonFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json))
+            }
+        }
     }
 
     tasks.withType(JavaCompile).configureEach {
@@ -112,5 +130,5 @@ subprojects {
     }
 
     sourceSets.main.java.srcDirs += compat_sources.split(',').collect { rootProject.file("compat/$it") } + [rootProject.file('common/src/main/java')]
-    sourceSets.main.resources.srcDirs += [rootProject.file('common/src/main/resources')]
+    sourceSets.main.resources.srcDirs += compat_sources.split(',').collect { rootProject.file("compat/${it}_res") } + [rootProject.file('common/src/main/resources')]
 }

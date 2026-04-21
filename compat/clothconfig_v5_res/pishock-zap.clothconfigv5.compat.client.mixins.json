@@ -1,0 +1,11 @@
+{
+  "required": false,
+  "package": "moe.score.pishockzap.compat.mixin.clothconfig",
+  "compatibilityLevel": "JAVA_${java_version}",
+  "client": [
+    "SubCategoryMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
