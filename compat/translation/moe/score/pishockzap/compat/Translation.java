@@ -27,7 +27,7 @@ public final class Translation {
 
     public static @NonNull MutableComponent addLink(@NonNull MutableComponent text, @NonNull String url, @NonNull Component tooltip) {
         return text.withStyle(style ->
-            TextStyle.setHoverText(TextStyle.setUrlOnClick(style, url), tooltip)
+            TextStyle.withHoverText(TextStyle.withUrlOnClick(style, url), tooltip)
                 .withUnderlined(true)
                 .withColor(ChatFormatting.BLUE)
         );

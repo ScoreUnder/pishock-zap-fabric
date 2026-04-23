@@ -266,16 +266,16 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             Translation.of("description.pishock-zap.config.api.webhook",
                 Translation.of("description.pishock-zap.config.api.webhook.payload",
                     Translation.raw("\"" + OpType.SHOCK.name() + "\"").withStyle(style ->
-                        TextStyle.setHoverText(style.withColor(ChatFormatting.LIGHT_PURPLE).withUnderlined(true),
+                        TextStyle.withHoverText(style.withColor(ChatFormatting.LIGHT_PURPLE).withUnderlined(true),
                             Translation.of("tooltip.pishock-zap.config.api.webhook.payload.operation", allOpTypes))),
                     Translation.raw("26").withStyle(style ->
-                        TextStyle.setHoverText(style.withColor(ChatFormatting.LIGHT_PURPLE).withUnderlined(true),
+                        TextStyle.withHoverText(style.withColor(ChatFormatting.LIGHT_PURPLE).withUnderlined(true),
                             Translation.of("tooltip.pishock-zap.config.api.webhook.payload.intensity"))),
                     Translation.raw("1.2").withStyle(style ->
-                        TextStyle.setHoverText(style.withColor(ChatFormatting.LIGHT_PURPLE).withUnderlined(true),
+                        TextStyle.withHoverText(style.withColor(ChatFormatting.LIGHT_PURPLE).withUnderlined(true),
                             Translation.of("tooltip.pishock-zap.config.api.webhook.payload.duration"))),
                     Translation.raw("\"" + ShockDistribution.RANDOM.name() + "\"").withStyle(style ->
-                        TextStyle.setHoverText(style.withColor(ChatFormatting.LIGHT_PURPLE).withUnderlined(true),
+                        TextStyle.withHoverText(style.withColor(ChatFormatting.LIGHT_PURPLE).withUnderlined(true),
                             Translation.of("tooltip.pishock-zap.config.api.webhook.payload.distribution", allShockDistributions)))
                 ).withStyle(style -> style.withColor(ChatFormatting.GRAY))
             )).build());

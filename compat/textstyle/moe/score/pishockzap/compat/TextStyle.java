@@ -11,11 +11,11 @@ public class TextStyle {
     private TextStyle() {
     }
 
-    public static Style setHoverText(Style style, Component text) {
+    public static Style withHoverText(Style style, Component text) {
         return style.withHoverEvent(new HoverEvent.ShowText(text));
     }
 
-    public static Style setUrlOnClick(Style style, String url) {
+    public static Style withUrlOnClick(Style style, String url) {
         return style.withClickEvent(new ClickEvent.OpenUrl(URI.create(url)));
     }
 }
