@@ -1,11 +1,12 @@
 {
-	"required": false,
-	"package": "moe.score.pishockzap.mixin.clothconfig",
-	"compatibilityLevel": "JAVA_${java_version}",
-	"client": [
-		"BaseListEntryMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	}
+  "required": false,
+  "package": "moe.score.pishockzap.mixin.clothconfig",
+  "compatibilityLevel": "JAVA_${java_version}",
+  "client": [
+    "BaseListEntryMixin",
+    "DynamicElementListWidgetElementEntryMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }
