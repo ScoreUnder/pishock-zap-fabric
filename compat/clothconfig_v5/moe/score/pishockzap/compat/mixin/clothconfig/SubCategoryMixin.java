@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -52,7 +53,7 @@ public abstract class SubCategoryMixin extends TooltipListEntry<List<AbstractCon
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void renderIfNotDisplayed(CallbackInfo cir) {
         if (!pishockzap$isDisplayed()) {
-            for(AbstractConfigListEntry entry : this.entries) {
+            for (AbstractConfigListEntry entry : this.entries) {
                 entry.setParent(this.getParent());
                 entry.setScreen(this.getConfigScreen());
             }
@@ -67,12 +68,12 @@ public abstract class SubCategoryMixin extends TooltipListEntry<List<AbstractCon
 
     @Inject(method = "children", at = @At("HEAD"), cancellable = true)
     private void childrenIfNotDisplayed(CallbackInfoReturnable<List<? extends GuiEventListener>> cir) {
-        if (!pishockzap$isDisplayed()) cir.setReturnValue(List.of());
+        if (!pishockzap$isDisplayed()) cir.setReturnValue(Collections.emptyList());
     }
 
     @Inject(method = "narratables", at = @At("HEAD"), cancellable = true)
     private void narratablesIfNotDisplayed(CallbackInfoReturnable<List<? extends NarratableEntry>> cir) {
-        if (!pishockzap$isDisplayed()) cir.setReturnValue(List.of());
+        if (!pishockzap$isDisplayed()) cir.setReturnValue(Collections.emptyList());
     }
 
     @Override
