@@ -21,6 +21,7 @@ import moe.score.pishockzap.backend.impls.PiShockWebApiV1Backend;
 import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
 import moe.score.pishockzap.backend.model.openshock.ShockDevice;
 import moe.score.pishockzap.compat.*;
+import moe.score.pishockzap.compat.clothconfig.BetterMultiElementListEntry;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.mixin.pool.ListEntryExt;
@@ -353,11 +354,12 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 if (elem == null) {
                     elem = new ShockDevice(ShockCollarModel.CAIXIANLIN, 0);
                 }
-                return new MultiElementListEntry<>(Translation.of("title.pishock-zap.config.api.openshock.serial.devices.entry"), elem,
-                    List.of(
-                        entryBuilder.startIntField(Translation.of("title.pishock-zap.config.api.openshock.serial.devices.entry.id"), elem.id()).build(),
-                        createOpenShockCollarModelDropdown(entryBuilder, "api.openshock.serial.devices.entry.model", elem.model())),
-                    true);
+                var deviceId = entryBuilder.startIntField(Translation.of("title.pishock-zap.config.api.openshock.serial.devices.entry.id"), elem.id()).build();
+                var deviceModel = createOpenShockCollarModelDropdown(entryBuilder, "api.openshock.serial.devices.entry.model", elem.model());
+                return new BetterMultiElementListEntry<>(
+                    Translation.of("title.pishock-zap.config.api.openshock.serial.devices.entry"),
+                    () -> new ShockDevice(deviceModel.getValue(), deviceId.getValue()),
+                    List.of(deviceId, deviceModel));
             }
         );
 
@@ -414,11 +416,12 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 if (elem == null) {
                     elem = Pair.of(0, new IntArrayList(new int[]{0}));
                 }
-                return new MultiElementListEntry<>(Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry"), elem,
-                    List.of(
-                        entryBuilder.startIntField(Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry.id"), elem.getLeft()).build(),
-                        entryBuilder.startIntList(Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry.devices"), elem.getRight()).build()),
-                    true);
+                var hubId = entryBuilder.startIntField(Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry.id"), elem.getLeft()).build();
+                var shockersList = entryBuilder.startIntList(Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry.devices"), elem.getRight()).build();
+                return new BetterMultiElementListEntry<>(
+                    Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry"),
+                    () -> Pair.of(hubId.getValue(), new IntArrayList(shockersList.getValue())),
+                    List.of(hubId, shockersList));
             }
         );
 
