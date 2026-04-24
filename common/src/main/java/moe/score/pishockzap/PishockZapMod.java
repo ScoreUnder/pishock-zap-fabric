@@ -18,6 +18,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Style;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -35,6 +36,7 @@ import java.util.logging.Logger;
 
 import static moe.score.pishockzap.util.Gsons.gson;
 
+@ApiStatus.Internal
 public class PishockZapMod implements ClientModInitializer {
     public static final String NAME = "PiShock-Zap";
     public static final String ID = "pishock-zap";

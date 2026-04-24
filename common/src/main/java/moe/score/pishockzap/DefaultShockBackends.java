@@ -2,7 +2,9 @@ package moe.score.pishockzap;
 
 import moe.score.pishockzap.backend.ShockBackendRegistry;
 import moe.score.pishockzap.backend.impls.*;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.Internal
 public class DefaultShockBackends {
     public static final String PISHOCK_WEB_V1 = "pishock_web_v1";
     public static final String PISHOCK_WEBSOCKET = "pishock_websocket";

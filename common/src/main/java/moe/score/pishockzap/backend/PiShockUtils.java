@@ -3,11 +3,13 @@ package moe.score.pishockzap.backend;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import moe.score.pishockzap.config.ShockDistribution;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Random;
 import java.util.logging.Logger;
 
 @UtilityClass
+@ApiStatus.Internal
 public class PiShockUtils {
     public static final int PISHOCK_MAX_DURATION = 15;
     public static final int PISHOCK_MAX_INTENSITY = 100;

@@ -4,6 +4,7 @@ import lombok.NonNull;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
@@ -18,6 +19,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@ApiStatus.Internal
 public abstract class SimpleHttpRequestShockBackend<T, U> extends SafeShockBackend {
     protected final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     protected final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();

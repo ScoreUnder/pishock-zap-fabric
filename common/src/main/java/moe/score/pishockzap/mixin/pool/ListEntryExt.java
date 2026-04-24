@@ -1,8 +1,10 @@
 package moe.score.pishockzap.mixin.pool;
 
 import me.shedaniel.clothconfig2.gui.entries.AbstractListListEntry;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+@ApiStatus.Internal
 public interface ListEntryExt<T> {
     void pishockZap$addListEntry(T value);
 

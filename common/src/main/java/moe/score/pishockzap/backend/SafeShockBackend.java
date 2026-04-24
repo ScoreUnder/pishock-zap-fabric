@@ -5,9 +5,11 @@ import lombok.RequiredArgsConstructor;
 import moe.score.pishockzap.PishockZapApi;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
+import org.jetbrains.annotations.ApiStatus;
 
 @RequiredArgsConstructor
 public abstract class SafeShockBackend implements ShockBackend {
+    @ApiStatus.Internal
     protected final PishockZapConfig config;
 
     @Override

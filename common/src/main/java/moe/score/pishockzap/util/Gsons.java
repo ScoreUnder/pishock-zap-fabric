@@ -7,6 +7,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -15,6 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 
 @UtilityClass
+@ApiStatus.Internal
 public class Gsons {
     public static final Gson gson = new GsonBuilder().registerTypeAdapterFactory(new CaseInsensitiveEnumTypeAdapterFactory()).create();
     public static final Gson pascalCaseGson = new GsonBuilder()

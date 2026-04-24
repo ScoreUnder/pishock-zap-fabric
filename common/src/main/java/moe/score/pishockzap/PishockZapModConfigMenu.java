@@ -29,6 +29,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URL;
@@ -41,6 +42,7 @@ import static moe.score.pishockzap.backend.PiShockUtils.PISHOCK_MAX_DURATION;
 import static moe.score.pishockzap.backend.PiShockUtils.PISHOCK_MAX_INTENSITY;
 
 @SuppressWarnings("unused")
+@ApiStatus.Internal
 public class PishockZapModConfigMenu implements ModMenuApi {
     public static final String PISHOCK_ACCOUNT_PAGE_URL = "https://login.pishock.com/account";
     private static final String PISHOCK_CONTROLLER_PAGE_URL = "https://pishock.com/#/control";

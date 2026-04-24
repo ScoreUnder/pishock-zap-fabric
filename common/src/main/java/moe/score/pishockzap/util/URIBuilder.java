@@ -1,6 +1,7 @@
 package moe.score.pishockzap.util;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@ApiStatus.Internal
 public class URIBuilder {
     private final URI baseUri;
     private final ArrayList<Pair<String, String>> queryParams = new ArrayList<>();

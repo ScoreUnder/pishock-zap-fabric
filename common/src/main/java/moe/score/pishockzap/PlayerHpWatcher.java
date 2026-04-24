@@ -1,9 +1,11 @@
 package moe.score.pishockzap;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.ref.WeakReference;
 
+@ApiStatus.Internal
 public class PlayerHpWatcher<T> {
     private static final WeakReference<Object> NULL_WEAK_REFERENCE = new WeakReference<>(null);
     @SuppressWarnings("unchecked")

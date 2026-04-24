@@ -5,6 +5,7 @@ import lombok.NonNull;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+@ApiStatus.Internal
 public abstract class SerialBackend<D> extends SafeShockBackend {
     public static final int PISHOCK_SERIAL_BAUD_RATE = 115200;
     protected static WeakReference<SerialBackend<?>> INSTANCE;

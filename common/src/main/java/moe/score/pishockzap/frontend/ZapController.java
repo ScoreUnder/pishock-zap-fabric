@@ -7,6 +7,7 @@ import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.ShockBackend;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.logging.Logger;
 
@@ -15,6 +16,7 @@ import java.util.logging.Logger;
  * process them according to the limits and backoff settings in the
  * configuration, then sends them to the PiShock API.
  */
+@ApiStatus.Internal
 public class ZapController implements ShockFrontend {
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     @Getter

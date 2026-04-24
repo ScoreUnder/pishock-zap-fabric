@@ -1,5 +1,8 @@
 package moe.score.pishockzap.util;
 
+import org.jetbrains.annotations.ApiStatus;
+
+@ApiStatus.Internal
 public interface Either<L, R> {
     boolean isLeft();
 

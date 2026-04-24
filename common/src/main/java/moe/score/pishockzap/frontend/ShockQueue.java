@@ -9,12 +9,14 @@ import moe.score.pishockzap.backend.PiShockUtils;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.util.Either;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 @RequiredArgsConstructor
+@ApiStatus.Internal
 public class ShockQueue {
     private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
     private final BlockingQueue<Either<QueuedShock, CalculatedShock>> queue = new LinkedBlockingQueue<>();
