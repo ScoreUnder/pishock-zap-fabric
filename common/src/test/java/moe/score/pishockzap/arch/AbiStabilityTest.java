@@ -55,13 +55,17 @@ class AbiStabilityTest {
 
     private static String signature(JavaMember member) {
         var tag = member instanceof JavaCodeUnit ? "M" : member instanceof JavaField ? "F" : "?";
-        return tag + ":" + member.getOwner().getName() + ":" + member.getName() + ":" + member.getDescriptor();
+        return tag + ":" + member.getOwner().getName() + ":" + member.getName() + ":" + getModifiersStr(member) + ":" + member.getDescriptor();
+    }
+
+    private static @NonNull String getModifiersStr(HasModifiers m) {
+        return m.getModifiers().stream().map(JavaModifier::name).sorted().collect(Collectors.joining(","));
     }
 
     private static String signature(JavaClass clazz) {
-        var modifiers = clazz.getModifiers().stream().map(JavaModifier::name).sorted().collect(Collectors.joining(","));
+        var modifiers = getModifiersStr(clazz);
         var inheritance = Stream.concat(
-            clazz.getSuperclass().map(JavaType::getName).stream(),
+            clazz.getSuperclass().map(JavaType::getName).filter(n -> !n.equals("java.lang.Object")).stream(),
             clazz.getInterfaces().stream().map(JavaType::getName).sorted()
         ).collect(Collectors.joining(","));
         return "C:" + clazz.getFullName() + genericsToString(clazz.getTypeParameters()) + ":" + modifiers + ":" + inheritance;

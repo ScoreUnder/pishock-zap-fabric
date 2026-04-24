@@ -2,49 +2,49 @@
 # This exists so that I can track when breaking changes are made.
 # (Or just as a way to poke me to remember to mark a class as internal)
 
-C:moe.score.pishockzap.PishockZapApi:FINAL,PUBLIC:java.lang.Object
-M:moe.score.pishockzap.PishockZapApi:getBackend:()Lmoe/score/pishockzap/backend/ShockBackend;
-M:moe.score.pishockzap.PishockZapApi:getFrontend:()Lmoe/score/pishockzap/frontend/ShockFrontend;
-M:moe.score.pishockzap.PishockZapApi:getMaxDuration:(Lmoe/score/pishockzap/backend/OpType;)F
-M:moe.score.pishockzap.PishockZapApi:getMaxIntensity:(Lmoe/score/pishockzap/backend/OpType;)I
-M:moe.score.pishockzap.PishockZapApi:isEnabled:()Z
-M:moe.score.pishockzap.PishockZapApi:isInitialised:()Z
-M:moe.score.pishockzap.PishockZapApi:zap:(F)V
+C:moe.score.pishockzap.PishockZapApi:FINAL,PUBLIC:
+M:moe.score.pishockzap.PishockZapApi:getBackend:PUBLIC,STATIC:()Lmoe/score/pishockzap/backend/ShockBackend;
+M:moe.score.pishockzap.PishockZapApi:getFrontend:PUBLIC,STATIC:()Lmoe/score/pishockzap/frontend/ShockFrontend;
+M:moe.score.pishockzap.PishockZapApi:getMaxDuration:PUBLIC,STATIC:(Lmoe/score/pishockzap/backend/OpType;)F
+M:moe.score.pishockzap.PishockZapApi:getMaxIntensity:PUBLIC,STATIC:(Lmoe/score/pishockzap/backend/OpType;)I
+M:moe.score.pishockzap.PishockZapApi:isEnabled:PUBLIC,STATIC:()Z
+M:moe.score.pishockzap.PishockZapApi:isInitialised:PUBLIC,STATIC:()Z
+M:moe.score.pishockzap.PishockZapApi:zap:PUBLIC,STATIC:(F)V
 
 C:moe.score.pishockzap.backend.OpType:FINAL,PUBLIC:java.lang.Enum<moe.score.pishockzap.backend.OpType>
-F:moe.score.pishockzap.backend.OpType:BEEP:Lmoe/score/pishockzap/backend/OpType;
-F:moe.score.pishockzap.backend.OpType:SHOCK:Lmoe/score/pishockzap/backend/OpType;
-F:moe.score.pishockzap.backend.OpType:VIBRATE:Lmoe/score/pishockzap/backend/OpType;
-M:moe.score.pishockzap.backend.OpType:valueOf:(Ljava/lang/String;)Lmoe/score/pishockzap/backend/OpType;
-M:moe.score.pishockzap.backend.OpType:values:()[Lmoe/score/pishockzap/backend/OpType;
+F:moe.score.pishockzap.backend.OpType:BEEP:ENUM,FINAL,PUBLIC,STATIC:Lmoe/score/pishockzap/backend/OpType;
+F:moe.score.pishockzap.backend.OpType:SHOCK:ENUM,FINAL,PUBLIC,STATIC:Lmoe/score/pishockzap/backend/OpType;
+F:moe.score.pishockzap.backend.OpType:VIBRATE:ENUM,FINAL,PUBLIC,STATIC:Lmoe/score/pishockzap/backend/OpType;
+M:moe.score.pishockzap.backend.OpType:valueOf:PUBLIC,STATIC:(Ljava/lang/String;)Lmoe/score/pishockzap/backend/OpType;
+M:moe.score.pishockzap.backend.OpType:values:PUBLIC,STATIC:()[Lmoe/score/pishockzap/backend/OpType;
 
-C:moe.score.pishockzap.backend.SafeShockBackend:ABSTRACT,PUBLIC:java.lang.Object,moe.score.pishockzap.backend.ShockBackend
-M:moe.score.pishockzap.backend.SafeShockBackend:<init>:(Lmoe/score/pishockzap/config/PishockZapConfig;)V
-M:moe.score.pishockzap.backend.SafeShockBackend:areShockParamsValid:(Lmoe/score/pishockzap/backend/OpType;IF)Z
-M:moe.score.pishockzap.backend.SafeShockBackend:isConfigured:()Z
-M:moe.score.pishockzap.backend.SafeShockBackend:performOp:(Lmoe/score/pishockzap/config/ShockDistribution;Lmoe/score/pishockzap/backend/OpType;IF)Z
-M:moe.score.pishockzap.backend.SafeShockBackend:safePerformOp:(Lmoe/score/pishockzap/config/ShockDistribution;Lmoe/score/pishockzap/backend/OpType;IF)V
+C:moe.score.pishockzap.backend.SafeShockBackend:ABSTRACT,PUBLIC:moe.score.pishockzap.backend.ShockBackend
+M:moe.score.pishockzap.backend.SafeShockBackend:<init>:PUBLIC:(Lmoe/score/pishockzap/config/PishockZapConfig;)V
+M:moe.score.pishockzap.backend.SafeShockBackend:areShockParamsValid:PROTECTED:(Lmoe/score/pishockzap/backend/OpType;IF)Z
+M:moe.score.pishockzap.backend.SafeShockBackend:isConfigured:ABSTRACT,PROTECTED:()Z
+M:moe.score.pishockzap.backend.SafeShockBackend:performOp:FINAL,PUBLIC:(Lmoe/score/pishockzap/config/ShockDistribution;Lmoe/score/pishockzap/backend/OpType;IF)Z
+M:moe.score.pishockzap.backend.SafeShockBackend:safePerformOp:ABSTRACT,PROTECTED:(Lmoe/score/pishockzap/config/ShockDistribution;Lmoe/score/pishockzap/backend/OpType;IF)V
 
 C:moe.score.pishockzap.backend.ShockBackend:ABSTRACT,PUBLIC:
-M:moe.score.pishockzap.backend.ShockBackend:canReplaceOngoingOperation:()Lmoe/score/pishockzap/util/TriState;
-M:moe.score.pishockzap.backend.ShockBackend:close:()V
-M:moe.score.pishockzap.backend.ShockBackend:getMaxDuration:()F
-M:moe.score.pishockzap.backend.ShockBackend:performOp:(Lmoe/score/pishockzap/config/ShockDistribution;Lmoe/score/pishockzap/backend/OpType;IF)Z
+M:moe.score.pishockzap.backend.ShockBackend:canReplaceOngoingOperation:PUBLIC:()Lmoe/score/pishockzap/util/TriState;
+M:moe.score.pishockzap.backend.ShockBackend:close:PUBLIC:()V
+M:moe.score.pishockzap.backend.ShockBackend:getMaxDuration:PUBLIC:()F
+M:moe.score.pishockzap.backend.ShockBackend:performOp:ABSTRACT,PUBLIC:(Lmoe/score/pishockzap/config/ShockDistribution;Lmoe/score/pishockzap/backend/OpType;IF)Z
 
-C:moe.score.pishockzap.backend.ShockBackendRegistry:FINAL,PUBLIC:java.lang.Object
-M:moe.score.pishockzap.backend.ShockBackendRegistry:getAllBackendIds:()[Ljava/lang/String;
-M:moe.score.pishockzap.backend.ShockBackendRegistry:getCreateFunc:(Ljava/lang/String;)Ljava/util/function/BiFunction;
-M:moe.score.pishockzap.backend.ShockBackendRegistry:getTranslationKey:(Ljava/lang/String;)Ljava/lang/String;
-M:moe.score.pishockzap.backend.ShockBackendRegistry:register:(Ljava/lang/String;Ljava/lang/String;Ljava/util/function/BiFunction;)V
+C:moe.score.pishockzap.backend.ShockBackendRegistry:FINAL,PUBLIC:
+M:moe.score.pishockzap.backend.ShockBackendRegistry:getAllBackendIds:PUBLIC,STATIC:()[Ljava/lang/String;
+M:moe.score.pishockzap.backend.ShockBackendRegistry:getCreateFunc:PUBLIC,STATIC:(Ljava/lang/String;)Ljava/util/function/BiFunction;
+M:moe.score.pishockzap.backend.ShockBackendRegistry:getTranslationKey:PUBLIC,STATIC:(Ljava/lang/String;)Ljava/lang/String;
+M:moe.score.pishockzap.backend.ShockBackendRegistry:register:PUBLIC,STATIC:(Ljava/lang/String;Ljava/lang/String;Ljava/util/function/BiFunction;)V
 
 C:moe.score.pishockzap.frontend.ShockFrontend:ABSTRACT,PUBLIC:
-M:moe.score.pishockzap.frontend.ShockFrontend:queueRawShock:(Lmoe/score/pishockzap/config/ShockDistribution;Lmoe/score/pishockzap/backend/OpType;IF)V
-M:moe.score.pishockzap.frontend.ShockFrontend:queueShock:(Lmoe/score/pishockzap/config/ShockDistribution;ZF)V
-M:moe.score.pishockzap.frontend.ShockFrontend:queueShockForDamage:(FFF)V
+M:moe.score.pishockzap.frontend.ShockFrontend:queueRawShock:ABSTRACT,PUBLIC:(Lmoe/score/pishockzap/config/ShockDistribution;Lmoe/score/pishockzap/backend/OpType;IF)V
+M:moe.score.pishockzap.frontend.ShockFrontend:queueShock:ABSTRACT,PUBLIC:(Lmoe/score/pishockzap/config/ShockDistribution;ZF)V
+M:moe.score.pishockzap.frontend.ShockFrontend:queueShockForDamage:ABSTRACT,PUBLIC:(FFF)V
 
 C:moe.score.pishockzap.util.TriState:FINAL,PUBLIC:java.lang.Enum<moe.score.pishockzap.util.TriState>
-F:moe.score.pishockzap.util.TriState:FALSE:Lmoe/score/pishockzap/util/TriState;
-F:moe.score.pishockzap.util.TriState:TRUE:Lmoe/score/pishockzap/util/TriState;
-F:moe.score.pishockzap.util.TriState:UNCERTAIN:Lmoe/score/pishockzap/util/TriState;
-M:moe.score.pishockzap.util.TriState:valueOf:(Ljava/lang/String;)Lmoe/score/pishockzap/util/TriState;
-M:moe.score.pishockzap.util.TriState:values:()[Lmoe/score/pishockzap/util/TriState;
+F:moe.score.pishockzap.util.TriState:FALSE:ENUM,FINAL,PUBLIC,STATIC:Lmoe/score/pishockzap/util/TriState;
+F:moe.score.pishockzap.util.TriState:TRUE:ENUM,FINAL,PUBLIC,STATIC:Lmoe/score/pishockzap/util/TriState;
+F:moe.score.pishockzap.util.TriState:UNCERTAIN:ENUM,FINAL,PUBLIC,STATIC:Lmoe/score/pishockzap/util/TriState;
+M:moe.score.pishockzap.util.TriState:valueOf:PUBLIC,STATIC:(Ljava/lang/String;)Lmoe/score/pishockzap/util/TriState;
+M:moe.score.pishockzap.util.TriState:values:PUBLIC,STATIC:()[Lmoe/score/pishockzap/util/TriState;
