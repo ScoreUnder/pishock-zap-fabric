@@ -1,3 +1,6 @@
 .gradle/
 build/
-logs/
+/logs/
+/*/logs/
+/run/
+/*/run/
