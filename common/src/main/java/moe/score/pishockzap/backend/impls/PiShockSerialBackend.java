@@ -123,7 +123,7 @@ public class PiShockSerialBackend extends SerialBackend<Integer> {
                     if (line.startsWith(prefix)) {
                         var terminalInfo = gson.fromJson(line.substring(prefix.length()), TerminalInfo.class);
                         result.complete(
-                                terminalInfo.shockers.stream().map(s -> s.id).toList());
+                            terminalInfo.shockers.stream().map(s -> s.id).toList());
                     }
                 }
             } catch (Exception e) {

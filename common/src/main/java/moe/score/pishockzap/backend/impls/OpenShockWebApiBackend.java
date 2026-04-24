@@ -65,16 +65,16 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
             userAgent = PishockZapMod.NAME + "/" + PishockZapMod.getVersion() + " (minecraft mod; github.com/ScoreUnder/pishock-zap-fabric)";
         }
         return Map.of(
-                "User-Agent", userAgent,
-                "Content-Type", "application/json",
-                "Open-Shock-Token", token);
+            "User-Agent", userAgent,
+            "Content-Type", "application/json",
+            "Open-Shock-Token", token);
     }
 
     @Override
     protected @Nullable String getPostBody(List<Control> data) {
         return gson.toJson(Map.of(
-                "shocks", data,
-                "customName", config.getLogIdentifier()));
+            "shocks", data,
+            "customName", config.getLogIdentifier()));
     }
 
     @Override

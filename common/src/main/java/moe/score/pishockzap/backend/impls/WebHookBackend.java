@@ -21,10 +21,10 @@ public class WebHookBackend extends BulkHttpRequestShockBackend<Map<String, Obje
     @Override
     protected Map<String, Object> generateDataForOperation(ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
         return Map.of(
-                "operation", op.name(),
-                "intensity", intensity,
-                "duration", duration,
-                "distribution", distribution.name());
+            "operation", op.name(),
+            "intensity", intensity,
+            "duration", duration,
+            "distribution", distribution.name());
     }
 
     @Override

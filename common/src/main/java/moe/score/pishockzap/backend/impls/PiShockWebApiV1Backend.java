@@ -45,7 +45,7 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
     @Override
     protected ShockerOperation generateDataForOperation(String shareCode, @NonNull OpType op, int intensity, float duration) {
         return new ShockerOperation(config.getUsername(), shareCode, config.getLogIdentifier(), config.getApiKey(),
-                API_CODE_BY_OP.get(op), intensity, transformDuration(duration));
+            API_CODE_BY_OP.get(op), intensity, transformDuration(duration));
     }
 
     @Override
@@ -137,18 +137,18 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
 
         public CompletableFuture<List<String>> probeShareCodes(String username, String apiKey) {
             return getUserProfile(username, apiKey).thenComposeAsync(profile ->
-                            getShareCodesByOwner(apiKey, profile.userId).thenComposeAsync(shareIdsMap -> {
-                                List<Integer> myShareIds = shareIdsMap.get(profile.username);
-                                List<Integer> shareIds = myShareIds == null || myShareIds.isEmpty()
-                                        ? shareIdsMap.values().stream().flatMap(List::stream).toList()
-                                        : shareIdsMap.get(profile.username);
+                    getShareCodesByOwner(apiKey, profile.userId).thenComposeAsync(shareIdsMap -> {
+                        List<Integer> myShareIds = shareIdsMap.get(profile.username);
+                        List<Integer> shareIds = myShareIds == null || myShareIds.isEmpty()
+                            ? shareIdsMap.values().stream().flatMap(List::stream).toList()
+                            : shareIdsMap.get(profile.username);
 
-                                return getShockersByShareIds(apiKey, profile.userId, shareIds);
-                            }, executor), executor)
-                    .thenApplyAsync(shockersMap -> shockersMap.values().stream()
-                            .flatMap(List::stream)
-                            .map(info -> info.shareCode)
-                            .toList(), executor);
+                        return getShockersByShareIds(apiKey, profile.userId, shareIds);
+                    }, executor), executor)
+                .thenApplyAsync(shockersMap -> shockersMap.values().stream()
+                    .flatMap(List::stream)
+                    .map(info -> info.shareCode)
+                    .toList(), executor);
         }
 
         public CompletableFuture<UserProfile> getUserProfile(String username, String apiKey) {
@@ -157,10 +157,10 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
                         .addParameter("apikey", apiKey)
                         .addParameter("username", username)
                         .build()).build(),
-                    executor
+                executor
             ).thenComposeAsync(
-                    req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
-                    executor
+                req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
+                executor
             ).thenApplyAsync(resp -> pascalCaseGson.fromJson(resp.body(), UserProfile.class), executor);
         }
 
@@ -171,15 +171,15 @@ public class PiShockWebApiV1Backend extends SimpleHttpRequestShockBackend<String
                         .addParameter("Token", apiKey)
                         .addParameter("api", "true")
                         .build()).build(),
-                    executor
+                executor
             ).thenComposeAsync(
-                    req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
-                    executor
+                req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
+                executor
             ).thenApplyAsync(
-                    resp -> gson.fromJson(resp.body(),
-                            new TypeToken<Map<String, List<Integer>>>() {
-                            }.getType()),
-                    executor);
+                resp -> gson.fromJson(resp.body(),
+                    new TypeToken<Map<String, List<Integer>>>() {
+                    }.getType()),
+                executor);
         }
 
         private @NonNull CompletableFuture<Map<String, List<ShareCodeInfo>>> getShockersByShareIds(String apiKey, int userId, List<Integer> shareIds) {

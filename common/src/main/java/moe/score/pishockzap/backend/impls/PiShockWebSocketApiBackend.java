@@ -108,7 +108,8 @@ public class PiShockWebSocketApiBackend extends SafeShockBackend {
 
     private CompletableFuture<WebSocket> connectToApi() {
         var uri = getApiUri();
-        return httpClient.newWebSocketBuilder().buildAsync(uri, new WebSocket.Listener() {});
+        return httpClient.newWebSocketBuilder().buildAsync(uri, new WebSocket.Listener() {
+        });
     }
 
     private CompletableFuture<WebSocket> getWebSocketCompletableFuture() {
@@ -192,23 +193,34 @@ public class PiShockWebSocketApiBackend extends SafeShockBackend {
 
     @AllArgsConstructor
     @SuppressWarnings("unused")
-    static class ShockerCommand{
-        @SerializedName("id") int id;
-        @SerializedName("m") V2OperationType op;
-        @SerializedName("i") int intensity;
-        @SerializedName("d") int duration;
-        @SerializedName("r") boolean replace;
-        @SerializedName("l") LogMetadata logMetadata;
+    static class ShockerCommand {
+        @SerializedName("id")
+        int id;
+        @SerializedName("m")
+        V2OperationType op;
+        @SerializedName("i")
+        int intensity;
+        @SerializedName("d")
+        int duration;
+        @SerializedName("r")
+        boolean replace;
+        @SerializedName("l")
+        LogMetadata logMetadata;
     }
 
     @AllArgsConstructor
     @SuppressWarnings("unused")
     static class LogMetadata {
-        @SerializedName("u") int userId;
-        @SerializedName("ty") AccessType accessType;
-        @SerializedName("w") boolean isWarning;
-        @SerializedName("h") boolean isContinuous;
-        @SerializedName("o") String logIdentifier;
+        @SerializedName("u")
+        int userId;
+        @SerializedName("ty")
+        AccessType accessType;
+        @SerializedName("w")
+        boolean isWarning;
+        @SerializedName("h")
+        boolean isContinuous;
+        @SerializedName("o")
+        String logIdentifier;
     }
 
     enum AccessType {
