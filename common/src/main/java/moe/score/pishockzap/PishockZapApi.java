@@ -73,6 +73,8 @@ public class PishockZapApi {
 
     /**
      * Gets the {@link ShockFrontend} through which shocks from damage are queued.
+     * You may also queue your own raw operations here, which are not subject to the usual shock merging rules that
+     * the player may have configured for shocks from damage.
      */
     public static ShockFrontend getFrontend() {
         return mod().getZapController();
@@ -82,6 +84,9 @@ public class PishockZapApi {
      * Gets the {@link ShockBackend} through which more fine-grained shock requests can be performed.
      * You must stay within the limits as specified in {@link PishockZapApi#getMaxIntensity(OpType)}
      * and {@link PishockZapApi#getMaxDuration(OpType)}, otherwise your requests will be ignored.
+     * <p>
+     * You should prefer using {@link #getFrontend()} for most use cases, as the backend does not manage shock timing,
+     * and you may end up with multiple consumers fighting for control over the same device.
      */
     public static ShockBackend getBackend() {
         return mod().getZapController().getBackend();
