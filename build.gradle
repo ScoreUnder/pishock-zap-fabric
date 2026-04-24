@@ -40,7 +40,6 @@ subprojects {
 
     dependencies {
         def modImpl = configurations.findByName('modImplementation') ? 'modImplementation' : 'implementation'
-        def modApi = configurations.findByName('modApi') ? 'modApi' : 'api'
 
         minecraft "com.mojang:minecraft:${project.minecraft_version}"
         if (project.loom_plugin.endsWith("remap")) {
@@ -58,9 +57,7 @@ subprojects {
         "${modImpl}" "net.fabricmc:fabric-loader:${project.loader_version}"
         "${modImpl}" "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
         "${modImpl}" "com.terraformersmc:modmenu:${project.modmenu_version}"
-        "${modApi}"("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
-            exclude(group: "net.fabricmc.fabric-api")
-        }
+        "${modImpl}" "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
         implementation "com.fazecast:jSerialComm:[2.0.0,3.0.0)"
         include "com.fazecast:jSerialComm:[2.0.0,3.0.0)"
         testImplementation "com.tngtech.archunit:archunit:1.4.2"
