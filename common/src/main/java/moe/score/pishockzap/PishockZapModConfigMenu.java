@@ -20,7 +20,7 @@ import moe.score.pishockzap.backend.impls.PiShockWebApiV1Backend;
 import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
 import moe.score.pishockzap.backend.model.openshock.ShockDevice;
 import moe.score.pishockzap.compat.*;
-import moe.score.pishockzap.compat.clothconfig.BetterMultiElementListEntry;
+import moe.score.pishockzap.compat.clothconfig.Arity2StructEntry;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.mixin.pool.ListEntryExt;
@@ -364,12 +364,11 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 if (elem == null) {
                     elem = new ShockDevice(ShockCollarModel.CAIXIANLIN, 0);
                 }
-                var deviceId = helper.makeIntField("api.openshock.serial.devices.entry.id", elem.id());
-                var deviceModel = helper.makeOpenShockCollarModelDropdown("api.openshock.serial.devices.entry.model", elem.model());
-                return new BetterMultiElementListEntry<>(
+                return new Arity2StructEntry<>(
                     Translation.of("title.pishock-zap.config.api.openshock.serial.devices.entry"),
-                    () -> new ShockDevice(deviceModel.getValue(), deviceId.getValue()),
-                    List.of(deviceId, deviceModel));
+                    ShockDevice::new,
+                    helper.makeOpenShockCollarModelDropdown("api.openshock.serial.devices.entry.model", elem.model()),
+                    helper.makeIntField("api.openshock.serial.devices.entry.id", elem.id()));
             }
         );
 
@@ -425,12 +424,11 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 if (elem == null) {
                     elem = Pair.of(0, new IntArrayList(new int[]{0}));
                 }
-                var hubId = helper.makeIntField("api.pishock.websocket.devices.entry.id", elem.getLeft());
-                var shockersList = helper.makeIntListField("api.pishock.websocket.devices.entry.devices", elem.getRight());
-                return new BetterMultiElementListEntry<>(
+                return new Arity2StructEntry<>(
                     Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry"),
-                    () -> Pair.of(hubId.getValue(), new IntArrayList(shockersList.getValue())),
-                    List.of(hubId, shockersList));
+                    (a, b) -> Pair.of(a, new IntArrayList(b)),
+                    helper.makeIntField("api.pishock.websocket.devices.entry.id", elem.getLeft()),
+                    helper.makeIntListField("api.pishock.websocket.devices.entry.devices", elem.getRight()));
             }
         );
 
