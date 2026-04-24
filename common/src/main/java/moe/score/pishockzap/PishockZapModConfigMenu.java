@@ -21,6 +21,8 @@ import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
 import moe.score.pishockzap.backend.model.openshock.ShockDevice;
 import moe.score.pishockzap.compat.*;
 import moe.score.pishockzap.compat.clothconfig.Arity2StructEntry;
+import moe.score.pishockzap.compat.clothconfig.ClothUtil;
+import moe.score.pishockzap.compat.clothconfig.NestedList;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.mixin.pool.ListEntryExt;
@@ -350,27 +352,20 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         helper.addTextDescription("api.openshock.serial");
 
-        var openShockDeviceListEntry = new NestedListListEntry<ShockDevice, MultiElementListEntry<ShockDevice>>(
-            Translation.of("title.pishock-zap.config.api.openshock.serial.devices"),
-            config.getOpenShockSerialDevices(),
-            true,
-            () -> Optional.of(new Component[]{Translation.of("tooltip.pishock-zap.config.api.openshock.serial.devices")}),
-            config::setOpenShockSerialDevices,
-            defaultConfig::getOpenShockSerialDevices,
-            helper.getResetButtonKey(),
-            true,
-            true,
-            (elem, nestedListListEntry) -> {
-                if (elem == null) {
-                    elem = new ShockDevice(ShockCollarModel.CAIXIANLIN, 0);
-                }
-                return new Arity2StructEntry<>(
-                    Translation.of("title.pishock-zap.config.api.openshock.serial.devices.entry"),
-                    ShockDevice::new,
-                    helper.makeOpenShockCollarModelDropdown("api.openshock.serial.devices.entry.model", elem.model()),
-                    helper.makeIntField("api.openshock.serial.devices.entry.id", elem.id()));
-            }
-        );
+        var openShockDeviceListEntry = NestedList.<ShockDevice, MultiElementListEntry<ShockDevice>>builder()
+            .setTitle(Translation.of("title.pishock-zap.config.api.openshock.serial.devices"))
+            .setInitialValue(config.getOpenShockSerialDevices())
+            .setTooltipSupplier(ClothUtil.supply(Translation.of("tooltip.pishock-zap.config.api.openshock.serial.devices")))
+            .setSaveConsumer(config::setOpenShockSerialDevices)
+            .setDefaultValueSupplier(defaultConfig::getOpenShockSerialDevices)
+            .setResetButtonKey(helper.getResetButtonKey())
+            .setDefaultNewEntryValue(new ShockDevice(ShockCollarModel.CAIXIANLIN, 0))
+            .setWidgetCreator((elem, widget) -> new Arity2StructEntry<>(
+                Translation.of("title.pishock-zap.config.api.openshock.serial.devices.entry"),
+                ShockDevice::new,
+                helper.makeOpenShockCollarModelDropdown("api.openshock.serial.devices.entry.model", elem.model()),
+                helper.makeIntField("api.openshock.serial.devices.entry.id", elem.id())))
+            .build();
 
         addOpenShockSerialDeviceFetchSubCategory(helper, openShockApiTokenField, openShockDeviceListEntry);
 
@@ -404,33 +399,26 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         helper.add(piShockApiKeyEntry);
         helper.add(logIdentifierField);
 
-        var hubDeviceIdListEntry = new NestedListListEntry<Pair<Integer, IntList>, MultiElementListEntry<Pair<Integer, IntList>>>(
-            Translation.of("title.pishock-zap.config.api.pishock.websocket.devices"),
-            hubShockerMapToList(config.getPsHubShockers()),
-            true,
-            () -> Optional.of(new Component[]{Translation.of("tooltip.pishock-zap.config.api.pishock.websocket.devices")}),
-            list -> {
+        var hubDeviceIdListEntry = NestedList.<Pair<Integer, IntList>, MultiElementListEntry<Pair<Integer, IntList>>>builder()
+            .setTitle(Translation.of("title.pishock-zap.config.api.pishock.websocket.devices"))
+            .setInitialValue(hubShockerMapToList(config.getPsHubShockers()))
+            .setTooltipSupplier(ClothUtil.supply(Translation.of("tooltip.pishock-zap.config.api.pishock.websocket.devices")))
+            .setSaveConsumer(list -> {
                 var result = new Int2ObjectArrayMap<IntList>();
                 for (var pair : list) {
                     result.put(pair.getLeft().intValue(), pair.getRight());
                 }
                 config.setPsHubShockers(result);
-            },
-            () -> hubShockerMapToList(defaultConfig.getPsHubShockers()),
-            helper.getResetButtonKey(),
-            true,
-            true,
-            (elem, nestedListListEntry) -> {
-                if (elem == null) {
-                    elem = Pair.of(0, new IntArrayList(new int[]{0}));
-                }
-                return new Arity2StructEntry<>(
-                    Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry"),
-                    (a, b) -> Pair.of(a, new IntArrayList(b)),
-                    helper.makeIntField("api.pishock.websocket.devices.entry.id", elem.getLeft()),
-                    helper.makeIntListField("api.pishock.websocket.devices.entry.devices", elem.getRight()));
-            }
-        );
+            })
+            .setDefaultValueSupplier(() -> hubShockerMapToList(defaultConfig.getPsHubShockers()))
+            .setResetButtonKey(helper.getResetButtonKey())
+            .setDefaultNewEntryValue(Pair.of(0, new IntArrayList(new int[]{0})))
+            .setWidgetCreator((elem, widget) -> new Arity2StructEntry<>(
+                Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry"),
+                (a, b) -> Pair.of(a, new IntArrayList(b)),
+                helper.makeIntField("api.pishock.websocket.devices.entry.id", elem.getLeft()),
+                helper.makeIntListField("api.pishock.websocket.devices.entry.devices", elem.getRight())))
+            .build();
 
         var websocketUserIdEntry = helper.makeIntField("api.pishock.websocket.user_id",
             PishockZapConfig::getPsUserId,
