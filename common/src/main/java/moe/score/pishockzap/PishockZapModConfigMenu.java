@@ -7,10 +7,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.NonNull;
-import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
-import me.shedaniel.clothconfig2.api.ConfigBuilder;
-import me.shedaniel.clothconfig2.api.ConfigCategory;
-import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import me.shedaniel.clothconfig2.api.*;
 import me.shedaniel.clothconfig2.gui.entries.*;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.ShockBackendRegistry;
@@ -130,6 +127,25 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         helper.addBooleanSwitch("debounce.queue_different", PishockZapConfig::isQueueDifferent, PishockZapConfig::setQueueDifferent);
     }
 
+    private static int specialOrderingKey(String backendType) {
+        return switch (backendType) {
+            case DefaultShockBackends.PISHOCK_WEBSOCKET -> 0;
+            case DefaultShockBackends.PISHOCK_SERIAL -> 1;
+            case DefaultShockBackends.OPENSHOCK_WEB -> 2;
+            case DefaultShockBackends.OPENSHOCK_SERIAL -> 3;
+            case DefaultShockBackends.PISHOCK_WEB_V1 -> 4;
+            default -> Integer.MAX_VALUE;
+        };
+    }
+
+    private static Component getApiTypeTranslation(String apiType) {
+        var text = Translation.of(ShockBackendRegistry.getTranslationKey(apiType));
+        return switch (apiType) {
+            case DefaultShockBackends.PISHOCK_WEB_V1 -> text.withStyle(style -> style.withStrikethrough(true));
+            default -> text;
+        };
+    }
+
     private static void addApiCategory(Helper helper, PishockZapConfig config, PishockZapConfig defaultConfig) {
         helper.startCategory("api");
 
@@ -137,8 +153,10 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             "api_type",
             PishockZapConfig::getApiType,
             PishockZapConfig::setApiType,
-            ShockBackendRegistry.getAllBackendIds(),
-            value -> Translation.of(ShockBackendRegistry.getTranslationKey(value)));
+            Arrays.stream(ShockBackendRegistry.getAllBackendIds())
+                .sorted(Comparator.comparingInt(PishockZapModConfigMenu::specialOrderingKey).thenComparing(a -> a))
+                .toArray(String[]::new),
+            PishockZapModConfigMenu::getApiTypeTranslation);
 
         helper.add(apiTypeSwitcher);
 
@@ -154,7 +172,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         addPishockWebSocketApiSubCategory(helper, config, defaultConfig, apiTypeSwitcher, psFields.piShockUsernameEntry(), psFields.piShockApiKeyEntry(), psFields.logIdentifierField());
     }
 
-    private static @NonNull PishockV1ConfigFields addPishockWebV1ApiSubCategory(Helper helper, SelectionListEntry<@NonNull String> apiTypeSwitcher) {
+    private static @NonNull PishockV1ConfigFields addPishockWebV1ApiSubCategory(Helper helper, AbstractConfigEntry<@NonNull String> apiTypeSwitcher) {
         helper.startSubCategory(Translation.of("title.pishock-zap.config.api.web_v1"))
             .setDisplayRequirement(() -> DefaultShockBackends.PISHOCK_WEB_V1.equals(apiTypeSwitcher.getValue()));
 
@@ -205,7 +223,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                                          StringListEntry piShockApiKeyEntry) {
     }
 
-    private static @NonNull DropdownBoxEntry<String> addPishockLocalSerialApiSubCategory(Helper helper, SelectionListEntry<@NonNull String> apiTypeSwitcher) {
+    private static @NonNull DropdownBoxEntry<String> addPishockLocalSerialApiSubCategory(Helper helper, AbstractConfigEntry<@NonNull String> apiTypeSwitcher) {
         var localApiCategory = helper.startSubCategory(Translation.of("title.pishock-zap.config.api.local"))
             .setDisplayRequirement(() -> DefaultShockBackends.PISHOCK_SERIAL.equals(apiTypeSwitcher.getValue()));
 
@@ -256,7 +274,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         return piShockSerialPortEntry;
     }
 
-    private static void addWebHookApiSubCategory(Helper helper, SelectionListEntry<@NonNull String> apiTypeSwitcher) {
+    private static void addWebHookApiSubCategory(Helper helper, AbstractConfigEntry<@NonNull String> apiTypeSwitcher) {
         var webhookCategory = helper.startSubCategory(Translation.of("title.pishock-zap.config.api.webhook"))
             .setDisplayRequirement(() -> DefaultShockBackends.WEBHOOK.equals(apiTypeSwitcher.getValue()));
 
@@ -300,7 +318,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         helper.endSubCategory();
     }
 
-    private static @NonNull StringListEntry addOpenShockWebApiSubCategory(Helper helper, SelectionListEntry<@NonNull String> apiTypeSwitcher, StringListEntry logIdentifierField) {
+    private static @NonNull StringListEntry addOpenShockWebApiSubCategory(Helper helper, AbstractConfigEntry<@NonNull String> apiTypeSwitcher, StringListEntry logIdentifierField) {
         var openShockApiCategory = helper.startSubCategory(Translation.of("title.pishock-zap.config.api.openshock"))
             .setDisplayRequirement(() -> DefaultShockBackends.OPENSHOCK_WEB.equals(apiTypeSwitcher.getValue()));
 
@@ -345,7 +363,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         return openShockApiTokenField;
     }
 
-    private static void addOpenShockSerialApiSubCategory(Helper helper, PishockZapConfig config, PishockZapConfig defaultConfig, SelectionListEntry<@NonNull String> apiTypeSwitcher, StringListEntry openShockApiTokenField, DropdownBoxEntry<String> piShockSerialPortEntry) {
+    private static void addOpenShockSerialApiSubCategory(Helper helper, PishockZapConfig config, PishockZapConfig defaultConfig, AbstractConfigEntry<@NonNull String> apiTypeSwitcher, StringListEntry openShockApiTokenField, DropdownBoxEntry<String> piShockSerialPortEntry) {
         var openShockSerialApiCategory = helper.startSubCategory(Translation.of("title.pishock-zap.config.api.openshock.serial"))
             .setDisplayRequirement(() -> DefaultShockBackends.OPENSHOCK_SERIAL.equals(apiTypeSwitcher.getValue()));
 
@@ -390,7 +408,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
     }
 
     @SuppressWarnings("deprecation") // TextFieldListEntry.setValue is deprecated
-    private static void addPishockWebSocketApiSubCategory(Helper helper, PishockZapConfig config, PishockZapConfig defaultConfig, SelectionListEntry<@NonNull String> apiTypeSwitcher, StringListEntry piShockUsernameEntry, StringListEntry piShockApiKeyEntry, StringListEntry logIdentifierField) {
+    private static void addPishockWebSocketApiSubCategory(Helper helper, PishockZapConfig config, PishockZapConfig defaultConfig, AbstractConfigEntry<@NonNull String> apiTypeSwitcher, StringListEntry piShockUsernameEntry, StringListEntry piShockApiKeyEntry, StringListEntry logIdentifierField) {
         var piShockWebSocketApiCategory = helper
             .startSubCategory("api.pishock.websocket")
             .setDisplayRequirement(() -> DefaultShockBackends.PISHOCK_WEBSOCKET.equals(apiTypeSwitcher.getValue()));
