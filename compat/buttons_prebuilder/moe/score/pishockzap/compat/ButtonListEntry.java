@@ -53,10 +53,10 @@ public class ButtonListEntry extends TooltipListEntry<Void> {
         var displayed = getDisplayedFieldName();
         var textRenderer = Minecraft.getInstance().font;
         if (textRenderer.isBidirectional()) {
-            textRenderer.drawShadow(matrices, displayed.getVisualOrderText(), (float) (window.getGuiScaledWidth() - x - textRenderer.width(displayed)), y + 6, 0xffffff);
+            textRenderer.drawShadow(matrices, displayed.getVisualOrderText(), window.getGuiScaledWidth() - x - textRenderer.width(displayed), y + 6, 0xffffff);
             buttonWidget.x = x;
         } else {
-            textRenderer.drawShadow(matrices, displayed.getVisualOrderText(), (float) x, (float) (y + 6), this.getPreferredTextColor());
+            textRenderer.drawShadow(matrices, displayed.getVisualOrderText(), x, y + 6, this.getPreferredTextColor());
             buttonWidget.x = x + entryWidth - 150;
         }
 
