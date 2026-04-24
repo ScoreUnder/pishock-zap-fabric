@@ -34,7 +34,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
@@ -265,7 +265,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             if (url.isBlank())
                 return Optional.of(Translation.of("error.pishock-zap.config.api.custom_webhook_url.empty"));
             try {
-                new URL(url);
+                new URI(url);
             } catch (Exception e) {
                 return Optional.of(Translation.of("error.pishock-zap.config.api.custom_webhook_url.invalid"));
             }
