@@ -12,6 +12,7 @@ import moe.score.pishockzap.DefaultShockBackends;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.backend.model.openshock.ShockDevice;
 import moe.score.pishockzap.util.Gsons;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -24,6 +25,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Data
+@ApiStatus.Experimental
 public class PishockZapConfig {
     static final @NonNull String CONFIG_VERSION_KEY = "CONFIG_VERSION_DO_NOT_EDIT";
     static final int CONFIG_VERSION = 3;
@@ -230,6 +232,7 @@ public class PishockZapConfig {
         return sb.toString();
     }
 
+    @ApiStatus.Internal
     public void setFromConfig(@NonNull Map<String, Object> config) {
         config = performConfigMigrations(config);
 
@@ -263,6 +266,7 @@ public class PishockZapConfig {
         }
     }
 
+    @ApiStatus.Internal
     public void copyToConfig(@NonNull Map<String, Object> config) {
         for (Field field : getClass().getDeclaredFields()) {
             try {

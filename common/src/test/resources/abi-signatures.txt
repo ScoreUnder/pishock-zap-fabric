@@ -37,6 +37,18 @@ M:moe.score.pishockzap.backend.ShockBackendRegistry:getCreateFunc:PUBLIC,STATIC:
 M:moe.score.pishockzap.backend.ShockBackendRegistry:getTranslationKey:PUBLIC,STATIC:(Ljava/lang/String;)Ljava/lang/String;
 M:moe.score.pishockzap.backend.ShockBackendRegistry:register:PUBLIC,STATIC:(Ljava/lang/String;Ljava/lang/String;Ljava/util/function/BiFunction;)V
 
+C:moe.score.pishockzap.config.PishockZapConfig:PUBLIC:
+
+C:moe.score.pishockzap.config.ShockDistribution:FINAL,PUBLIC:java.lang.Enum<moe.score.pishockzap.config.ShockDistribution>
+F:moe.score.pishockzap.config.ShockDistribution:ALL:ENUM,FINAL,PUBLIC,STATIC:Lmoe/score/pishockzap/config/ShockDistribution;
+F:moe.score.pishockzap.config.ShockDistribution:FIRST:ENUM,FINAL,PUBLIC,STATIC:Lmoe/score/pishockzap/config/ShockDistribution;
+F:moe.score.pishockzap.config.ShockDistribution:LAST:ENUM,FINAL,PUBLIC,STATIC:Lmoe/score/pishockzap/config/ShockDistribution;
+F:moe.score.pishockzap.config.ShockDistribution:RANDOM:ENUM,FINAL,PUBLIC,STATIC:Lmoe/score/pishockzap/config/ShockDistribution;
+F:moe.score.pishockzap.config.ShockDistribution:RANDOM_ALL:ENUM,FINAL,PUBLIC,STATIC:Lmoe/score/pishockzap/config/ShockDistribution;
+F:moe.score.pishockzap.config.ShockDistribution:ROUND_ROBIN:ENUM,FINAL,PUBLIC,STATIC:Lmoe/score/pishockzap/config/ShockDistribution;
+M:moe.score.pishockzap.config.ShockDistribution:valueOf:PUBLIC,STATIC:(Ljava/lang/String;)Lmoe/score/pishockzap/config/ShockDistribution;
+M:moe.score.pishockzap.config.ShockDistribution:values:PUBLIC,STATIC:()[Lmoe/score/pishockzap/config/ShockDistribution;
+
 C:moe.score.pishockzap.frontend.ShockFrontend:ABSTRACT,PUBLIC:
 M:moe.score.pishockzap.frontend.ShockFrontend:queueRawShock:ABSTRACT,PUBLIC:(Lmoe/score/pishockzap/config/ShockDistribution;Lmoe/score/pishockzap/backend/OpType;IF)V
 M:moe.score.pishockzap.frontend.ShockFrontend:queueShock:ABSTRACT,PUBLIC:(Lmoe/score/pishockzap/config/ShockDistribution;ZF)V
