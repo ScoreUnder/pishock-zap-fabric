@@ -5,6 +5,7 @@ import com.tngtech.archunit.core.domain.*;
 import com.tngtech.archunit.core.domain.properties.HasModifiers;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import lombok.NonNull;
+import moe.score.pishockzap.annotation.InternalMembers;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -40,7 +41,7 @@ class AbiStabilityTest {
     }
 
     private static boolean isInternal(JavaMember member) {
-        return member.isAnnotatedWith(INTERNAL_ANNOTATION);
+        return member.isAnnotatedWith(INTERNAL_ANNOTATION) || member.getOwner().isAnnotatedWith(InternalMembers.class);
     }
 
     private static boolean isInternal(JavaClass clazz) {

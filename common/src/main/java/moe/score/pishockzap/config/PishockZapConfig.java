@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NonNull;
 import moe.score.pishockzap.DefaultShockBackends;
 import moe.score.pishockzap.PishockZapMod;
+import moe.score.pishockzap.annotation.InternalMembers;
 import moe.score.pishockzap.backend.model.openshock.ShockDevice;
 import moe.score.pishockzap.util.Gsons;
 import org.jetbrains.annotations.ApiStatus;
@@ -24,8 +25,14 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * Represents the full configuration of the Pishock-Zap mod. This is a live object (modified in-place), not a snapshot.
+ * <p>
+ * The internals of this class are not meant for API consumers and will change without warning.
+ */
 @Data
 @ApiStatus.Experimental
+@InternalMembers
 public class PishockZapConfig {
     static final @NonNull String CONFIG_VERSION_KEY = "CONFIG_VERSION_DO_NOT_EDIT";
     static final int CONFIG_VERSION = 3;
