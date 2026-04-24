@@ -3,7 +3,23 @@ package moe.score.pishockzap.backend;
 import lombok.NonNull;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.util.TriState;
+import org.jetbrains.annotations.ApiStatus;
 
+/**
+ * A backend for performing shock operations. This is the raw interface to the shock device, and does not manage timing,
+ * queueing, etc.; that is the responsibility of {@link moe.score.pishockzap.frontend.ShockFrontend}.
+ * <p>
+ * Implementations should be thread-safe; while the frontend uses a dedicated worker thread to invoke
+ * {@link #performOp}, the API may be called from other threads by other mods, and calls to anything else (e.g.
+ * {@link #close()}) are expected to happen from other threads which may be running at the same time as a
+ * {@link #performOp} operation.
+ * <p>
+ * When implementing: Prefer to subclass {@link SafeShockBackend} unless you have a good reason not to; it provides some
+ * basic safety checks including guarantees to the user that they will not be shocked above their limits or when the
+ * mod has been disabled.
+ */
+@ApiStatus.AvailableSince("2.0.0")
+@SuppressWarnings("unused")
 public interface ShockBackend {
     /**
      * Perform the given operation on the user's shock device(s).
@@ -40,6 +56,7 @@ public interface ShockBackend {
      * Close any resources this backend has open.
      * Not intended for public use; this is for switching out backends via user config.
      */
+    @ApiStatus.OverrideOnly
     default void close() {
     }
 }
