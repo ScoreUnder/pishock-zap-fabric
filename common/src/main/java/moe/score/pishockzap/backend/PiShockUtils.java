@@ -14,14 +14,14 @@ public class PiShockUtils {
 
     private static final Logger logger = Logger.getLogger(PiShockUtils.class.getName());
 
-    public static boolean shockParamsAreValid(int intensity, float duration) {
+    public static boolean shockParamsAreValid(int intensity, float duration, float intensityMax, float durationMax) {
         if (intensity == 0 || duration == 0.0f) return false;
-        if (intensity < 0 || intensity > PISHOCK_MAX_INTENSITY) {
-            logger.warning("PiShock intensity out of range: " + intensity);
+        if (intensity < 0 || intensity > intensityMax) {
+            logger.warning("Shock operation intensity out of range: " + intensity);
             return false;
         }
-        if (duration < 0.0f || duration > PISHOCK_MAX_DURATION || !Float.isFinite(duration)) {
-            logger.warning("PiShock duration out of range: " + duration);
+        if (duration < 0.0f || duration > durationMax || !Float.isFinite(duration)) {
+            logger.warning("Shock operation duration out of range: " + duration);
             return false;
         }
         return true;

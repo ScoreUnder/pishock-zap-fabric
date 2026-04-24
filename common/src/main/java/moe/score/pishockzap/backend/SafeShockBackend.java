@@ -23,7 +23,7 @@ public abstract class SafeShockBackend implements ShockBackend {
     }
 
     protected boolean areShockParamsValid(OpType op, int intensity, float duration) {
-        return PiShockUtils.shockParamsAreValid(intensity, duration);
+        return PiShockUtils.shockParamsAreValid(intensity, duration, PiShockUtils.PISHOCK_MAX_INTENSITY, getMaxDuration());
     }
 
     protected abstract boolean isConfigured();
