@@ -1,5 +1,6 @@
 package moe.score.pishockzap;
 
+import lombok.experimental.UtilityClass;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.ShockBackend;
 import moe.score.pishockzap.frontend.ShockFrontend;
@@ -10,11 +11,8 @@ import org.jetbrains.annotations.ApiStatus;
  */
 @SuppressWarnings("unused")
 @ApiStatus.AvailableSince("2.0.0")
+@UtilityClass
 public class PishockZapApi {
-    private PishockZapApi() {
-        throw new UnsupportedOperationException();
-    }
-
     /**
      * Gets the maximum intensity you may use for a given operation.
      * Requests which exceed this intensity will be ignored.

@@ -1,5 +1,6 @@
 package moe.score.pishockzap.backend;
 
+import lombok.experimental.UtilityClass;
 import moe.score.pishockzap.config.PishockZapConfig;
 
 import java.util.HashMap;
@@ -8,6 +9,7 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 
+@UtilityClass
 public class ShockBackendRegistry {
     private static final Map<String, BiFunction<? super PishockZapConfig, ? super Executor, ? extends ShockBackend>> backendFactories = new HashMap<>();
     private static final Map<String, String> translationKeys = new HashMap<>();

@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
+import lombok.experimental.UtilityClass;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -13,14 +14,11 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+@UtilityClass
 public class Gsons {
     public static final Gson gson = new GsonBuilder().registerTypeAdapterFactory(new CaseInsensitiveEnumTypeAdapterFactory()).create();
     public static final Gson pascalCaseGson = new GsonBuilder()
         .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE).create();
-
-    private Gsons() {
-        throw new UnsupportedOperationException();
-    }
 
     private static class CaseInsensitiveEnumTypeAdapterFactory implements TypeAdapterFactory {
         @SuppressWarnings({"unchecked", "rawtypes"})
