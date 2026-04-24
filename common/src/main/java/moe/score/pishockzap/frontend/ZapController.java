@@ -9,6 +9,7 @@ import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -60,6 +61,8 @@ public class ZapController implements ShockFrontend {
                 }
             } catch (InterruptedException e) {
                 return;
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Error in shock queue thread", e);
             }
         }
     }
