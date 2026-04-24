@@ -52,7 +52,7 @@ public class PishockZapMod implements ClientModInitializer {
     private final Path configFile = FabricLoader.getInstance().getConfigDir().resolve(NAME.toLowerCase() + ".json");
     @Getter
     private final PishockZapConfig config = new PishockZapConfig();
-    private final PlayerHpWatcher playerHpWatcher = new PlayerHpWatcher();
+    private final PlayerHpWatcher<LocalPlayer> playerHpWatcher = new PlayerHpWatcher<>();
     private final ExecutorService apiExecutor = Executors.newCachedThreadPool();
     @Getter(AccessLevel.PACKAGE)
     private final ZapController zapController = new ZapController(new NullBackend(), config);

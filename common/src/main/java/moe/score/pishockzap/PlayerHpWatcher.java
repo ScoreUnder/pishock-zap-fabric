@@ -1,17 +1,17 @@
 package moe.score.pishockzap;
 
 import lombok.NonNull;
-import net.minecraft.world.entity.LivingEntity;
 
 import java.lang.ref.WeakReference;
 
-public class PlayerHpWatcher {
-    private static final WeakReference<LivingEntity> NULL_WEAK_REFERENCE = new WeakReference<>(null);
-    private @NonNull WeakReference<LivingEntity> lastPlayer = NULL_WEAK_REFERENCE;
+public class PlayerHpWatcher<T> {
+    private static final WeakReference<Object> NULL_WEAK_REFERENCE = new WeakReference<>(null);
+    @SuppressWarnings("unchecked")
+    private @NonNull WeakReference<T> lastPlayer = (WeakReference<T>) NULL_WEAK_REFERENCE;
     private float lastPlayerHp = -1;
     private int ignore = 0;
 
-    public float updatePlayerHpAndGetDamage(@NonNull LivingEntity player, float hp) {
+    public float updatePlayerHpAndGetDamage(@NonNull T player, float hp) {
         float damage = calculateDamage(player, hp);
         lastPlayerHp = hp;
         return damage;
@@ -21,7 +21,7 @@ public class PlayerHpWatcher {
         lastPlayerHp = hp;
     }
 
-    private float calculateDamage(@NonNull LivingEntity player, float hp) {
+    private float calculateDamage(@NonNull T player, float hp) {
         if (player != lastPlayer.get()) {
             lastPlayer = new WeakReference<>(player);
             // Ignore the first update after the player is changed
@@ -38,8 +38,9 @@ public class PlayerHpWatcher {
         return lastPlayerHp - hp;
     }
 
+    @SuppressWarnings("unchecked")
     public void resetPlayer() {
-        lastPlayer = NULL_WEAK_REFERENCE;
+        lastPlayer = (WeakReference<T>) NULL_WEAK_REFERENCE;
         lastPlayerHp = -1;
     }
 }

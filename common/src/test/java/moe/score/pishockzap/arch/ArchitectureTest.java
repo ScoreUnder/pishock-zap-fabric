@@ -29,8 +29,7 @@ class ArchitectureTest {
                 "moe.score.pishockzap.compat.."
             )
             .and().doNotHaveFullyQualifiedName("moe.score.pishockzap.PishockZapMod")
-            .and().doNotHaveFullyQualifiedName("moe.score.pishockzap.PlayerHpWatcher")
-            .and(not(haveOrWithinFullyQualifiedName("moe.score.pishockzap.PishockZapModConfigMenu")))
+            .and(not(haveOrWithinFullyQualifiedName("moe.score.pishockzap.PishockZapModConfigMenu")))  // TODO: needs to be in compat
             .should().dependOnClassesThat().resideInAnyPackage(
                 "net.minecraft..",
                 "net.fabricmc..",
