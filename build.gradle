@@ -1,3 +1,6 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
 plugins {
     id 'base'
     id 'net.fabricmc.fabric-loom' version "$loom_version" apply false
@@ -8,7 +11,7 @@ plugins {
 
 tasks.register('collectJars', Copy) {
     def jarTasks = subprojects.collect { sub ->
-        sub.tasks.findByName('remapJar') ? sub.tasks.named('remapJar') : sub.tasks.named('jar')
+        sub.tasks.names.contains('remapJar') ? sub.tasks.named('remapJar') : sub.tasks.named('jar')
     }
     dependsOn jarTasks
     from jarTasks
@@ -39,7 +42,7 @@ subprojects {
     }
 
     dependencies {
-        def modImpl = configurations.findByName('modImplementation') ? 'modImplementation' : 'implementation'
+        def modImpl = configurations.names.contains('modImplementation') ? 'modImplementation' : 'implementation'
 
         minecraft "com.mojang:minecraft:${project.minecraft_version}"
         if (project.loom_plugin.endsWith("remap")) {
@@ -84,7 +87,7 @@ subprojects {
         doLast {
             def resourcesDir = outputs.files.first()
             def jsonFile = new File(resourcesDir, 'fabric.mod.json')
-            def json = new groovy.json.JsonSlurper().parse(jsonFile)
+            def json = new JsonSlurper().parse(jsonFile)
 
             def modified = false
             resourcesDir.eachFileRecurse { file ->
@@ -95,7 +98,7 @@ subprojects {
             }
 
             if (modified) {
-                jsonFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(json))
+                jsonFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(json))
             }
         }
     }
