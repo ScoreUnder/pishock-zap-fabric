@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @UtilityClass
+@SuppressWarnings("UnstableApiUsage")
 public class NestedList {
     @Builder(setterPrefix = "set")
     public static <T, W extends AbstractConfigListEntry<T>> NestedListListEntry<T, W> create(

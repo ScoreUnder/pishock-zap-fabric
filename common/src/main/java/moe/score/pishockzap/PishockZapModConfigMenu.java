@@ -198,8 +198,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         helper.addTextDescription("api.web_v1.disclaimer");
 
         helper.endSubCategory();
-        PishockV1ConfigFields psFields = new PishockV1ConfigFields(logIdentifierField, piShockUsernameEntry, piShockApiKeyEntry);
-        return psFields;
+        return new PishockV1ConfigFields(logIdentifierField, piShockUsernameEntry, piShockApiKeyEntry);
     }
 
     private record PishockV1ConfigFields(StringListEntry logIdentifierField, StringListEntry piShockUsernameEntry,
@@ -390,6 +389,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         }
     }
 
+    @SuppressWarnings("deprecation") // TextFieldListEntry.setValue is deprecated
     private static void addPishockWebSocketApiSubCategory(Helper helper, PishockZapConfig config, PishockZapConfig defaultConfig, SelectionListEntry<@NonNull String> apiTypeSwitcher, StringListEntry piShockUsernameEntry, StringListEntry piShockApiKeyEntry, StringListEntry logIdentifierField) {
         var piShockWebSocketApiCategory = helper
             .startSubCategory("api.pishock.websocket")
@@ -438,7 +438,6 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 var profile = result.getLeft();
                 var devices = result.getRight();
 
-                //noinspection deprecation
                 websocketUserIdEntry.setValue(Integer.toString(profile.userId));
 
                 var ext = ListEntryExt.of(hubDeviceIdListEntry);
@@ -686,6 +685,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                             return null;
                         }
 
+                        @SuppressWarnings("CallToPrintStackTrace")
                         private void onError(Throwable throwable) {
                             throwable.printStackTrace();
                             btn.setEditable(true);
@@ -720,15 +720,14 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             addEntry = category::addEntry;
         }
 
-        public ConfigCategory startCategory(Component title) {
+        public void startCategory(Component title) {
             if (!subCategoryStack.isEmpty()) throw new IllegalStateException();
             var cat = configBuilder.getOrCreateCategory(title);
             setCategory(cat);
-            return cat;
         }
 
-        public ConfigCategory startCategory(String keyPart) {
-            return startCategory(Translation.of("title.pishock-zap.config." + keyPart));
+        public void startCategory(String keyPart) {
+            startCategory(Translation.of("title.pishock-zap.config." + keyPart));
         }
 
         public BuilderCompat.SubCategoryBuilderCompat startSubCategory(Component title) {
