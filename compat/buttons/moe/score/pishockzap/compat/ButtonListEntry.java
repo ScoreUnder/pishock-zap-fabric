@@ -1,5 +1,6 @@
 package moe.score.pishockzap.compat;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.Window;
 import lombok.Builder;
 import lombok.NonNull;
@@ -27,7 +28,7 @@ public class ButtonListEntry extends TooltipListEntry<Void> {
         super(fieldName, tooltipSupplier);
         this.buttonWidget = Button.builder(buttonText, btn -> onClickCallback.accept(this))
             .bounds(0, 0, 150, 20).build();
-        this.widgets = List.of(buttonWidget);
+        this.widgets = ImmutableList.of(buttonWidget);
     }
 
     public void setButtonText(Component text) {
