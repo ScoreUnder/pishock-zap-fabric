@@ -3,6 +3,7 @@ import groovy.json.JsonSlurper
 
 plugins {
     id 'base'
+    id 'java'
     id 'net.fabricmc.fabric-loom' version "$loom_version" apply false
     id 'net.fabricmc.fabric-loom-remap' version "$loom_version" apply false
     id 'maven-publish'
@@ -131,8 +132,13 @@ subprojects {
         }
     }
 
-    sourceSets.main.java.srcDirs += compat_sources.split(',').collect { rootProject.file("compat/$it") } + [rootProject.file('common/src/main/java')]
-    sourceSets.main.resources.srcDirs += compat_sources.split(',').collect { rootProject.file("compat/${it}_res") } + [rootProject.file('common/src/main/resources')]
+    sourceSets.main.java.srcDir rootProject.file('common/src/main/java')
+    sourceSets.main.resources.srcDir rootProject.file('common/src/main/resources')
+
+    project.property('compat_sources').split(',').each { name ->
+        sourceSets.main.java.srcDir rootProject.file("compat/${name}")
+        sourceSets.main.resources.srcDir rootProject.file("compat/${name}_res")
+    }
 
     if (project.java_language_version.toInteger() >= 17) {
         sourceSets.test.java.srcDirs += [rootProject.file('common/src/test/java')]
