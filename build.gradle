@@ -135,5 +135,6 @@ subprojects {
 
     if (project.java_language_version.toInteger() >= 17) {
         sourceSets.test.java.srcDirs += [rootProject.file('common/src/test/java')]
+        sourceSets.test.resources.srcDirs += [rootProject.file('common/src/test/resources')]
     }
 }
