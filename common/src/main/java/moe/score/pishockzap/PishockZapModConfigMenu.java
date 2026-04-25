@@ -11,8 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.ExtensionMethod;
 import lombok.experimental.FieldDefaults;
-import me.shedaniel.clothconfig2.api.ConfigBuilder;
-import me.shedaniel.clothconfig2.gui.entries.MultiElementListEntry;
 import me.shedaniel.clothconfig2.gui.entries.StringListListEntry;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.ShockBackendRegistry;
@@ -24,9 +22,7 @@ import moe.score.pishockzap.backend.model.openshock.ShockDevice;
 import moe.score.pishockzap.compat.TextStyle;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.compat.clothconfig.Arity2StructEntry;
-import moe.score.pishockzap.compat.clothconfig.ClothUtil;
 import moe.score.pishockzap.compat.clothconfig.ConfigHelper;
-import moe.score.pishockzap.compat.clothconfig.NestedList;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.mixin.pool.ListEntryUtil;
@@ -58,19 +54,14 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var config = mod.getConfig();
 
         var defaultConfig = new PishockZapConfig();
-
-        var configBuilder = ConfigBuilder.create()
-            .setParentScreen(parent)
-            .setTitle(Translation.of("title.pishock-zap.config"));
-        var helper = new ConfigHelper(config, defaultConfig, configBuilder);
+        var helper = new ConfigHelper(config, defaultConfig, parent);
 
         addGeneralCategory(helper);
         addLimitsCategory(helper);
         addDebounceCategory(helper);
-        addApiCategory(helper, config, defaultConfig);
+        addApiCategory(helper);
 
-        configBuilder.setSavingRunnable(mod::saveConfig);
-        return configBuilder.build();
+        return helper.buildScreen(mod::saveConfig);
     }
 
     private static void addGeneralCategory(ConfigHelper helper) {
@@ -153,7 +144,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         };
     }
 
-    private static void addApiCategory(ConfigHelper helper, PishockZapConfig config, PishockZapConfig defaultConfig) {
+    private static void addApiCategory(ConfigHelper helper) {
         helper.startCategory("api");
 
         var apiTypeSwitcher = helper.addSelector(
@@ -179,8 +170,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         addPishockLocalSerialApiSubCategory(helper, getApiType, serialPortDetails);
         addWebHookApiSubCategory(helper, getApiType);
         addOpenShockWebApiSubCategory(helper, getApiType, openShockAccountDetails, loggingDetails);
-        addOpenShockSerialApiSubCategory(helper, config, defaultConfig, getApiType, openShockAccountDetails, serialPortDetails);
-        addPishockWebSocketApiSubCategory(helper, config, defaultConfig, getApiType, pishockAccountDetails, loggingDetails);
+        addOpenShockSerialApiSubCategory(helper, getApiType, openShockAccountDetails, serialPortDetails);
+        addPishockWebSocketApiSubCategory(helper, getApiType, pishockAccountDetails, loggingDetails);
     }
 
     private static LoggingBackendDetails addLoggingSubCategory(ConfigHelper helper, Supplier<String> apiType) {
@@ -473,7 +464,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         helper.endSubCategory();
     }
 
-    private static void addOpenShockSerialApiSubCategory(ConfigHelper helper, PishockZapConfig config, PishockZapConfig defaultConfig, Supplier<String> apiType, OpenShockAccountDetails accountDetails, SerialPortDetails serialPortDetails) {
+    private static void addOpenShockSerialApiSubCategory(ConfigHelper helper, Supplier<String> apiType, OpenShockAccountDetails accountDetails, SerialPortDetails serialPortDetails) {
         var thisBackend = DefaultShockBackends.OPENSHOCK_SERIAL;
         serialPortDetails.showForBackend(thisBackend);
         // accountDetails.showForBackend(thisBackend); -- done halfway down this function when we know the list extension mixin is there, since the account details are only needed for fetching device IDs automatically
@@ -483,20 +474,16 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         helper.addTextDescription("api.openshock.serial");
 
-        var openShockDeviceListEntry = NestedList.<ShockDevice, MultiElementListEntry<ShockDevice>>builder()
-            .setTitle(Translation.of("title.pishock-zap.config.api.openshock.serial.devices"))
-            .setInitialValue(config.getOpenShockSerialDevices())
-            .setTooltipSupplier(ClothUtil.supply(Translation.of("tooltip.pishock-zap.config.api.openshock.serial.devices")))
-            .setSaveConsumer(config::setOpenShockSerialDevices)
-            .setDefaultValueSupplier(defaultConfig::getOpenShockSerialDevices)
-            .setResetButtonKey(helper.getResetButtonKey())
-            .setDefaultNewEntryValue(new ShockDevice(ShockCollarModel.CAIXIANLIN, 0))
-            .setWidgetCreator((elem, widget) -> new Arity2StructEntry<>(
+        var openShockDeviceListEntry = helper.makeNestedList(
+            "api.openshock.serial.devices",
+            PishockZapConfig::getOpenShockSerialDevices,
+            PishockZapConfig::setOpenShockSerialDevices,
+            new ShockDevice(ShockCollarModel.CAIXIANLIN, 0),
+            (elem, widget) -> new Arity2StructEntry<>(
                 Translation.of("title.pishock-zap.config.api.openshock.serial.devices.entry"),
                 ShockDevice::new,
                 helper.makeOpenShockCollarModelDropdown("api.openshock.serial.devices.entry.model", elem.model()),
-                helper.makeIntField("api.openshock.serial.devices.entry.id", elem.id())))
-            .build();
+                helper.makeIntField("api.openshock.serial.devices.entry.id", elem.id())));
 
         ListEntryUtil.withExtensions(openShockDeviceListEntry, list -> {
             accountDetails.showForBackend(thisBackend);
@@ -516,7 +503,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
     }
 
     @SuppressWarnings("deprecation") // TextFieldListEntry.setValue is deprecated
-    private static void addPishockWebSocketApiSubCategory(ConfigHelper helper, PishockZapConfig config, PishockZapConfig defaultConfig, Supplier<String> apiType, PishockAccountDetails accountDetails, LoggingBackendDetails loggingDetails) {
+    private static void addPishockWebSocketApiSubCategory(ConfigHelper helper, Supplier<String> apiType, PishockAccountDetails accountDetails, LoggingBackendDetails loggingDetails) {
         var thisBackend = DefaultShockBackends.PISHOCK_WEBSOCKET;
         accountDetails.showForBackend(thisBackend);
         loggingDetails.showForBackend(thisBackend);
@@ -525,26 +512,23 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             .startSubCategory("api.pishock.websocket")
             .setDisplayRequirement(() -> thisBackend.equals(apiType.get()));
 
-        var hubDeviceIdListEntry = NestedList.<Pair<Integer, IntList>, MultiElementListEntry<Pair<Integer, IntList>>>builder()
-            .setTitle(Translation.of("title.pishock-zap.config.api.pishock.websocket.devices"))
-            .setInitialValue(hubShockerMapToList(config.getPsHubShockers()))
-            .setTooltipSupplier(ClothUtil.supply(Translation.of("tooltip.pishock-zap.config.api.pishock.websocket.devices")))
-            .setSaveConsumer(list -> {
+        var hubDeviceIdListEntry = helper.makeNestedList(
+            "api.pishock.websocket.devices",
+            config -> hubShockerMapToList(config.getPsHubShockers()),
+            (config, list) -> {
                 var result = new Int2ObjectArrayMap<IntList>();
                 for (var pair : list) {
                     result.put(pair.getLeft().intValue(), pair.getRight());
                 }
                 config.setPsHubShockers(result);
-            })
-            .setDefaultValueSupplier(() -> hubShockerMapToList(defaultConfig.getPsHubShockers()))
-            .setResetButtonKey(helper.getResetButtonKey())
-            .setDefaultNewEntryValue(Pair.of(0, new IntArrayList(new int[]{0})))
-            .setWidgetCreator((elem, widget) -> new Arity2StructEntry<>(
+            },
+            Pair.of(0, new IntArrayList(new int[]{0})),
+            (elem, widget) -> new Arity2StructEntry<>(
                 Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry"),
                 (a, b) -> Pair.of(a, new IntArrayList(b)),
                 helper.makeIntField("api.pishock.websocket.devices.entry.id", elem.getLeft()),
-                helper.makeIntListField("api.pishock.websocket.devices.entry.devices", elem.getRight())))
-            .build();
+                helper.makeIntListField("api.pishock.websocket.devices.entry.devices", elem.getRight()))
+        );
 
         var websocketUserIdEntry = helper.makeIntField("api.pishock.websocket.user_id",
             PishockZapConfig::getPsUserId,

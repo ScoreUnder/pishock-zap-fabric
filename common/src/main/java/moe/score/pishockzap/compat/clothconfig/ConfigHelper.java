@@ -13,6 +13,7 @@ import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,10 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 public class ConfigHelper {
     private final PishockZapConfig config;
@@ -34,10 +32,13 @@ public class ConfigHelper {
     private final List<Consumer<AbstractConfigListEntry<?>>> addEntryStack = new ArrayList<>();
     private final List<BuilderCompat.SubCategoryBuilderCompat> subCategoryStack = new ArrayList<>();
 
-    public ConfigHelper(PishockZapConfig config, PishockZapConfig defaultConfig, ConfigBuilder configBuilder) {
+    public ConfigHelper(PishockZapConfig config, PishockZapConfig defaultConfig, Screen parentScreen) {
         this.config = config;
         this.defaultConfig = defaultConfig;
-        this.configBuilder = configBuilder;
+        this.configBuilder = ConfigBuilder.create()
+            .setParentScreen(parentScreen)
+            .setTitle(Translation.of("title.pishock-zap.config"));
+        ;
         this.entryBuilder = configBuilder.entryBuilder();
     }
 
@@ -209,6 +210,20 @@ public class ConfigHelper {
             .build();
     }
 
+    public <T, W extends AbstractConfigListEntry<T>> NestedListListEntry<T, W> makeNestedList(String keyPart, Function<PishockZapConfig, List<T>> get, BiConsumer<PishockZapConfig, List<T>> set, T defaultNewEntryValue, BiFunction<? super T, ? super NestedListListEntry<T, W>, ? extends W> widgetCreator) {
+        return NestedList.<T, W>builder()
+            .setTitle(Translation.of("title.pishock-zap.config." + keyPart))
+            .setInitialValue(get.apply(config))
+            .setTooltipSupplier(ClothUtil.supply(Translation.of("tooltip.pishock-zap.config." + keyPart)))
+            .setSaveConsumer(v -> set.accept(config, v))
+            .setDefaultValueSupplier(() -> get.apply(defaultConfig))
+            .setResetButtonKey(getResetButtonKey())
+            .setDefaultNewEntryValue(defaultNewEntryValue)
+            .setWidgetCreator(widgetCreator)
+            .build();
+    }
+
+
     public <T> void addActionButton(String keyPart, Supplier<CompletableFuture<T>> action, Consumer<T> success) {
         add(ButtonListEntry.builder()
             .setButtonText(Translation.of("label.pishock-zap.config." + keyPart))
@@ -287,5 +302,10 @@ public class ConfigHelper {
     public void endSubCategory() {
         addEntry = addEntryStack.remove(addEntryStack.size() - 1);
         addEntry.accept(subCategoryStack.remove(subCategoryStack.size() - 1).build());
+    }
+
+    public Screen buildScreen(Runnable saveRunnable) {
+        configBuilder.setSavingRunnable(saveRunnable);
+        return configBuilder.build();
     }
 }
