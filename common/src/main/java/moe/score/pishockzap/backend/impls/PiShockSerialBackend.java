@@ -90,20 +90,21 @@ public class PiShockSerialBackend extends SerialBackend<Integer> {
 
     @NonNull
     public static CompletableFuture<List<Integer>> probeDeviceIds(String serialPortAddress) {
-        WeakReference<SerialBackend<?>> instanceRef = SerialBackend.INSTANCE;
-        SerialBackend<?> existingInstance = instanceRef == null ? null : instanceRef.get();
-        boolean serialPortIsMine;
-        SerialPort port = existingInstance == null ? null : existingInstance.reuseThisSerialPort(serialPortAddress);
-        if (port == null) {
-            System.out.println("Opening my own serial port");
-            port = createAndOpenPort(serialPortAddress);
-            serialPortIsMine = true;
-        } else {
-            System.out.println("Reusing a serial port");
-            serialPortIsMine = false;
-        }
-
-        return getDeviceIdsFromPort(port, serialPortIsMine);
+        return CompletableFuture.supplyAsync(() -> {
+            WeakReference<SerialBackend<?>> instanceRef = SerialBackend.INSTANCE;
+            SerialBackend<?> existingInstance = instanceRef == null ? null : instanceRef.get();
+            boolean serialPortIsMine;
+            SerialPort port = existingInstance == null ? null : existingInstance.reuseThisSerialPort(serialPortAddress);
+            if (port == null) {
+                System.out.println("Opening my own serial port");
+                port = createAndOpenPort(serialPortAddress);
+                serialPortIsMine = true;
+            } else {
+                System.out.println("Reusing a serial port");
+                serialPortIsMine = false;
+            }
+            return getDeviceIdsFromPort(port, serialPortIsMine);
+        }).thenCompose(t -> t);
     }
 
     private static @NonNull CompletableFuture<List<Integer>> getDeviceIdsFromPort(SerialPort port, boolean closeWhenDone) {
