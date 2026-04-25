@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.Window;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.experimental.ExtensionMethod;
 import me.shedaniel.clothconfig2.gui.entries.TooltipListEntry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -18,6 +19,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+@ExtensionMethod(WidgetUtil.Extensions.class)
 public class ButtonListEntry extends TooltipListEntry<Void> {
     private final Button buttonWidget;
     private final List<AbstractWidget> widgets;
@@ -26,8 +28,7 @@ public class ButtonListEntry extends TooltipListEntry<Void> {
     @Builder(setterPrefix = "set")
     public ButtonListEntry(Component fieldName, Component buttonText, Consumer<ButtonListEntry> onClickCallback, Supplier<Optional<Component[]>> tooltipSupplier) {
         super(fieldName, tooltipSupplier);
-        this.buttonWidget = Button.builder(buttonText, btn -> onClickCallback.accept(this))
-            .bounds(0, 0, 150, 20).build();
+        this.buttonWidget = WidgetUtil.makeButton(0, 0, 150, 20, buttonText, btn -> onClickCallback.accept(this));
         this.widgets = ImmutableList.of(buttonWidget);
     }
 

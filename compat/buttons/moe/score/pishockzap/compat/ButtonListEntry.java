@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.Window;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.experimental.ExtensionMethod;
 import me.shedaniel.clothconfig2.gui.entries.TooltipListEntry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,6 +19,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+@ExtensionMethod(WidgetUtil.Extensions.class)
 public class ButtonListEntry extends TooltipListEntry<Void> {
     private final Button buttonWidget;
     private final List<AbstractWidget> widgets;
@@ -26,8 +28,7 @@ public class ButtonListEntry extends TooltipListEntry<Void> {
     @Builder(setterPrefix = "set")
     public ButtonListEntry(Component fieldName, Component buttonText, Consumer<ButtonListEntry> onClickCallback, Supplier<Optional<Component[]>> tooltipSupplier) {
         super(fieldName, tooltipSupplier);
-        this.buttonWidget = Button.builder(buttonText, btn -> onClickCallback.accept(this))
-            .bounds(0, 0, 150, 20).build();
+        this.buttonWidget = WidgetUtil.makeButton(0, 0, 150, 20, buttonText, btn -> onClickCallback.accept(this));
         this.widgets = ImmutableList.of(buttonWidget);
     }
 
@@ -35,18 +36,26 @@ public class ButtonListEntry extends TooltipListEntry<Void> {
         buttonWidget.setMessage(text);
     }
 
+    @Override
     public boolean isEdited() {
         return false;
     }
 
+    @Override
     public Void getValue() {
         return null;
     }
 
+    @Override
     public Optional<Void> getDefaultValue() {
         return Optional.empty();
     }
 
+    @Override
+    public void save() {
+    }
+
+    @Override
     public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
         super.render(graphics, index, y, x, entryWidth, entryHeight, mouseX, mouseY, isHovered, delta);
         Window window = Minecraft.getInstance().getWindow();
@@ -65,10 +74,12 @@ public class ButtonListEntry extends TooltipListEntry<Void> {
         buttonWidget.render(graphics, mouseX, mouseY, delta);
     }
 
+    @Override
     public @NonNull List<? extends GuiEventListener> children() {
         return widgets;
     }
 
+    @Override
     public List<? extends NarratableEntry> narratables() {
         return widgets;
     }

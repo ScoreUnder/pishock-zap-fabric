@@ -47,15 +47,23 @@ subprojects {
 
         minecraft "com.mojang:minecraft:${project.minecraft_version}"
         if (project.loom_plugin.endsWith("remap")) {
-            if (findProperty('yarn_mappings')) {
-                mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-            } else if (findProperty('parchment_mappings')) {
-                mappings loom.layered() {
+            mappings loom.layered() {
+                if (findProperty('yarn_mappings')) {
+                    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+                } else {
                     officialMojangMappings()
-                    parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:${project.parchment_mappings}@zip")
+                    if (findProperty('parchment_mappings')) {
+                        parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:${project.parchment_mappings}@zip")
+                    }
                 }
-            } else {
-                mappings loom.officialMojangMappings()
+
+                project.property('compat_sources').split(',').each { name ->
+                    if (rootProject.file("compat/${name}.tiny").exists()) {
+                        mappings(rootProject.file("compat/${name}.tiny")) {
+                            mergeNamespace 'official'
+                        }
+                    }
+                }
             }
         }
         "${modImpl}" "net.fabricmc:fabric-loader:${project.loader_version}"
