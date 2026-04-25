@@ -100,6 +100,18 @@ public class ConfigHelper {
         return entry;
     }
 
+    public StringListEntry addTextFieldNoDefault(String keyPart, Function<PishockZapConfig, String> get, BiConsumer<PishockZapConfig, String> set, Function<String, Optional<Component>> errorSupplier) {
+        StringListEntry entry = entryBuilder
+            .startStrField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
+            .setSaveConsumer(v -> set.accept(config, v))
+            .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
+            // no default
+            .setErrorSupplier(errorSupplier)
+            .build();
+        add(entry);
+        return entry;
+    }
+
     public StringListEntry addTextField(String keyPart, Function<PishockZapConfig, String> get, BiConsumer<PishockZapConfig, String> set, Function<String, Optional<Component>> errorSupplier) {
         StringListEntry field = entryBuilder
             .startStrField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
@@ -108,12 +120,6 @@ public class ConfigHelper {
             .setDefaultValue(get.apply(defaultConfig))
             .setErrorSupplier(errorSupplier)
             .build();
-        add(field);
-        return field;
-    }
-
-    public IntegerListEntry addIntField(String keyPart, Function<PishockZapConfig, Integer> get, BiConsumer<PishockZapConfig, Integer> set, Function<Integer, Optional<Component>> errorSupplier) {
-        var field = makeIntField(keyPart, get, set, errorSupplier);
         add(field);
         return field;
     }
@@ -134,10 +140,6 @@ public class ConfigHelper {
             .build();
     }
 
-    public void addStringListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<String>> get, BiConsumer<PishockZapConfig, List<String>> set, Function<List<String>, Optional<Component>> errorSupplier, Function<String, Optional<Component>> cellErrorSupplier) {
-        add(makeStringListFieldNoDefault(keyPart, get, set, errorSupplier, cellErrorSupplier));
-    }
-
     public @NonNull StringListListEntry makeStringListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<String>> get, BiConsumer<PishockZapConfig, List<String>> set, Function<List<String>, Optional<Component>> errorSupplier, Function<String, Optional<Component>> cellErrorSupplier) {
         return entryBuilder
             .startStrList(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
@@ -148,10 +150,6 @@ public class ConfigHelper {
             .setExpanded(true)
             // no default
             .build();
-    }
-
-    public void addIntListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<Integer>> get, BiConsumer<PishockZapConfig, List<Integer>> set, Function<List<Integer>, Optional<Component>> errorSupplier, Function<Integer, Optional<Component>> cellErrorSupplier) {
-        add(makeIntListFieldNoDefault(keyPart, get, set, errorSupplier, cellErrorSupplier));
     }
 
     public @NonNull IntegerListListEntry makeIntListFieldNoDefault(String keyPart, Function<PishockZapConfig, List<Integer>> get, BiConsumer<PishockZapConfig, List<Integer>> set, Function<List<Integer>, Optional<Component>> errorSupplier, Function<Integer, Optional<Component>> cellErrorSupplier) {
@@ -190,13 +188,15 @@ public class ConfigHelper {
             .build();
     }
 
-    public <T> @NotNull SelectionListEntry<T> makeSelector(String keyPart, Function<PishockZapConfig, T> get, BiConsumer<PishockZapConfig, T> set, T[] options, Function<T, Component> nameProvider) {
-        return entryBuilder.startSelector(Translation.of("title.pishock-zap.config." + keyPart), options, get.apply(config))
+    public <T> @NotNull SelectionListEntry<T> addSelector(String keyPart, Function<PishockZapConfig, T> get, BiConsumer<PishockZapConfig, T> set, T[] options, Function<T, Component> nameProvider) {
+        var selector = entryBuilder.startSelector(Translation.of("title.pishock-zap.config." + keyPart), options, get.apply(config))
             .setDefaultValue(get.apply(defaultConfig))
             .setNameProvider(nameProvider)
             .setSaveConsumer(v -> set.accept(config, v))
             .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
             .build();
+        add(selector);
+        return selector;
     }
 
     public <T> @NotNull DropdownBoxEntry<T> makeDropdown(String keyPart, Function<PishockZapConfig, T> get, BiConsumer<PishockZapConfig, T> set, Iterable<T> options, Function<String, T> stringToObject, Function<T, Component> objectToText) {
