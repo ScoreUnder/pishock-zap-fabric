@@ -13,6 +13,7 @@ import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.frontend.ZapController;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -153,6 +154,7 @@ public class PishockZapMod implements ClientModInitializer {
         zapController.start();
 
         registerToggleHotkey();
+        registerBackendJoinWorldNotifier();
     }
 
     private void registerToggleHotkey() {
@@ -169,6 +171,10 @@ public class PishockZapMod implements ClientModInitializer {
                 }
             }
         });
+    }
+
+    private void registerBackendJoinWorldNotifier() {
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> zapController.getBackend().onWorldJoin());
     }
 
     public static String getVersion() {

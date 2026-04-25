@@ -74,6 +74,11 @@ public class PiShockWebSocketApiBackend extends SafeShockBackend {
     }
 
     @Override
+    public void onWorldJoin() {
+        doApiCall(new PingCommand());
+    }
+
+    @Override
     public void close() {
         var lock = httpLock.writeLock();
         lock.lock();

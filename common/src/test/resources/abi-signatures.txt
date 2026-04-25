@@ -27,6 +27,7 @@ M:moe.score.pishockzap.backend.SafeShockBackend:safePerformOp:ABSTRACT,PROTECTED
 
 C:moe.score.pishockzap.backend.ShockBackend:ABSTRACT,PUBLIC:
 M:moe.score.pishockzap.backend.ShockBackend:canReplaceOngoingOperation:PUBLIC:()Lmoe/score/pishockzap/util/TriState;
+M:moe.score.pishockzap.backend.ShockBackend:onWorldJoin:PUBLIC:()V
 M:moe.score.pishockzap.backend.ShockBackend:close:PUBLIC:()V
 M:moe.score.pishockzap.backend.ShockBackend:getMaxDuration:PUBLIC:()F
 M:moe.score.pishockzap.backend.ShockBackend:performOp:ABSTRACT,PUBLIC:(Lmoe/score/pishockzap/config/ShockDistribution;Lmoe/score/pishockzap/backend/OpType;IF)Z

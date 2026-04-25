@@ -53,6 +53,15 @@ public interface ShockBackend {
     }
 
     /**
+     * Called when the user joins a world. This is intended for backends to get their init (e.g. connection) out of the
+     * way before the user actually gets shocked.
+     */
+    @ApiStatus.AvailableSince("2.1.0")
+    @ApiStatus.OverrideOnly
+    default void onWorldJoin() {
+    }
+
+    /**
      * Close any resources this backend has open.
      * Not intended for public use; this is for switching out backends via user config.
      */
