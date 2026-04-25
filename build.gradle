@@ -1,11 +1,12 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import net.fabricmc.loom.api.mappings.layered.spec.FileSpec
 
 plugins {
     id 'base'
     id 'java'
-    id 'net.fabricmc.fabric-loom' version "$loom_version" apply false
-    id 'net.fabricmc.fabric-loom-remap' version "$loom_version" apply false
+    id 'net.fabricmc.fabric-loom' apply false // version "$loom_version" -- loaded by buildSrc already
+    id 'net.fabricmc.fabric-loom-remap' apply false // version "$loom_version" -- loaded by buildSrc already
     id 'maven-publish'
     id 'io.freefair.lombok' version '9.2.0' apply false
 }
@@ -58,10 +59,18 @@ subprojects {
                 }
 
                 project.property('compat_sources').split(',').each { name ->
-                    if (rootProject.file("compat/${name}.tiny").exists()) {
-                        mappings(rootProject.file("compat/${name}.tiny")) {
+                    def remapsFile = rootProject.file("compat/${name}.tiny")
+                    if (remapsFile.exists()) {
+                        mappings(remapsFile) {
                             mergeNamespace 'official'
                         }
+                    }
+                }
+
+                project.property('compat_sources').split(',').each { name ->
+                    def renamesFile = rootProject.file("compat/${name}.rename.tiny")
+                    if (renamesFile.exists()) {
+                        addLayer PostProcessingMappingSpec.newInstance(FileSpec.create(renamesFile), 'official')
                     }
                 }
             }

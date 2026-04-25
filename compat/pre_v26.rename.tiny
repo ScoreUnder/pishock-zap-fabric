@@ -1,0 +1,7 @@
+tiny	2	0	previous	named
+c	net/minecraft/resources/ResourceLocation	net/minecraft/resources/Identifier
+c	net/minecraft/client/gui/GuiGraphics	net/minecraft/client/gui/GuiGraphicsExtractor
+	m	(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;III)I	drawString	text
+	m	(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;III)V	drawString	text
+c	net/minecraft/client/gui/components/Renderable	net/minecraft/client/gui/components/Renderable
+	m	(Lnet/minecraft/client/gui/GuiGraphics;IIF)V	render	extractRenderState

@@ -3,11 +3,12 @@
 // (powered by FernFlower decompiler)
 //
 
-package moe.score.pishockzap.compat;
+package moe.score.pishockzap.compat.clothconfig;
 
 import lombok.NonNull;
 import me.shedaniel.clothconfig2.gui.entries.IntegerSliderEntry;
 import me.shedaniel.clothconfig2.impl.builders.AbstractSliderFieldBuilder;
+import moe.score.pishockzap.compat.Translation;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.network.chat.Component;

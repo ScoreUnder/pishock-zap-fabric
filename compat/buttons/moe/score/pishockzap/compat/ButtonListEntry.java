@@ -7,7 +7,7 @@ import lombok.NonNull;
 import lombok.experimental.ExtensionMethod;
 import me.shedaniel.clothconfig2.gui.entries.TooltipListEntry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -56,22 +56,22 @@ public class ButtonListEntry extends TooltipListEntry<Void> {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
-        super.render(graphics, index, y, x, entryWidth, entryHeight, mouseX, mouseY, isHovered, delta);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
+        super.extractRenderState(graphics, index, y, x, entryWidth, entryHeight, mouseX, mouseY, isHovered, delta);
         Window window = Minecraft.getInstance().getWindow();
         buttonWidget.active = isEditable();
         buttonWidget.setY(y);
         var displayed = getDisplayedFieldName();
         var textRenderer = Minecraft.getInstance().font;
         if (textRenderer.isBidirectional()) {
-            graphics.drawString(textRenderer, displayed.getVisualOrderText(), window.getGuiScaledWidth() - x - textRenderer.width(displayed), y + 6, 0xffffff);
+            graphics.text(textRenderer, displayed.getVisualOrderText(), window.getGuiScaledWidth() - x - textRenderer.width(displayed), y + 6, 0xffffff);
             buttonWidget.setX(x);
         } else {
-            graphics.drawString(textRenderer, displayed.getVisualOrderText(), x, y + 6, this.getPreferredTextColor());
+            graphics.text(textRenderer, displayed.getVisualOrderText(), x, y + 6, this.getPreferredTextColor());
             buttonWidget.setX(x + entryWidth - 150);
         }
 
-        buttonWidget.render(graphics, mouseX, mouseY, delta);
+        buttonWidget.extractRenderState(graphics, mouseX, mouseY, delta);
     }
 
     @Override

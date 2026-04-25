@@ -19,6 +19,7 @@ import moe.score.pishockzap.backend.model.openshock.ShockDevice;
 import moe.score.pishockzap.compat.*;
 import moe.score.pishockzap.compat.clothconfig.Arity2StructEntry;
 import moe.score.pishockzap.compat.clothconfig.ClothUtil;
+import moe.score.pishockzap.compat.clothconfig.FloatSliderBuilder;
 import moe.score.pishockzap.compat.clothconfig.NestedList;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
