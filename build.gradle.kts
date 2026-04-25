@@ -72,9 +72,7 @@ subprojects {
                     mappings("net.fabricmc:yarn:${yarnMappings}:v2")
                 } else {
                     officialMojangMappings()
-                    if (parchmentMappings != null) {
-                        parchment("org.parchmentmc.data:parchment-${minecraftVersion}:${parchmentMappings}@zip")
-                    }
+                    parchmentMappings?.let { parchment("org.parchmentmc.data:parchment-${minecraftVersion}:${it}@zip") }
                 }
                 compatMappings(compatSources, rootProject.projectDir)
             })
