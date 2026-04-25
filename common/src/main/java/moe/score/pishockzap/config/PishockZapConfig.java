@@ -49,7 +49,7 @@ public class PishockZapConfig {
     private boolean fractionalDamage = false;
 
     /// The duration per shock/vibration
-    private float duration = 1.0f;
+    private float duration = 0.4f;
     /// The maximum duration per shock/vibration, if it varies e.g. based on debouncing
     private float maxDuration = 10.0f;
     /// The threshold to swap from vibration to shock
@@ -76,7 +76,7 @@ public class PishockZapConfig {
     private @NonNull ShockDistribution shockDistributionDeath = ShockDistribution.ALL;
 
     /// Debounce time between shock/vibrate requests (seconds)
-    private float debounceTime = 1.0f;
+    private float debounceTime = 0.1f;
     /// Whether to accumulate duration for multiple requests within the debounce time
     private boolean accumulateDuration = true;
     /// Whether to accumulate intensity for multiple requests within the debounce time
