@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.NonNull;
+import lombok.experimental.ExtensionMethod;
 import me.shedaniel.clothconfig2.api.AbstractConfigEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.gui.entries.*;
@@ -25,7 +26,7 @@ import moe.score.pishockzap.compat.clothconfig.ConfigHelper;
 import moe.score.pishockzap.compat.clothconfig.NestedList;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
-import moe.score.pishockzap.mixin.pool.ListEntryExt;
+import moe.score.pishockzap.mixin.pool.ListEntryUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -42,6 +43,7 @@ import static moe.score.pishockzap.backend.PiShockUtils.PISHOCK_MAX_INTENSITY;
 
 @SuppressWarnings("unused")
 @ApiStatus.Internal
+@ExtensionMethod(ListEntryUtil.class)
 public class PishockZapModConfigMenu implements ModMenuApi {
     public static final String PISHOCK_ACCOUNT_PAGE_URL = "https://login.pishock.com/account";
     private static final String PISHOCK_CONTROLLER_PAGE_URL = "https://pishock.com/#/control";
@@ -202,15 +204,11 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             return isShareCodeInvalid(shareCode);
         });
 
-        {
-            var piShockSerialDeviceIdsExt = ListEntryExt.of(piShockShareCodesField);
-            if (piShockSerialDeviceIdsExt != null) {
-                helper.addActionButton(
-                    "api.web_v1.add_my_ids",
-                    () -> new PiShockWebApiV1Backend.HttpBackend().probeShareCodes(piShockUsernameEntry.getValue(), piShockApiKeyEntry.getValue()),
-                    piShockSerialDeviceIdsExt::pishockZap$addListEntries);
-            }
-        }
+        ListEntryUtil.withExtensions(piShockShareCodesField, list ->
+            helper.addActionButton(
+                "api.web_v1.add_my_ids",
+                () -> new PiShockWebApiV1Backend.HttpBackend().probeShareCodes(piShockUsernameEntry.getValue(), piShockApiKeyEntry.getValue()),
+                v -> list.replaceValues(v)));
 
         helper.add(piShockShareCodesField);
         helper.addTextDescription("api.web_v1.disclaimer");
@@ -258,15 +256,11 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             return Optional.empty();
         });
 
-        {
-            var piShockSerialDeviceIdsExt = ListEntryExt.of(piShockSerialDeviceIdField);
-            if (piShockSerialDeviceIdsExt != null) {
-                helper.addActionButton(
-                    "api.local.add_my_ids",
-                    () -> PiShockSerialBackend.probeDeviceIds(piShockSerialPortEntry.getValue()),
-                    piShockSerialDeviceIdsExt::pishockZap$addListEntries);
-            }
-        }
+        ListEntryUtil.withExtensions(piShockSerialDeviceIdField, list ->
+            helper.addActionButton(
+                "api.local.add_my_ids",
+                () -> PiShockSerialBackend.probeDeviceIds(piShockSerialPortEntry.getValue()),
+                values -> list.replaceValues(values)));
 
         helper.add(piShockSerialDeviceIdField);
 
@@ -346,13 +340,11 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             }
         );
 
-        var openShockDeviceIdsExt = ListEntryExt.of(openShockDeviceIdField);
-        if (openShockDeviceIdsExt != null) {
+        ListEntryUtil.withExtensions(openShockDeviceIdField, list ->
             helper.addActionButton(
                 "api.openshock.add_my_ids",
                 () -> OpenShockWebApiBackend.probeDeviceIds(openShockApiTokenField.getValue()),
-                openShockDeviceIdsExt::pishockZap$addListEntries);
-        }
+                values -> list.replaceValues(values)));
 
         helper.add(openShockDeviceIdField);
         helper.add(logIdentifierField);
@@ -393,18 +385,20 @@ public class PishockZapModConfigMenu implements ModMenuApi {
     }
 
     private static void addOpenShockSerialDeviceFetchSubCategory(ConfigHelper helper, StringListEntry openShockApiTokenField, NestedListListEntry<ShockDevice, MultiElementListEntry<ShockDevice>> openShockDeviceListEntry) {
-        var openShockDeviceListEntryExt = ListEntryExt.of(openShockDeviceListEntry);
-        if (openShockDeviceListEntryExt != null) {
+        ListEntryUtil.withExtensions(openShockDeviceListEntry, list -> {
             helper.startSubCategory(Translation.of("title.pishock-zap.config.api.openshock.serial.fetch"));
 
             helper.add(openShockApiTokenField);
             helper.addActionButton("api.openshock.serial.fetch.button",
                 () -> OpenShockWebApiBackend.probeDevices(openShockApiTokenField.getValue()),
-                result -> result.stream().map(s -> new ShockDevice(s.model(), s.rfId()))
-                    .forEachOrdered(openShockDeviceListEntryExt::pishockZap$addListEntry));
+                result -> {
+                    if (!result.isEmpty()) list.pishockZap$clear();
+                    result.stream().map(s -> new ShockDevice(s.model(), s.rfId()))
+                        .forEachOrdered(list::pishockZap$addListEntry);
+                });
 
             helper.endSubCategory();
-        }
+        });
     }
 
     @SuppressWarnings("deprecation") // TextFieldListEntry.setValue is deprecated
@@ -458,12 +452,12 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
                 websocketUserIdEntry.setValue(Integer.toString(profile.userId));
 
-                var ext = ListEntryExt.of(hubDeviceIdListEntry);
-                if (ext != null) {
-                    ext.pishockZap$addListEntries(devices.stream()
+                ListEntryUtil.withExtensions(hubDeviceIdListEntry, list -> {
+                    if (devices.isEmpty()) return;
+                    list.replaceValues(devices.stream()
                         .map(d -> Pair.<Integer, IntList>of(d.clientId, IntArrayList.wrap(d.shockers.stream()
                             .mapToInt(s -> s.shockerId).toArray()))).toList());
-                }
+                });
             });
 
         helper.add(websocketUserIdEntry);
