@@ -1,7 +1,4 @@
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonObject
 import net.fabricmc.loom.api.LoomGradleExtensionAPI
-import net.fabricmc.loom.api.mappings.layered.spec.FileSpec
 
 plugins {
     base
@@ -43,6 +40,7 @@ subprojects {
     val modmenuVersion = project.property("modmenu_version") as String
     val clothConfigVersion = project.property("cloth_config_version") as String
     val junitVersion = project.property("junit_version") as String
+    val useRemapping = loomPlugin.endsWith("remap")
 
     apply(plugin = loomPlugin)
     val loom = extensions.getByType<LoomGradleExtensionAPI>()
@@ -64,10 +62,10 @@ subprojects {
     }
 
     dependencies {
-        val modImpl = if (configurations.names.contains("modImplementation")) "modImplementation" else "implementation"
+        val modImpl = if (useRemapping) "modImplementation" else "implementation"
 
         add("minecraft", "com.mojang:minecraft:${minecraftVersion}")
-        if (loomPlugin.endsWith("remap")) {
+        if (useRemapping) {
             @Suppress("UnstableApiUsage")
             add("mappings", loom.layered {
                 if (yarnMappings != null) {
@@ -78,22 +76,7 @@ subprojects {
                         parchment("org.parchmentmc.data:parchment-${minecraftVersion}:${parchmentMappings}@zip")
                     }
                 }
-
-                compatSources.forEach { name ->
-                    val remapsFile = rootProject.file("compat/${name}.tiny")
-                    if (remapsFile.exists()) {
-                        mappings(remapsFile) {
-                            mergeNamespace("official")
-                        }
-                    }
-                }
-
-                compatSources.forEach { name ->
-                    val renamesFile = rootProject.file("compat/${name}.rename.tiny")
-                    if (renamesFile.exists()) {
-                        addLayer(PostProcessingMappingSpec(FileSpec.create(renamesFile), "official"))
-                    }
-                }
+                compatMappings(compatSources, rootProject.projectDir)
             })
         }
         add(modImpl, "net.fabricmc:fabric-loader:${loaderVersion}")
@@ -124,28 +107,11 @@ subprojects {
         }
 
         doLast {
-            val resourcesDir = outputs.files.first()
-            val jsonFile = File(resourcesDir, "fabric.mod.json")
-            val gson = GsonBuilder().setPrettyPrinting().create()
-            val json = jsonFile.reader().use { gson.fromJson(it, JsonObject::class.java) }
-
-            val mixins = json.getAsJsonArray("mixins")
-            var modified = false
-            resourcesDir.walkTopDown().forEach { file ->
-                if (file.name.endsWith(".compat.client.mixins.json")) {
-                    modified = true
-                    mixins.add(JsonObject().apply {
-                        addProperty("config", file.name)
-                        addProperty("environment", "client")
-                    })
-                }
-            }
-
-            if (modified) {
-                jsonFile.writeText(gson.toJson(json))
-            }
+            addMixinsToFabricModJson(destinationDir)
         }
     }
+
+    setupCompatSourcePaths(compatSources, rootProject, sourceSets)
 
     val projJavaVersion = javaLanguageVersion.toInt()
     tasks.withType<JavaCompile>().configureEach {
@@ -180,15 +146,4 @@ subprojects {
             }
         }
     }
-
-    sourceSets["main"].java.srcDir(rootProject.file("common/src/main/java"))
-    sourceSets["main"].resources.srcDir(rootProject.file("common/src/main/resources"))
-
-    compatSources.forEach { name ->
-        sourceSets["main"].java.srcDir(rootProject.file("compat/${name}"))
-        sourceSets["main"].resources.srcDir(rootProject.file("compat/${name}_res"))
-    }
-
-    sourceSets["test"].java.srcDir(rootProject.file("common/src/test/java"))
-    sourceSets["test"].resources.srcDir(rootProject.file("common/src/test/resources"))
 }

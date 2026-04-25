@@ -1,7 +1,10 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Properties
 
 plugins {
     java
+    `kotlin-dsl`
 }
 
 val rootProps = Properties()
@@ -19,4 +22,12 @@ repositories {
 
 dependencies {
     implementation("net.fabricmc:fabric-loom:${rootProps["loom_version"]}")
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set((rootProps["java_language_version"] as String).toInt())
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions.jvmTarget.set(JvmTarget.fromTarget(rootProps["java_language_version"] as String))
 }
