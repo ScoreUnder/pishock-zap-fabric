@@ -20,7 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class ConfigHelper {
     private final PishockZapConfig config;
@@ -214,30 +217,20 @@ public class ConfigHelper {
             .setOnClickCallback(btn -> {
                 btn.setEditable(false);
                 btn.setButtonText(Translation.of("label.pishock-zap.config." + keyPart + ".working"));
-                action.get().handleAsync(new BiFunction<>() {
-                    @Override
-                    public Object apply(T t, Throwable throwable) {
+                action.get()
+                    .thenAcceptAsync(t -> {
+                        success.accept(t);
+                        btn.setEditable(true);
+                        btn.setButtonText(Translation.of("label.pishock-zap.config." + keyPart));
+                    }, Minecraft.getInstance())
+                    .exceptionallyAsync((throwable) -> {
                         if (throwable != null) {
-                            onError(throwable);
-                        } else {
-                            try {
-                                success.accept(t);
-                                btn.setEditable(true);
-                                btn.setButtonText(Translation.of("label.pishock-zap.config." + keyPart));
-                            } catch (Exception e) {
-                                onError(e);
-                            }
+                            throwable.printStackTrace();
+                            btn.setEditable(true);
+                            btn.setButtonText(Translation.of("label.pishock-zap.config." + keyPart + ".error"));
                         }
                         return null;
-                    }
-
-                    @SuppressWarnings("CallToPrintStackTrace")
-                    private void onError(Throwable throwable) {
-                        throwable.printStackTrace();
-                        btn.setEditable(true);
-                        btn.setButtonText(Translation.of("label.pishock-zap.config." + keyPart + ".error"));
-                    }
-                }, Minecraft.getInstance());
+                    }, Minecraft.getInstance());
             })
             .build());
     }
