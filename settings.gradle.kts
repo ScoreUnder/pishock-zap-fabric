@@ -1,0 +1,13 @@
+pluginManagement {
+    repositories {
+        maven {
+            name = "Fabric"
+            url = uri("https://maven.fabricmc.net/")
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = "pishock-zap"
+include("mc1.17", "mc1.18.2", "mc1.19", "mc1.19.3", "mc1.20", "mc1.21.5", "mc1.21.9", "mc26.1")
