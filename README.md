@@ -164,8 +164,7 @@ than 100, it will be interpreted by the PiShock API as milliseconds instead.
 
 ### [Raith's PiShock mod]
 
-(Neo)Forge mod which seems to be based on the original PiShock Forge mod(?), but
-with some extra bugfixes and better version compatibility.
+NeoForge client-side PiShock mod for Minecraft 1.21.x. It has grown beyond the original Forge-style implementation with current PiShock websocket broker support, in-game setup tools, automatic User/Hub/Shocker ID discovery, Shock/Vibrate/Beep modes, damage-scaled intensity, death triggers, queued and combined damage handling, configurable millisecond durations, a quick toggle hotkey, manual API/websocket test button, broker error reporting, and unit-tested limit clamping to avoid intensity/duration overflow issues.
 
 ### [The original Forge mod][original-forge-mod]
 
