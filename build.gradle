@@ -121,14 +121,20 @@ subprojects {
         }
     }
 
+    int projJavaVersion = project.property('java_language_version').toInteger()
     tasks.withType(JavaCompile).configureEach {
-        it.options.release = project.java_language_version.toInteger()
+        it.options.release = projJavaVersion
     }
 
     java {
         withSourcesJar()
         sourceCompatibility = JavaVersion.toVersion(project.java_language_version)
         targetCompatibility = JavaVersion.toVersion(project.java_language_version)
+    }
+
+    compileTestJava {
+        int baseJavaVersion = rootProject.property('java_language_version').toInteger()
+        options.release = baseJavaVersion > projJavaVersion ? baseJavaVersion : projJavaVersion
     }
 
     jar {
@@ -157,8 +163,6 @@ subprojects {
         sourceSets.main.resources.srcDir rootProject.file("compat/${name}_res")
     }
 
-    if (project.java_language_version.toInteger() >= 17) {
-        sourceSets.test.java.srcDirs += [rootProject.file('common/src/test/java')]
-        sourceSets.test.resources.srcDirs += [rootProject.file('common/src/test/resources')]
-    }
+    sourceSets.test.java.srcDir rootProject.file('common/src/test/java')
+    sourceSets.test.resources.srcDir rootProject.file('common/src/test/resources')
 }
