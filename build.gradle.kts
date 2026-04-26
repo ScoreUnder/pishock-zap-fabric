@@ -22,6 +22,10 @@ tasks.named("build") {
     dependsOn("collectJars")
 }
 
+tasks.named<Jar>("jar") {
+    enabled = false
+}
+
 subprojects {
     val loomPlugin = project.property("loom_plugin") as String
     val modVersion = project.property("mod_version") as String
