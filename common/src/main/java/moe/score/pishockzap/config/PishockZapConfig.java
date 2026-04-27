@@ -94,18 +94,9 @@ public class PishockZapConfig implements PiShockWebSocketApiConfig {
     private @NonNull String username = "";
     /// PiShock account API key
     private @NonNull String apiKey = "";
-    /// PiShock device share codes
-    private @NonNull List<String> shareCodes = List.of();
 
     public void setLogIdentifier(String string) {
         logIdentifier = string.isBlank() ? "PiShock-Zap (Minecraft)" : string.trim();
-    }
-
-    public void setShareCodes(List<String> strings) {
-        shareCodes = ImmutableList.copyOf(strings.stream()
-            .map(String::trim)
-            .filter(s -> !s.isEmpty())
-            .iterator());
     }
 
     /// PiShock device serial port
