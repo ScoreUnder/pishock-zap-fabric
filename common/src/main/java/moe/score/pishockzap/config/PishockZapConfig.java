@@ -95,7 +95,7 @@ public class PishockZapConfig implements PiShockWebSocketApiConfig {
     /// PiShock account API key
     private @NonNull String apiKey = "";
     /// PiShock device share codes
-    private @NonNull List<String> shareCodes = ImmutableList.of("BADC0DE0000");
+    private @NonNull List<String> shareCodes = List.of();
 
     public void setLogIdentifier(String string) {
         logIdentifier = string.isBlank() ? "PiShock-Zap (Minecraft)" : string.trim();
@@ -111,7 +111,7 @@ public class PishockZapConfig implements PiShockWebSocketApiConfig {
     /// PiShock device serial port
     private @NonNull String serialPort = "/dev/ttyACM0";
     /// PiShock device IDs (for serial API)
-    private @NonNull List<Integer> deviceIds = List.of(12345);
+    private @NonNull List<Integer> deviceIds = List.of();
 
     /// Custom Webhook URL
     private @NonNull String customWebhookUrl = "";
@@ -119,12 +119,12 @@ public class PishockZapConfig implements PiShockWebSocketApiConfig {
     /// OpenShock API token
     private @NonNull String openShockApiToken = "";
     /// OpenShock shocker IDs
-    private @NonNull List<String> openShockShockerIds = List.of("badc0def-ffff-ffff-ffff-badc0defffff");
+    private @NonNull List<String> openShockShockerIds = List.of();
 
     /// PiShock (WebSocket backend) user ID
     private int psUserId = -1;
     /// PiShock (WebSocket backend) hub/shocker mapping
-    private Int2ObjectMap<IntList> psHubShockers = new Int2ObjectArrayMap<>(new int[]{1234}, new Object[]{IntArrayList.wrap(new int[]{12345})});
+    private Int2ObjectMap<IntList> psHubShockers = new Int2ObjectArrayMap<>();
 
     /// OpenShock devices for serial use
     private @NonNull List<ShockDevice> openShockSerialDevices = List.of();
