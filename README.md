@@ -100,35 +100,43 @@ compare them and then note some more specific quirks of each.
 ## Big comparison table
 
 
-| Feature                         | PiShock-Zap        | [PiShockForMc]         | [Shockcraft]       | [Minecraft Shock Collar] | [Raith's PiShock mod] | [The original Forge mod][original-forge-mod] | [pishock-mc]       |
-|---------------------------------|--------------------|------------------------|--------------------|--------------------------|-----------------------|----------------------------------------------|--------------------|
-| Minecraft versions              | 1.17.x - 26.1.x    | 1.19.x, 1.20.x, 1.21.x | 1.19.3, 1.19.4     | Wide range               | 1.21.x                | 1.18.2                                       | 1.21               |
-| Author                          | [ScoreUnder]       | [ojaha065]             | [yanchan09]        | [Hepno]                  | [Raith]               | [DrasticLp]                                  | [PancakeTAS]       |
-| Mod loader                      | Fabric             | Forge                  | Fabric             | Bukkit                   | NeoForge              | Forge                                        | Fabric             |
-| Client-side                     | :white_check_mark: | :white_check_mark:     | :white_check_mark: | :x:                      | :white_check_mark:    | :white_check_mark:                           | :white_check_mark: |
-| Singleplayer                    | :white_check_mark: | :white_check_mark:     | :white_check_mark: | :x:                      | :white_check_mark:    | :white_check_mark:                           | :white_check_mark: |
-| Multiplayer                     | :white_check_mark: | :white_check_mark:     | :white_check_mark: | :white_check_mark:       | :white_check_mark:    | :white_check_mark:                           | :white_check_mark: |
-| Works on vanilla servers        | :white_check_mark: | :white_check_mark:     | :white_check_mark: | :x:                      | :white_check_mark:    | :x:                                          | :x:                |
-| Low-latency local serial API    | :white_check_mark: | :x:                    | :x:                | :x:                      | :x:                   | :x:                                          | :white_check_mark: |
-| Multiple simultaneous shockers  | :white_check_mark: | :x:                    | :x:                | :x:                      | :x:                   | :x:                                          | :x:                |
-| Vibration support               | :white_check_mark: | :white_check_mark:     | :x:                | :x:                      | :white_check_mark:    | :x:                                          | :x:                |
-| Vibration/shock threshold       | :white_check_mark: | :x:                    | :x:                | :x:                      | :x:                   | :x:                                          | :x:                |
-| API connectivity checks         | Sorta              | :white_check_mark:     | :x:                | :x:                      | :white_check_mark:    | :x:                                          | :white_check_mark: |
-| Vibration test button           | :x:                | :white_check_mark:     | :x:                | :x:                      | :white_check_mark:    | :x:                                          | :x:                |
-| In-game quick toggle            | Via hotkey         | :x:                    | Via command        | :x:                      | Via hotkey            | :x:                                          | :x:                |
-| Damage curves                   | :white_check_mark: | :white_check_mark:     | :x:                | :x:                      | :white_check_mark:    | :white_check_mark:                           | :white_check_mark: |
-| Queued/combined damage events   | :white_check_mark: | :white_check_mark:     | :x:                | :x:                      | :white_check_mark:    | :x:                                          | :x:                |
-| Separate shock-on-death config  | :white_check_mark: | :white_check_mark:     | :x:                | :x:                      | :white_check_mark:    | :white_check_mark:                           | :white_check_mark: |
-| Millisecond-precise duration    | :white_check_mark: | :x:                    | :x:                | :white_check_mark:       | :white_check_mark:    | :x:                                          | :white_check_mark: |
-| Alternative/third-party devices | :white_check_mark: | :x:                    | :x:                | :x:                      | :x:                   | :x:                                          | :x:                |
-| Usable by other mods            | :white_check_mark: | :x:                    | :x:                | :x:                      | :x:                   | :x:                                          | :x:                |
-| Configuration method            | In-game settings   | In-game settings       | Slash commands     | Configuration file       | In-game settings      | In-game settings                             | In-game settings   |
-| Configurability                 | Control-freak      | Simple                 | Basic              | Basic                    | Moderate              | Simple                                       | Simple             |
-| Known performance issues        | :ok:               | :ok:                   | :ok:               | :warning:                | :ok:                  | :warning:                                    | :ok:               |
-| Known limit-exceeding bugs      | :ok:               | :ok:                   | :ok:               | :ok:                     | :ok:                  | :warning: :bangbang:                         | :ok:               |
-| Limit-respecting failsafes      | Multi-level        | Some                   | N/A                | N/A                      | Multi-level           | :x:                                          | :x:                |
-| Source code available           | :white_check_mark: | :white_check_mark:     | :white_check_mark: | :white_check_mark:       | :white_check_mark:    | :x:                                          | :white_check_mark: |
-| Unit tests                      | :white_check_mark: | :x:                    | :x:                | :x:                      | :white_check_mark:    | :question:                                   | :x:                |
+| Feature                         | PiShock-Zap        | [Raith's PiShock mod] | [PiShockForMc]         | [Shockcraft]       | [Minecraft Shock Collar] | [The original Forge mod][original-forge-mod] | [pishock-mc]       |
+|---------------------------------|--------------------|-----------------------|------------------------|--------------------|--------------------------|----------------------------------------------|--------------------|
+| Minecraft versions              | 1.17.x - 26.1.x    | 1.21.x                | 1.19.x, 1.20.x, 1.21.x | 1.19.3, 1.19.4     | Wide range               | 1.18.2                                       | 1.21               |
+| Author                          | [ScoreUnder]       | [Raith]               | [ojaha065]             | [yanchan09]        | [Hepno]                  | [DrasticLp]                                  | [PancakeTAS]       |
+| Mod loader                      | Fabric             | NeoForge              | Forge                  | Fabric             | Bukkit                   | Forge                                        | Fabric             |
+| Client-side                     | :white_check_mark: | :white_check_mark:    | :white_check_mark:     | :white_check_mark: | :x:                      | :white_check_mark:                           | :white_check_mark: |
+| Singleplayer                    | :white_check_mark: | :white_check_mark:    | :white_check_mark:     | :white_check_mark: | :x:                      | :white_check_mark:                           | :white_check_mark: |
+| Multiplayer                     | :white_check_mark: | :white_check_mark:    | :white_check_mark:     | :white_check_mark: | :white_check_mark:       | :white_check_mark:                           | :white_check_mark: |
+| Works on vanilla servers        | :white_check_mark: | :white_check_mark:    | :white_check_mark:     | :white_check_mark: | :x:                      | :x:                                          | :x:                |
+| Low-latency local serial API    | :white_check_mark: | :x:                   | :x:                    | :x:                | :x:                      | :x:                                          | :white_check_mark: |
+| Multiple simultaneous shockers  | :white_check_mark: | :x:                   | :x:                    | :x:                | :x:                      | :x:                                          | :x:                |
+| Vibration support               | :white_check_mark: | :white_check_mark:    | :white_check_mark:     | :x:                | :x:                      | :x:                                          | :x:                |
+| Vibration/shock threshold       | :white_check_mark: | :x:                   | :x:                    | :x:                | :x:                      | :x:                                          | :x:                |
+| API connectivity checks         | Sorta              | :white_check_mark:    | :white_check_mark:     | :x:                | :x:                      | :x:                                          | :white_check_mark: |
+| Vibration test button           | :x:                | :white_check_mark:    | :white_check_mark:     | :x:                | :x:                      | :x:                                          | :x:                |
+| In-game quick toggle            | Via hotkey         | Via hotkey            | :x:                    | Via command        | :x:                      | :x:                                          | :x:                |
+| Damage curves                   | :white_check_mark: | :white_check_mark:    | :white_check_mark:     | :x:                | :x:                      | :white_check_mark:                           | :white_check_mark: |
+| Queued/combined damage events   | :white_check_mark: | :white_check_mark:    | :white_check_mark:     | :x:                | :x:                      | :x:                                          | :x:                |
+| Separate shock-on-death config  | :white_check_mark: | :white_check_mark:    | :white_check_mark:     | :x:                | :x:                      | :white_check_mark:                           | :white_check_mark: |
+| Millisecond-precise duration    | :white_check_mark: | :white_check_mark:    | :x:                    | :x:                | :white_check_mark:       | :x:                                          | :white_check_mark: |
+| Alternative/third-party devices | :white_check_mark: | :x:                   | :x:                    | :x:                | :x:                      | :x:                                          | :x:                |
+| Usable by other mods            | :white_check_mark: | :x:                   | :x:                    | :x:                | :x:                      | :x:                                          | :x:                |
+| Configuration method            | In-game settings   | In-game settings      | In-game settings       | Slash commands     | Configuration file       | In-game settings                             | In-game settings   |
+| Configurability                 | Control-freak      | Moderate              | Simple                 | Basic              | Basic                    | Simple                                       | Simple             |
+| Known performance issues        | :ok:               | :ok:                  | :ok:                   | :ok:               | :warning:                | :warning:                                    | :ok:               |
+| Known limit-exceeding bugs      | :ok:               | :ok:                  | :ok:                   | :ok:               | :ok:                     | :warning: :bangbang:                         | :ok:               |
+| Limit-respecting failsafes      | Multi-level        | Multi-level           | Some                   | N/A                | N/A                      | :x:                                          | :x:                |
+| Source code available           | :white_check_mark: | :white_check_mark:    | :white_check_mark:     | :white_check_mark: | :white_check_mark:       | :x:                                          | :white_check_mark: |
+| Unit tests                      | :white_check_mark: | :white_check_mark:    | :x:                    | :x:                | :x:                      | :question:                                   | :x:                |
+
+### [Raith's PiShock mod]
+
+This mod is a NeoForge rebuild of the original PiShock Forge mod, modernising
+it, patching some known bugs, and bringing the feature set up to something more
+competitive.
+
+I would recommend this mod if you are using NeoForge.
 
 ### [PiShockForMc]
 
@@ -161,14 +169,6 @@ to their needs.
 It supports millisecond-precise duration settings, but only on a technicality;
 the duration is meant to be in seconds, but if you configure a duration higher
 than 100, it will be interpreted by the PiShock API as milliseconds instead.
-
-### [Raith's PiShock mod]
-
-This mod is a NeoForge rebuild of the original PiShock Forge mod, modernising
-it, patching some known bugs, and bringing the feature set up to something more
-competitive.
-
-I would recommend this mod if you are using NeoForge.
 
 ### [The original Forge mod][original-forge-mod]
 
