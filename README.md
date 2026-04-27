@@ -144,7 +144,9 @@ competitive.
 
 I would recommend this mod if you are using NeoForge.
 
-### [pishock-mc]
+### Unmaintained mods
+
+#### [pishock-mc]
 
 This is a Fabric mod which I have not yet had the chance to test in detail. It
 fulfils a similar niche to PiShock-Zap.
@@ -153,7 +155,9 @@ It uses a different method of damage detection, which is accurate but requires
 a server-side mod to be installed. This means it is not suitable for use on
 vanilla servers.
 
-### [PiShockForMc]
+### Unmaintained and broken mods
+
+#### [PiShockForMc]
 
 It has a hardcoded duration of 0.6 seconds for all shocks except the shock on
 death.
@@ -161,12 +165,12 @@ It uses a different method of damage detection, which may result in slightly
 different behaviour in edge cases. I am not sure if it is more or less reliable
 than PiShock-Zap.
 
-### [Shockcraft]
+#### [Shockcraft]
 
 This uses a slightly different method of damage detection, but also different
 from PiShockForMc. Again, I am not sure which method is more reliable.
 
-### [Minecraft Shock Collar]
+#### [Minecraft Shock Collar]
 
 You will need to have control over the server to use this mod. It may cause
 performance issues on the server side due to blocking HTTP requests being made
@@ -177,15 +181,11 @@ mods zap the configured person when the local player gets damaged. Because of
 how it is implemented, it can only be configured to zap one person at a time per
 server.
 
-It is much simpler than PiShock-Zap, which makes it a better starting point for
-new developers to understand Minecraft and PiShock integration, or to modify it
-to their needs.
-
 It supports millisecond-precise duration settings, but only on a technicality;
 the duration is meant to be in seconds, but if you configure a duration higher
 than 100, it will be interpreted by the PiShock API as milliseconds instead.
 
-### [The original Forge mod][original-forge-mod]
+#### [The original Forge mod][original-forge-mod]
 
 **Not recommended** due to known bugs and no clear path to updates.
 
