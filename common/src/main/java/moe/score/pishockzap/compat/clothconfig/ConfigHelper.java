@@ -132,6 +132,7 @@ public class ConfigHelper {
     public @NonNull IntegerListEntry makeIntField(String keyPart, int value) {
         return entryBuilder
             .startIntField(Translation.of("title.pishock-zap.config." + keyPart), value)
+            .setDefaultValue(value)
             .build();
     }
 
