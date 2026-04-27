@@ -11,6 +11,7 @@ import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
 import moe.score.pishockzap.backend.model.openshock.ShockDevice;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.internal.OpenShockSerialConfig;
+import moe.score.pishockzap.util.TriState;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +58,11 @@ public class OpenShockSerialBackend extends SerialBackend<ShockDevice> {
     @Override
     protected String getOperationData(@NonNull OpType op, int intensity, float duration, ShockDevice device) {
         return getRfTransmitCommandString(op, intensity, duration, device);
+    }
+
+    @Override
+    public @NonNull TriState canReplaceOngoingOperation() {
+        return TriState.TRUE;
     }
 
     static String getRfTransmitCommandString(@NonNull OpType op, int intensity, float duration, ShockDevice device) {

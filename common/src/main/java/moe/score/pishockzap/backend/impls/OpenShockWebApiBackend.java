@@ -11,6 +11,7 @@ import moe.score.pishockzap.backend.model.openshock.ControlType;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.config.internal.OpenShockWebApiConfig;
+import moe.score.pishockzap.util.TriState;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
@@ -74,6 +75,11 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Con
         if (config.getOpenShockShockerIds().isEmpty()) return false;
         if (config.getOpenShockApiToken().isBlank()) return false;
         return !config.getLogIdentifier().isBlank();
+    }
+
+    @Override
+    public @NonNull TriState canReplaceOngoingOperation() {
+        return TriState.TRUE;
     }
 
     private static int transformDuration(float duration) {
