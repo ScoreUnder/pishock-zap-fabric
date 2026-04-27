@@ -45,6 +45,7 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
         boolean[] shocks = distributor.pickShockers(distribution, devices.size());
         var finalShocks = new ArrayList<Control>();
         for (int i = 0; i < shocks.length; i++) {
+            if (!shocks[i]) continue;
             finalShocks.add(new Control(devices.get(i), ControlType.of(op), intensity, transformDuration(duration), false));
         }
         return finalShocks;
