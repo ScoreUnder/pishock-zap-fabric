@@ -1,24 +1,23 @@
 package moe.score.pishockzap.backend.impls;
 
-import com.fazecast.jSerialComm.SerialPort;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import moe.score.pishockzap.backend.BackendConnectionTest;
+import moe.score.pishockzap.backend.ConnectionTestResult;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.SerialBackend;
 import moe.score.pishockzap.backend.model.pishock.V2OperationType;
 import moe.score.pishockzap.config.PishockZapConfig;
+import moe.score.pishockzap.config.internal.PiShockSerialConfig;
 import moe.score.pishockzap.util.TriState;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static moe.score.pishockzap.util.Gsons.gson;
 
@@ -62,6 +61,10 @@ public class PiShockSerialBackend extends SerialBackend<Integer> {
 
     @Override
     protected @NonNull String getOperationData(@NonNull OpType op, int intensity, float duration, Integer deviceId) {
+        return getOperateCommandString(op, intensity, duration, deviceId);
+    }
+
+    static String getOperateCommandString(@NonNull OpType op, int intensity, float duration, Integer deviceId) {
         var operateCommand = new OperateCommand(new OperatePayload(deviceId, V2OperationType.of(op), intensity, transformDuration(duration)));
         return gson.toJson(operateCommand);
     }
@@ -84,75 +87,20 @@ public class PiShockSerialBackend extends SerialBackend<Integer> {
      * @param duration duration in seconds
      * @return duration in PiShock API format
      */
-    private int transformDuration(float duration) {
+    private static int transformDuration(float duration) {
         return Math.round(duration * 1000.0f);
     }
 
     @NonNull
     public static CompletableFuture<List<Integer>> probeDeviceIds(String serialPortAddress) {
-        return CompletableFuture.supplyAsync(() -> {
-            WeakReference<SerialBackend<?>> instanceRef = SerialBackend.INSTANCE;
-            SerialBackend<?> existingInstance = instanceRef == null ? null : instanceRef.get();
-            boolean serialPortIsMine;
-            SerialPort port = existingInstance == null ? null : existingInstance.reuseThisSerialPort(serialPortAddress);
-            if (port == null) {
-                System.out.println("Opening my own serial port");
-                port = createAndOpenPort(serialPortAddress);
-                serialPortIsMine = true;
-            } else {
-                System.out.println("Reusing a serial port");
-                serialPortIsMine = false;
+        return SerialBackend.withSerialPort(serialPortAddress, output -> output.write("\nG:I\n"), line -> {
+            String prefix = "TERMINALINFO:";
+            if (line.startsWith(prefix)) {
+                var terminalInfo = gson.fromJson(line.substring(prefix.length()), TerminalInfo.class);
+                return Optional.of(terminalInfo.shockers.stream().map(s -> s.id).toList());
             }
-            return getDeviceIdsFromPort(port, serialPortIsMine);
-        }).thenCompose(t -> t);
-    }
-
-    private static @NonNull CompletableFuture<List<Integer>> getDeviceIdsFromPort(SerialPort port, boolean closeWhenDone) {
-        var result = new CompletableFuture<List<Integer>>();
-        var input = new BufferedReader(new InputStreamReader(port.getInputStream()));
-        var output = new OutputStreamWriter(port.getOutputStream());
-
-        var ioThread = new Thread(() -> {
-            try {
-                output.write("\nG:I\n");
-                output.flush();
-
-                String prefix = "TERMINALINFO:";
-                String line;
-                while ((line = input.readLine()) != null) {
-                    System.out.println("Got from serial: " + line);
-                    if (line.startsWith(prefix)) {
-                        var terminalInfo = gson.fromJson(line.substring(prefix.length()), TerminalInfo.class);
-                        result.complete(
-                            terminalInfo.shockers.stream().map(s -> s.id).toList());
-                    }
-                }
-            } catch (Exception e) {
-                result.completeExceptionally(e);
-                throw new RuntimeException(e);
-            } finally {
-                if (closeWhenDone) {
-                    try {
-                        output.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } finally {
-                        try {
-                            input.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } finally {
-                            port.closePort();
-                        }
-                    }
-                }
-            }
-        });
-        ioThread.setDaemon(true);
-        ioThread.start();
-
-        CompletableFuture.delayedExecutor(3, TimeUnit.SECONDS).execute(ioThread::interrupt);
-        return result;
+            return Optional.empty();
+        }, 3, TimeUnit.SECONDS);
     }
 
     @NoArgsConstructor
@@ -188,5 +136,45 @@ public class PiShockSerialBackend extends SerialBackend<Integer> {
     private static class Network {
         String ssid;
         String password;
+    }
+
+    @RequiredArgsConstructor
+    public static class ConnectionTest implements BackendConnectionTest {
+        private final PiShockSerialConfig config;
+
+        public CompletableFuture<ConnectionTestResult> testConnection() {
+            return testConnection(
+                output -> output.write("\nG:I\n"),
+                line -> {
+                    if (line.startsWith("TERMINALINFO:")) {
+                        return Optional.of(ConnectionTestResult.SUCCESS);
+                    }
+                    return Optional.empty();
+                });
+        }
+
+        private CompletableFuture<ConnectionTestResult> testConnection(OnConnectFunction onConnect, Function<String, Optional<ConnectionTestResult>> onLineReceived) {
+            if (config.getSerialPort().isBlank() || config.getDeviceIds().isEmpty()) {
+                return CompletableFuture.completedFuture(ConnectionTestResult.NOT_CONFIGURED);
+            }
+            return SerialBackend.withSerialPort(config.getSerialPort(), onConnect, onLineReceived, 3, TimeUnit.SECONDS)
+                .exceptionally(t -> t instanceof InterruptedException ? ConnectionTestResult.TIMED_OUT : ConnectionTestResult.CONNECTION_FAILED);
+        }
+
+        public CompletableFuture<ConnectionTestResult> testVibration() {
+            return testConnection(
+                output -> {
+                    for (var device : config.getDeviceIds()) {
+                        output.write(getOperateCommandString(OpType.VIBRATE, config.getVibrationIntensityMax(), config.getDuration(), device));
+                        output.write('\n');
+                    }
+                },
+                line -> {
+                    if (line.startsWith("Received JSON:")) {
+                        return Optional.of(ConnectionTestResult.SUCCESS);
+                    }
+                    return Optional.empty();
+                });
+        }
     }
 }

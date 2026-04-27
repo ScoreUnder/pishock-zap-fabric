@@ -2,14 +2,22 @@ package moe.score.pishockzap.backend.impls;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import moe.score.pishockzap.backend.BackendConnectionTest;
+import moe.score.pishockzap.backend.ConnectionTestResult;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.SerialBackend;
 import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
 import moe.score.pishockzap.backend.model.openshock.ShockDevice;
 import moe.score.pishockzap.config.PishockZapConfig;
+import moe.score.pishockzap.config.internal.OpenShockSerialConfig;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static moe.score.pishockzap.util.Gsons.gson;
 
@@ -48,6 +56,10 @@ public class OpenShockSerialBackend extends SerialBackend<ShockDevice> {
 
     @Override
     protected String getOperationData(@NonNull OpType op, int intensity, float duration, ShockDevice device) {
+        return getRfTransmitCommandString(op, intensity, duration, device);
+    }
+
+    static String getRfTransmitCommandString(@NonNull OpType op, int intensity, float duration, ShockDevice device) {
         var payload = new RfTransmitPayload(
             device.model(), device.id(),
             ShockerCommandType.of(op), intensity, Math.round(duration * 1000));
@@ -77,6 +89,49 @@ public class OpenShockSerialBackend extends SerialBackend<ShockDevice> {
                 case VIBRATE -> VIBRATE;
                 case BEEP -> SOUND;
             };
+        }
+    }
+
+    @RequiredArgsConstructor
+    public static class ConnectionTest implements BackendConnectionTest {
+        private final OpenShockSerialConfig config;
+
+        public CompletableFuture<ConnectionTestResult> testConnection() {
+            return testConnection(
+                output -> output.write("\njsonconfig\n"),
+                line -> {
+                    if (line.startsWith("$SYS$|Response|JsonConfig|")) {
+                        return Optional.of(ConnectionTestResult.SUCCESS);
+                    }
+                    return Optional.empty();
+                });
+        }
+
+        private CompletableFuture<ConnectionTestResult> testConnection(OnConnectFunction onConnect, Function<String, Optional<ConnectionTestResult>> onLineReceived) {
+            if (config.getSerialPort().isBlank() || config.getOpenShockSerialDevices().isEmpty()) {
+                return CompletableFuture.completedFuture(ConnectionTestResult.NOT_CONFIGURED);
+            }
+            return SerialBackend.withSerialPort(config.getSerialPort(), out -> {
+                    Thread.sleep(1000); // :( OpenShock serial tends to reboot on connect
+                    onConnect.accept(out);
+                }, onLineReceived, 5, TimeUnit.SECONDS)
+                .exceptionally(t -> ConnectionTestResult.CONNECTION_FAILED);
+        }
+
+        public CompletableFuture<ConnectionTestResult> testVibration() {
+            return testConnection(
+                output -> {
+                    for (var device : config.getOpenShockSerialDevices()) {
+                        output.write(getRfTransmitCommandString(OpType.VIBRATE, config.getVibrationIntensityMax(), config.getDuration(), device));
+                        output.write('\n');
+                    }
+                },
+                line -> {
+                    if (line.startsWith("$SYS$|Success") || line.contains("[RFTransmitter] Command received")) {
+                        return Optional.of(ConnectionTestResult.SUCCESS);
+                    }
+                    return Optional.empty();
+                });
         }
     }
 }

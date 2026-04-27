@@ -41,6 +41,9 @@
 
   "title.pishock-zap.config.api_type": "API Type",
 
+  "title.pishock-zap.config.api.test_connection": "Test connection",
+  "title.pishock-zap.config.api.test_vibration": "Test vibration",
+
   "title.pishock-zap.config.api.web_v1": "PiShock Web API",
   "title.pishock-zap.config.api.share_codes": "Share codes",
   "title.pishock-zap.config.api.web_v1.add_my_ids": "Fetch share codes automatically",
@@ -99,7 +102,7 @@
 
   "description.pishock-zap.config.api.openshock.serial": "OpenShock Local Serial API is intended for advanced users only. It requires the OpenShock device to be directly connected via USB to the computer running Minecraft. In exchange, it provides near-instant response times and high configurability.",
 
-  "description.pishock-zap.config.api.websocket.disclaimer": "This mod contacts the PiShock servers, and makes requests to them over the internet when a shock or vibrate operation is requested. This data is only sent to the PiShock API and is not shared with any other service.",
+  "description.pishock-zap.config.api.pishock.websocket.disclaimer": "This mod contacts the PiShock servers, and makes requests to them over the internet when a shock or vibrate operation is requested. This data is only sent to the PiShock API and is not shared with any other service.",
 
   "description.pishock-zap.config.api.pishock.account": "You can find your username and API key on the %1$s. Share codes are available from the %2$s (click the \"share\" button to generate a share code).",
   "description.pishock-zap.config.api.pishock.account.api_key_link": "PiShock account page",
@@ -131,6 +134,9 @@
   "tooltip.pishock-zap.config.debounce.queue_different": "Queue differently-sized shocks/vibrations separately\nIf this is enabled, during backoff, differently-sized\nshocks/vibrations will not accumulate duration with\neach other, and will instead be sent separately.\nDisables intensity accumulation.",
 
   "tooltip.pishock-zap.config.api_type": "The type of API to use for PiShock communication",
+
+  "tooltip.pishock-zap.config.api.test_conection": "Silently test connection to this API",
+  "tooltip.pishock-zap.config.api.test_vibration": "Send a vibrate command to this API",
 
   "tooltip.pishock-zap.config.api.share_codes": "The share codes of the devices you want\nto control with this mod",
   "tooltip.pishock-zap.config.api.web_v1.add_my_ids": "Use your API key to automatically\nfetch share codes from the server.\nYou may need to claim your own share codes\nin the app first before this finds them.",
@@ -169,6 +175,14 @@
   "label.pishock-zap.config.duration": "\u23F3 %1$ss",
   "label.pishock-zap.config.time_interval": "%1$ss",
 
+  "label.pishock-zap.config.api.test_connection": "Test!",
+  "label.pishock-zap.config.api.test_connection.working": "In progress...",
+  "label.pishock-zap.config.api.test_connection.error": "Internal error",
+
+  "label.pishock-zap.config.api.test_vibration": "Test!",
+  "label.pishock-zap.config.api.test_vibration.working": "In progress...",
+  "label.pishock-zap.config.api.test_vibration.error": "Internal error",
+
   "label.pishock-zap.config.api.web_v1.add_my_ids": "Go",
   "label.pishock-zap.config.api.web_v1.add_my_ids.working": "In progress...",
   "label.pishock-zap.config.api.web_v1.add_my_ids.error": "Error",
@@ -202,6 +216,15 @@
   "enum.pishock-zap.config.api_type.webhook": "Custom Webhook",
   "enum.pishock-zap.config.api_type.openshock": "OpenShock Web",
   "enum.pishock-zap.config.api_type.openshock.serial": "OpenShock Serial",
+
+  "enum.pishock-zap.config.connection_test_result.unknown_error": "Unknown error",
+  "enum.pishock-zap.config.connection_test_result.success": "Success!",
+  "enum.pishock-zap.config.connection_test_result.not_configured": "Missing configuration values",
+  "enum.pishock-zap.config.connection_test_result.connection_failed": "Failed to connect to API",
+  "enum.pishock-zap.config.connection_test_result.authentication_failed": "Failed to log in",
+  "enum.pishock-zap.config.connection_test_result.permission_denied": "Login OK but no permission",
+  "enum.pishock-zap.config.connection_test_result.device_missing": "Incorrect shocker ID",
+  "enum.pishock-zap.config.connection_test_result.timed_out": "Connection timed out",
 
   "error.pishock-zap.config.api.share_codes.empty": "Need at least one share code",
   "error.pishock-zap.config.api.share_codes.entry.empty": "Share code cannot be empty",

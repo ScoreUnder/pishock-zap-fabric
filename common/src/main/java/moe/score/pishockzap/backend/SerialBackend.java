@@ -8,14 +8,16 @@ import moe.score.pishockzap.config.ShockDistribution;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -131,5 +133,108 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
     @NonNull
     public static Iterable<String> getSerialPorts() {
         return Stream.of(SerialPort.getCommPorts()).map(SerialPort::getSystemPortPath)::iterator;
+    }
+
+    @NonNull
+    protected static <T> CompletableFuture<T> withSerialPort(String serialPortAddress, OnConnectFunction onConnect, Function<String, Optional<T>> onLineReceived, long timeout, TimeUnit timeoutUnit) {
+        var result = openAndMonitorSerialPortForLines(serialPortAddress, onConnect, onLineReceived, timeout, timeoutUnit);
+        for (int retry = 0; retry < 2; retry++) {
+            result = result.exceptionallyComposeAsync(e -> openAndMonitorSerialPortForLines(serialPortAddress, onConnect, onLineReceived, timeout, timeoutUnit));
+        }
+        return result;
+    }
+
+    private static <T> @NonNull CompletableFuture<T> openAndMonitorSerialPortForLines(String serialPortAddress, OnConnectFunction onConnect, Function<String, Optional<T>> onLineReceived, long timeout, TimeUnit timeoutUnit) {
+        return CompletableFuture.supplyAsync(() -> {
+            WeakReference<SerialBackend<?>> instanceRef = SerialBackend.INSTANCE;
+            SerialBackend<?> existingInstance = instanceRef == null ? null : instanceRef.get();
+            boolean serialPortIsMine;
+            SerialPort port = existingInstance == null ? null : existingInstance.reuseThisSerialPort(serialPortAddress);
+            if (port == null) {
+                System.out.println("Opening my own serial port");
+                port = createAndOpenPort(serialPortAddress);
+                serialPortIsMine = true;
+            } else {
+                System.out.println("Reusing a serial port");
+                serialPortIsMine = false;
+            }
+            return monitorSerialPortForLines(port, serialPortIsMine, onConnect, onLineReceived, timeout, timeoutUnit);
+        }).thenCompose(t -> t);
+    }
+
+    private static <T> @NonNull CompletableFuture<T> monitorSerialPortForLines(SerialPort port, boolean closeWhenDone, OnConnectFunction onConnect, Function<String, Optional<T>> lineConsumer, long timeout, TimeUnit timeoutUnit) {
+        var result = new CompletableFuture<T>();
+        var input = new BufferedReader(new InputStreamReader(port.getInputStream()));
+        var output = new OutputStreamWriter(port.getOutputStream());
+
+        var inputThread = new Thread(() -> {
+            try {
+                String line;
+                while ((line = readRetrying(input, 3)) != null) {
+                    System.out.println("Got from serial: " + line);
+                    var lineResult = lineConsumer.apply(line);
+                    if (lineResult.isPresent()) {
+                        result.complete(lineResult.get());
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                result.completeExceptionally(e);
+                throw new RuntimeException(e);
+            } catch (Throwable t) {
+                result.completeExceptionally(t);
+                throw t;
+            } finally {
+                if (closeWhenDone) {
+                    try {
+                        output.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } finally {
+                        try {
+                            input.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } finally {
+                            port.closePort();
+                        }
+                    }
+                }
+                if (!result.isDone()) {
+                    result.completeExceptionally(new RuntimeException("Serial input thread terminated without completing the result"));
+                }
+            }
+        });
+        inputThread.setDaemon(true);
+        inputThread.start();
+
+        var outputThread = new Thread(() -> {
+            try {
+                onConnect.accept(output);
+                output.flush();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        outputThread.setDaemon(true);
+        outputThread.start();
+
+        var delayedExecutor = CompletableFuture.delayedExecutor(timeout, timeoutUnit);
+        delayedExecutor.execute(inputThread::interrupt);
+        delayedExecutor.execute(outputThread::interrupt);
+        return result;
+    }
+
+    private static String readRetrying(BufferedReader input, int retries) throws IOException {
+        try {
+            return input.readLine();
+        } catch (InterruptedIOException ex) {
+            if (retries == 0) throw ex;
+            return readRetrying(input, retries - 1);
+        }
+    }
+
+    protected interface OnConnectFunction {
+        void accept(OutputStreamWriter output) throws Exception;
     }
 }

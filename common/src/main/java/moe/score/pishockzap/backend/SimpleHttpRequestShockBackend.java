@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -57,24 +58,24 @@ public abstract class SimpleHttpRequestShockBackend<T, U> extends SafeShockBacke
      */
     protected void doApiCallOnThread(U data) {
         CompletableFuture.supplyAsync(
-                        () -> {
-                            var req = HttpRequest.newBuilder(getUri(data));
-                            var postBody = getPostBody(data);
-                            if (postBody != null) {
-                                req.POST(HttpRequest.BodyPublishers.ofString(postBody, StandardCharsets.UTF_8));
-                            }
-                            for (var header : getHeaders(data).entrySet()) {
-                                req.setHeader(header.getKey(), header.getValue());
-                            }
-                            return req.build();
-                        }, executor)
-                .thenComposeAsync(
-                        req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
-                        executor)
-                .thenAcceptAsync(resp -> onResponse(data, resp.body()), executor)
-                .whenComplete((v, e) -> {
-                    if (e != null) logger.log(Level.WARNING, "API call failed; exception thrown", e);
-                });
+                () -> {
+                    var req = HttpRequest.newBuilder(getUri(data));
+                    var postBody = getPostBody(data);
+                    if (postBody != null) {
+                        req.POST(HttpRequest.BodyPublishers.ofString(postBody, StandardCharsets.UTF_8));
+                    }
+                    for (var header : getHeaders(data).entrySet()) {
+                        req.setHeader(header.getKey(), header.getValue());
+                    }
+                    return req.build();
+                }, executor)
+            .thenComposeAsync(
+                req -> httpClient.sendAsync(req, BodyHandlers.ofString(StandardCharsets.UTF_8)),
+                executor)
+            .thenAcceptAsync(resp -> onResponse(data, resp.body()), executor)
+            .whenComplete((v, e) -> {
+                if (e != null) logger.log(Level.WARNING, "API call failed; exception thrown", e);
+            });
     }
 
     protected abstract U generateDataForOperation(T device, @NonNull OpType op, int intensity, float duration);
@@ -86,4 +87,21 @@ public abstract class SimpleHttpRequestShockBackend<T, U> extends SafeShockBacke
     protected abstract @Nullable String getPostBody(U data);
 
     protected abstract void onResponse(U data, @NonNull String response);
+
+    protected static abstract class ConnectionTest implements BackendConnectionTest {
+        private final HttpClient httpClient = HttpClient.newBuilder().build();
+
+        protected CompletableFuture<HttpResponse<String>> makeRequest(URI uri, Map<String, String> headers, @Nullable String postBody) {
+            return CompletableFuture.supplyAsync(() -> {
+                var req = HttpRequest.newBuilder(uri);
+                if (postBody != null) {
+                    req.POST(HttpRequest.BodyPublishers.ofString(postBody, StandardCharsets.UTF_8));
+                }
+                for (var header : headers.entrySet()) {
+                    req.setHeader(header.getKey(), header.getValue());
+                }
+                return httpClient.sendAsync(req.build(), BodyHandlers.ofString(StandardCharsets.UTF_8));
+            }).thenCompose(f -> f);
+        }
+    }
 }

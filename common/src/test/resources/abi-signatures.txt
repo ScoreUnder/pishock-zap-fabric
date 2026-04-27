@@ -38,7 +38,7 @@ M:moe.score.pishockzap.backend.ShockBackendRegistry:getCreateFunc:PUBLIC,STATIC:
 M:moe.score.pishockzap.backend.ShockBackendRegistry:getTranslationKey:PUBLIC,STATIC:(Ljava/lang/String;)Ljava/lang/String;
 M:moe.score.pishockzap.backend.ShockBackendRegistry:register:PUBLIC,STATIC:(Ljava/lang/String;Ljava/lang/String;Ljava/util/function/BiFunction;)V
 
-C:moe.score.pishockzap.config.PishockZapConfig:PUBLIC:
+C:moe.score.pishockzap.config.PishockZapConfig:PUBLIC:moe.score.pishockzap.config.internal.PiShockWebSocketApiConfig
 
 C:moe.score.pishockzap.config.ShockDistribution:FINAL,PUBLIC:java.lang.Enum<moe.score.pishockzap.config.ShockDistribution>
 F:moe.score.pishockzap.config.ShockDistribution:ALL:ENUM,FINAL,PUBLIC,STATIC:Lmoe/score/pishockzap/config/ShockDistribution;

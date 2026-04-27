@@ -8,15 +8,14 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.ExtensionMethod;
 import lombok.experimental.FieldDefaults;
 import me.shedaniel.clothconfig2.gui.entries.StringListListEntry;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.ShockBackendRegistry;
-import moe.score.pishockzap.backend.impls.OpenShockWebApiBackend;
-import moe.score.pishockzap.backend.impls.PiShockSerialBackend;
-import moe.score.pishockzap.backend.impls.PiShockWebApiV1Backend;
+import moe.score.pishockzap.backend.impls.*;
 import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
 import moe.score.pishockzap.backend.model.openshock.ShockDevice;
 import moe.score.pishockzap.compat.TextStyle;
@@ -25,7 +24,9 @@ import moe.score.pishockzap.compat.clothconfig.Arity2StructEntry;
 import moe.score.pishockzap.compat.clothconfig.ConfigHelper;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
+import moe.score.pishockzap.config.internal.*;
 import moe.score.pishockzap.mixin.pool.ListEntryUtil;
+import moe.score.pishockzap.util.FloatSupplier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -36,6 +37,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -57,9 +59,9 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var helper = new ConfigHelper(config, defaultConfig, parent);
 
         addGeneralCategory(helper);
-        addLimitsCategory(helper);
+        var shockLimitsDetails = addLimitsCategory(helper);
         addDebounceCategory(helper);
-        addApiCategory(helper);
+        addApiCategory(helper, shockLimitsDetails);
 
         return helper.buildScreen(mod::saveConfig);
     }
@@ -73,26 +75,46 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         helper.addBooleanSwitch("general.fractional_damage", PishockZapConfig::isFractionalDamage, PishockZapConfig::setFractionalDamage);
     }
 
-    private static void addLimitsCategory(ConfigHelper helper) {
+    private static ShockLimitsDetails addLimitsCategory(ConfigHelper helper) {
         helper.startCategory("limits");
 
-        addShockLimitsSubCategory(helper);
+        var shockLimits = addShockLimitsSubCategory(helper);
         addDamageThresholdsSubCategory(helper);
         addShockOnDeathSubCategory(helper);
+
+        return shockLimits;
     }
 
-    private static void addShockLimitsSubCategory(ConfigHelper helper) {
+    private static ShockLimitsDetails addShockLimitsSubCategory(ConfigHelper helper) {
         helper.startSubCategory(Translation.of("title.pishock-zap.config.limits.shock_limits"));
 
-        helper.addFloatSlider("limits.duration", "duration", PishockZapConfig::getDuration, PishockZapConfig::setDuration, 0.1f, PISHOCK_MAX_DURATION);
+        var sliderScale = 1000f;
+        var duration = helper.addFloatSlider("limits.duration", "duration", PishockZapConfig::getDuration, PishockZapConfig::setDuration, 0.1f, PISHOCK_MAX_DURATION, sliderScale, 1);
         helper.addFloatSlider("limits.max_duration", "duration", PishockZapConfig::getMaxDuration, PishockZapConfig::setMaxDuration, 0.1f, PISHOCK_MAX_DURATION);
         helper.addIntSlider("limits.vibration_intensity_min", "vibration_intensity", PishockZapConfig::getVibrationIntensityMin, PishockZapConfig::setVibrationIntensityMin, 1, PISHOCK_MAX_INTENSITY);
-        helper.addIntSlider("limits.vibration_intensity_max", "vibration_intensity", PishockZapConfig::getVibrationIntensityMax, PishockZapConfig::setVibrationIntensityMax, 1, PISHOCK_MAX_INTENSITY);
+        var vibrationIntensityMax = helper.addIntSlider("limits.vibration_intensity_max", "vibration_intensity", PishockZapConfig::getVibrationIntensityMax, PishockZapConfig::setVibrationIntensityMax, 1, PISHOCK_MAX_INTENSITY);
         helper.addIntSlider("limits.shock_intensity_min", "intensity", PishockZapConfig::getShockIntensityMin, PishockZapConfig::setShockIntensityMin, 1, PISHOCK_MAX_INTENSITY);
         helper.addIntSlider("limits.shock_intensity_max", "intensity", PishockZapConfig::getShockIntensityMax, PishockZapConfig::setShockIntensityMax, 1, PISHOCK_MAX_INTENSITY);
         helper.add(helper.makeShockDistributionDropdown("limits.shock_distribution", PishockZapConfig::getShockDistribution, PishockZapConfig::setShockDistribution));
 
         helper.endSubCategory();
+
+        return new ShockLimitsDetails(() -> duration.getValue() / sliderScale, vibrationIntensityMax::getValue);
+    }
+
+    @AllArgsConstructor
+    @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+    private static class ShockLimitsDetails {
+        FloatSupplier duration;
+        IntSupplier vibrationIntensityMax;
+
+        public float duration() {
+            return duration.getAsFloat();
+        }
+
+        public int vibrationIntensityMax() {
+            return vibrationIntensityMax.getAsInt();
+        }
     }
 
     private static void addDamageThresholdsSubCategory(ConfigHelper helper) {
@@ -144,7 +166,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         };
     }
 
-    private static void addApiCategory(ConfigHelper helper) {
+    private static void addApiCategory(ConfigHelper helper, ShockLimitsDetails shockLimitsDetails) {
         helper.startCategory("api");
 
         var apiTypeSwitcher = helper.addSelector(
@@ -167,11 +189,11 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var serialPortDetails = addSerialPortSubCategory(helper, getApiType);
 
         addPishockWebV1ApiSubCategory(helper, getApiType, pishockAccountDetails, loggingDetails);
-        addPishockLocalSerialApiSubCategory(helper, getApiType, serialPortDetails);
-        addWebHookApiSubCategory(helper, getApiType);
-        addOpenShockWebApiSubCategory(helper, getApiType, openShockAccountDetails, loggingDetails);
-        addOpenShockSerialApiSubCategory(helper, getApiType, openShockAccountDetails, serialPortDetails);
-        addPishockWebSocketApiSubCategory(helper, getApiType, pishockAccountDetails, loggingDetails);
+        addPishockLocalSerialApiSubCategory(helper, getApiType, serialPortDetails, shockLimitsDetails);
+        addWebHookApiSubCategory(helper, getApiType, shockLimitsDetails);
+        addOpenShockWebApiSubCategory(helper, getApiType, openShockAccountDetails, loggingDetails, shockLimitsDetails);
+        addOpenShockSerialApiSubCategory(helper, getApiType, openShockAccountDetails, serialPortDetails, shockLimitsDetails);
+        addPishockWebSocketApiSubCategory(helper, getApiType, pishockAccountDetails, loggingDetails, shockLimitsDetails);
     }
 
     private static LoggingBackendDetails addLoggingSubCategory(ConfigHelper helper, Supplier<String> apiType) {
@@ -265,7 +287,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         });
 
         ListEntryUtil.withExtensions(piShockShareCodesField, list ->
-            helper.addActionButton(
+            helper.addSimpleActionButton(
                 "api.web_v1.add_my_ids",
                 () -> new PiShockWebApiV1Backend.HttpBackend().probeShareCodes(accountDetails.username(), accountDetails.apiKey()),
                 v -> list.replaceValues(v)));
@@ -310,7 +332,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         }
     }
 
-    private static void addPishockLocalSerialApiSubCategory(ConfigHelper helper, Supplier<String> apiType, SerialPortDetails serialPortDetails) {
+    private static void addPishockLocalSerialApiSubCategory(ConfigHelper helper, Supplier<String> apiType, SerialPortDetails serialPortDetails, ShockLimitsDetails shockLimitsDetails) {
         var thisBackend = DefaultShockBackends.PISHOCK_SERIAL;
         serialPortDetails.showForBackend(thisBackend);
 
@@ -340,21 +362,32 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         });
 
         ListEntryUtil.withExtensions(piShockSerialDeviceIdField, list ->
-            helper.addActionButton(
+            helper.addSimpleActionButton(
                 "api.local.add_my_ids",
                 () -> PiShockSerialBackend.probeDeviceIds(serialPortDetails.serialPort()),
                 values -> list.replaceValues(values)));
 
         helper.add(piShockSerialDeviceIdField);
 
+        helper.addConnectionTests(() -> new PiShockSerialBackend.ConnectionTest(new PiShockSerialConfig() {
+            @Getter
+            final List<Integer> deviceIds = piShockSerialDeviceIdField.getValue();
+            @Getter
+            final String serialPort = serialPortDetails.serialPort();
+            @Getter
+            final int vibrationIntensityMax = shockLimitsDetails.vibrationIntensityMax();
+            @Getter
+            final float duration = shockLimitsDetails.duration();
+        }));
+
         helper.endSubCategory();
     }
 
-    private static void addWebHookApiSubCategory(ConfigHelper helper, Supplier<String> apiType) {
+    private static void addWebHookApiSubCategory(ConfigHelper helper, Supplier<String> apiType, ShockLimitsDetails shockLimitsDetails) {
         var webhookCategory = helper.startSubCategory(Translation.of("title.pishock-zap.config.api.webhook"))
             .setDisplayRequirement(() -> DefaultShockBackends.WEBHOOK.equals(apiType.get()));
 
-        helper.addTextField("api.custom_webhook_url", PishockZapConfig::getCustomWebhookUrl, PishockZapConfig::setCustomWebhookUrl, url -> {
+        var urlField = helper.addTextField("api.custom_webhook_url", PishockZapConfig::getCustomWebhookUrl, PishockZapConfig::setCustomWebhookUrl, url -> {
             if (!DefaultShockBackends.WEBHOOK.equals(apiType.get())) return Optional.empty();
             if (url.isBlank())
                 return Optional.of(Translation.of("error.pishock-zap.config.api.custom_webhook_url.empty"));
@@ -390,6 +423,15 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                         TextStyle.withHoverText(style.withColor(ChatFormatting.LIGHT_PURPLE).withUnderlined(true),
                             Translation.of("tooltip.pishock-zap.config.api.webhook.payload.distribution", allShockDistributions)))
                 ).withStyle(style -> style.withColor(ChatFormatting.GRAY))));
+
+        helper.addConnectionTests(() -> new WebHookBackend.ConnectionTest(new WebHookApiConfig() {
+            @Getter
+            final String customWebhookUrl = urlField.getValue();
+            @Getter
+            final int vibrationIntensityMax = shockLimitsDetails.vibrationIntensityMax();
+            @Getter
+            final float duration = shockLimitsDetails.duration();
+        }));
 
         helper.endSubCategory();
     }
@@ -427,7 +469,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         }
     }
 
-    private static void addOpenShockWebApiSubCategory(ConfigHelper helper, Supplier<String> apiType, OpenShockAccountDetails accountDetails, LoggingBackendDetails loggingDetails) {
+    private static void addOpenShockWebApiSubCategory(ConfigHelper helper, Supplier<String> apiType, OpenShockAccountDetails accountDetails, LoggingBackendDetails loggingDetails, ShockLimitsDetails shockLimitsDetails) {
         var thisBackend = DefaultShockBackends.OPENSHOCK_WEB;
         accountDetails.showForBackend(thisBackend);
         loggingDetails.showForBackend(thisBackend);
@@ -452,7 +494,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         );
 
         ListEntryUtil.withExtensions(openShockDeviceIdField, list ->
-            helper.addActionButton(
+            helper.addSimpleActionButton(
                 "api.openshock.add_my_ids",
                 () -> OpenShockWebApiBackend.probeDeviceIds(accountDetails.apiToken()),
                 values -> list.replaceValues(values)));
@@ -461,10 +503,23 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         helper.addTextDescription("api.openshock.disclaimer");
 
+        helper.addConnectionTests(() -> new OpenShockWebApiBackend.ConnectionTest(new OpenShockWebApiConfig() {
+            @Getter
+            final List<String> openShockShockerIds = openShockDeviceIdField.getValue();
+            @Getter
+            final String openShockApiToken = accountDetails.apiToken();
+            @Getter
+            final String logIdentifier = loggingDetails.logIdentifier();
+            @Getter
+            final int vibrationIntensityMax = shockLimitsDetails.vibrationIntensityMax();
+            @Getter
+            final float duration = shockLimitsDetails.duration();
+        }));
+
         helper.endSubCategory();
     }
 
-    private static void addOpenShockSerialApiSubCategory(ConfigHelper helper, Supplier<String> apiType, OpenShockAccountDetails accountDetails, SerialPortDetails serialPortDetails) {
+    private static void addOpenShockSerialApiSubCategory(ConfigHelper helper, Supplier<String> apiType, OpenShockAccountDetails accountDetails, SerialPortDetails serialPortDetails, ShockLimitsDetails shockLimitsDetails) {
         var thisBackend = DefaultShockBackends.OPENSHOCK_SERIAL;
         serialPortDetails.showForBackend(thisBackend);
         // accountDetails.showForBackend(thisBackend); -- done halfway down this function when we know the list extension mixin is there, since the account details are only needed for fetching device IDs automatically
@@ -488,7 +543,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         ListEntryUtil.withExtensions(openShockDeviceListEntry, list -> {
             accountDetails.showForBackend(thisBackend);
 
-            helper.addActionButton("api.openshock.serial.fetch.button",
+            helper.addSimpleActionButton("api.openshock.serial.fetch.button",
                 () -> OpenShockWebApiBackend.probeDevices(accountDetails.apiToken()),
                 result -> {
                     if (!result.isEmpty()) list.pishockZap$clear();
@@ -499,11 +554,22 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         helper.add(openShockDeviceListEntry);
 
+        helper.addConnectionTests(() -> new OpenShockSerialBackend.ConnectionTest(new OpenShockSerialConfig() {
+            @Getter
+            final List<ShockDevice> openShockSerialDevices = openShockDeviceListEntry.getValue();
+            @Getter
+            final String serialPort = serialPortDetails.serialPort();
+            @Getter
+            final int vibrationIntensityMax = shockLimitsDetails.vibrationIntensityMax();
+            @Getter
+            final float duration = shockLimitsDetails.duration();
+        }));
+
         helper.endSubCategory();
     }
 
     @SuppressWarnings("deprecation") // TextFieldListEntry.setValue is deprecated
-    private static void addPishockWebSocketApiSubCategory(ConfigHelper helper, Supplier<String> apiType, PishockAccountDetails accountDetails, LoggingBackendDetails loggingDetails) {
+    private static void addPishockWebSocketApiSubCategory(ConfigHelper helper, Supplier<String> apiType, PishockAccountDetails accountDetails, LoggingBackendDetails loggingDetails, ShockLimitsDetails shockLimitsDetails) {
         var thisBackend = DefaultShockBackends.PISHOCK_WEBSOCKET;
         accountDetails.showForBackend(thisBackend);
         loggingDetails.showForBackend(thisBackend);
@@ -515,13 +581,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var hubDeviceIdListEntry = helper.makeNestedList(
             "api.pishock.websocket.devices",
             config -> hubShockerMapToList(config.getPsHubShockers()),
-            (config, list) -> {
-                var result = new Int2ObjectArrayMap<IntList>();
-                for (var pair : list) {
-                    result.put(pair.getLeft().intValue(), pair.getRight());
-                }
-                config.setPsHubShockers(result);
-            },
+            (config, list) -> config.setPsHubShockers(listToHubShockerMap(list)),
             Pair.of(0, new IntArrayList(new int[]{0})),
             (elem, widget) -> new Arity2StructEntry<>(
                 Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry"),
@@ -535,7 +595,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             PishockZapConfig::setPsUserId,
             value -> Optional.empty());
 
-        helper.addActionButton("api.pishock.websocket.fetch_ids",
+        helper.addSimpleActionButton("api.pishock.websocket.fetch_ids",
             () -> {
                 var backend = new PiShockWebApiV1Backend.HttpBackend();
                 var apiKey = accountDetails.apiKey();
@@ -561,9 +621,34 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         helper.add(websocketUserIdEntry);
         helper.add(hubDeviceIdListEntry);
 
-        helper.addTextDescription("api.websocket.disclaimer");
+        helper.addTextDescription("api.pishock.websocket.disclaimer");
+
+        helper.addConnectionTests(() -> new PiShockWebSocketApiBackend.ConnectionTest(new PiShockWebSocketApiConfig() {
+            @Getter
+            final Int2ObjectMap<IntList> psHubShockers = listToHubShockerMap(hubDeviceIdListEntry.getValue());
+            @Getter
+            final int psUserId = websocketUserIdEntry.getValue();
+            @Getter
+            final int vibrationIntensityMax = shockLimitsDetails.vibrationIntensityMax();
+            @Getter
+            final float duration = shockLimitsDetails.duration();
+            @Getter
+            final String logIdentifier = loggingDetails.logIdentifier();
+            @Getter
+            final String username = accountDetails.username();
+            @Getter
+            final String apiKey = accountDetails.apiKey();
+        }));
 
         helper.endSubCategory();
+    }
+
+    private static @NonNull Int2ObjectArrayMap<IntList> listToHubShockerMap(List<Pair<Integer, IntList>> list) {
+        var result = new Int2ObjectArrayMap<IntList>();
+        for (var pair : list) {
+            result.put(pair.getLeft().intValue(), pair.getRight());
+        }
+        return result;
     }
 
     private static @NonNull List<Pair<Integer, IntList>> hubShockerMapToList(Int2ObjectMap<IntList> psHubShockers) {

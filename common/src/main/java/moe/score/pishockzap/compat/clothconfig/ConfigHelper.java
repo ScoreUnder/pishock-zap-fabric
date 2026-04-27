@@ -6,12 +6,15 @@ import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.gui.entries.*;
+import moe.score.pishockzap.backend.BackendConnectionTest;
+import moe.score.pishockzap.backend.ConnectionTestResult;
 import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
 import moe.score.pishockzap.compat.BuilderCompat;
 import moe.score.pishockzap.compat.ButtonListEntry;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -38,7 +41,6 @@ public class ConfigHelper {
         this.configBuilder = ConfigBuilder.create()
             .setParentScreen(parentScreen)
             .setTitle(Translation.of("title.pishock-zap.config"));
-        ;
         this.entryBuilder = configBuilder.entryBuilder();
     }
 
@@ -51,17 +53,17 @@ public class ConfigHelper {
             .build());
     }
 
-    public void addFloatSlider(String keyPart, String formatKeyPart, Function<PishockZapConfig, Float> get, BiConsumer<PishockZapConfig, Float> set, float min, float max) {
-        addFloatSlider(keyPart, formatKeyPart, get, set, min, max, 1000f, 1);
+    public @NonNull IntegerSliderEntry addFloatSlider(String keyPart, String formatKeyPart, Function<PishockZapConfig, Float> get, BiConsumer<PishockZapConfig, Float> set, float min, float max) {
+        return addFloatSlider(keyPart, formatKeyPart, get, set, min, max, 1000f, 1);
     }
 
-    public void addFloatSlider(String keyPart, String formatKeyPart, Function<PishockZapConfig, Float> get, BiConsumer<PishockZapConfig, Float> set, float min, float max, float floatScale, float displayScale) {
+    public @NonNull IntegerSliderEntry addFloatSlider(String keyPart, String formatKeyPart, Function<PishockZapConfig, Float> get, BiConsumer<PishockZapConfig, Float> set, float min, float max, float floatScale, float displayScale) {
         var formatKey = "label.pishock-zap.config." + formatKeyPart;
         var digits = (int) Math.ceil(Math.log10(floatScale / displayScale));
         var formatStr = "%." + digits + "f";
 
         float value1 = get.apply(config);
-        add(new FloatSliderBuilder(entryBuilder.getResetButtonKey(), Translation.of("title.pishock-zap.config." + keyPart), value1, min, max, floatScale)
+        return add(new FloatSliderBuilder(entryBuilder.getResetButtonKey(), Translation.of("title.pishock-zap.config." + keyPart), value1, min, max, floatScale)
             .setSaveConsumer(v -> set.accept(config, v))
             .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
             .setDefaultValue(get.apply(defaultConfig))
@@ -69,8 +71,8 @@ public class ConfigHelper {
             .build());
     }
 
-    public void addIntSlider(String keyPart, String formatKeyPart, Function<PishockZapConfig, Integer> get, BiConsumer<PishockZapConfig, Integer> set, int min, int max) {
-        add(entryBuilder
+    public @NotNull IntegerSliderEntry addIntSlider(String keyPart, String formatKeyPart, Function<PishockZapConfig, Integer> get, BiConsumer<PishockZapConfig, Integer> set, int min, int max) {
+        return add(entryBuilder
             .startIntSlider(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config), min, max)
             .setSaveConsumer(v -> set.accept(config, v))
             .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
@@ -80,49 +82,41 @@ public class ConfigHelper {
     }
 
     public StringListEntry addTextField(String keyPart, Function<PishockZapConfig, String> get, BiConsumer<PishockZapConfig, String> set) {
-        StringListEntry field = entryBuilder
+        return add(entryBuilder
             .startStrField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
             .setSaveConsumer(v -> set.accept(config, v))
             .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
             .setDefaultValue(get.apply(defaultConfig))
-            .build();
-        add(field);
-        return field;
+            .build());
     }
 
     public StringListEntry addTextFieldNoDefault(String keyPart, Function<PishockZapConfig, String> get, BiConsumer<PishockZapConfig, String> set) {
-        StringListEntry entry = entryBuilder
+        return add(entryBuilder
             .startStrField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
             .setSaveConsumer(v -> set.accept(config, v))
             .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
             // no default
-            .build();
-        add(entry);
-        return entry;
+            .build());
     }
 
     public StringListEntry addTextFieldNoDefault(String keyPart, Function<PishockZapConfig, String> get, BiConsumer<PishockZapConfig, String> set, Function<String, Optional<Component>> errorSupplier) {
-        StringListEntry entry = entryBuilder
+        return add(entryBuilder
             .startStrField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
             .setSaveConsumer(v -> set.accept(config, v))
             .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
             // no default
             .setErrorSupplier(errorSupplier)
-            .build();
-        add(entry);
-        return entry;
+            .build());
     }
 
     public StringListEntry addTextField(String keyPart, Function<PishockZapConfig, String> get, BiConsumer<PishockZapConfig, String> set, Function<String, Optional<Component>> errorSupplier) {
-        StringListEntry field = entryBuilder
+        return add(entryBuilder
             .startStrField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
             .setSaveConsumer(v -> set.accept(config, v))
             .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
             .setDefaultValue(get.apply(defaultConfig))
             .setErrorSupplier(errorSupplier)
-            .build();
-        add(field);
-        return field;
+            .build());
     }
 
     public @NonNull IntegerListEntry makeIntField(String keyPart, Function<PishockZapConfig, Integer> get, BiConsumer<PishockZapConfig, Integer> set, Function<Integer, Optional<Component>> errorSupplier) {
@@ -223,8 +217,14 @@ public class ConfigHelper {
             .build();
     }
 
+    public <T> void addSimpleActionButton(String keyPart, Supplier<CompletableFuture<T>> action, Consumer<T> success) {
+        addActionButton(keyPart, action, t -> {
+            success.accept(t);
+            return Translation.of("label.pishock-zap.config." + keyPart);
+        });
+    }
 
-    public <T> void addActionButton(String keyPart, Supplier<CompletableFuture<T>> action, Consumer<T> success) {
+    public <T> void addActionButton(String keyPart, Supplier<CompletableFuture<T>> action, Function<T, Component> success) {
         add(ButtonListEntry.builder()
             .setButtonText(Translation.of("label.pishock-zap.config." + keyPart))
             .setFieldName(Translation.of("title.pishock-zap.config." + keyPart))
@@ -234,9 +234,9 @@ public class ConfigHelper {
                 btn.setButtonText(Translation.of("label.pishock-zap.config." + keyPart + ".working"));
                 action.get()
                     .thenAcceptAsync(t -> {
-                        success.accept(t);
+                        var result = success.apply(t);
                         btn.setEditable(true);
-                        btn.setButtonText(Translation.of("label.pishock-zap.config." + keyPart));
+                        btn.setButtonText(result);
                     }, Minecraft.getInstance())
                     .exceptionallyAsync((throwable) -> {
                         if (throwable != null) {
@@ -248,6 +248,17 @@ public class ConfigHelper {
                     }, Minecraft.getInstance());
             })
             .build());
+    }
+
+    public void addConnectionTests(Supplier<BackendConnectionTest> connectionTest) {
+        addActionButton("api.test_connection",
+            () -> connectionTest.get().testConnection(),
+            result -> Translation.of("enum.pishock-zap.config.connection_test_result." + result.name().toLowerCase())
+                .withStyle(style -> style.withColor(result == ConnectionTestResult.SUCCESS ? ChatFormatting.GREEN : ChatFormatting.RED)));
+        addActionButton("api.test_vibration",
+            () -> connectionTest.get().testVibration(),
+            result -> Translation.of("enum.pishock-zap.config.connection_test_result." + result.name().toLowerCase())
+                .withStyle(style -> style.withColor(result == ConnectionTestResult.SUCCESS ? ChatFormatting.GREEN : ChatFormatting.RED)));
     }
 
     public @NotNull TextListEntry makeTextDescription(Component component) {
@@ -266,8 +277,9 @@ public class ConfigHelper {
         return entryBuilder.getResetButtonKey();
     }
 
-    public void add(AbstractConfigListEntry<?> e) {
+    public <T extends AbstractConfigListEntry<?>> T add(T e) {
         addEntry.accept(e);
+        return e;
     }
 
     public void setCategory(ConfigCategory category) {

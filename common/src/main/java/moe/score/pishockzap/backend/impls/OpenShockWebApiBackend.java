@@ -2,17 +2,17 @@ package moe.score.pishockzap.backend.impls;
 
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 import lombok.experimental.Accessors;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.backend.BulkHttpRequestShockBackend;
+import moe.score.pishockzap.backend.ConnectionTestResult;
 import moe.score.pishockzap.backend.OpType;
+import moe.score.pishockzap.backend.SimpleHttpRequestShockBackend;
 import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
+import moe.score.pishockzap.config.internal.OpenShockWebApiConfig;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Supplier;
 
 import static moe.score.pishockzap.util.Gsons.gson;
 
@@ -91,7 +92,7 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
         return true;
     }
 
-    private int transformDuration(float duration) {
+    private static int transformDuration(float duration) {
         return Math.round(duration * 1000.0f);
     }
 
@@ -168,5 +169,60 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
         String id;
         int rfId;
         ShockCollarModel model;
+    }
+
+    @RequiredArgsConstructor
+    public static class ConnectionTest extends SimpleHttpRequestShockBackend.ConnectionTest {
+        private final OpenShockWebApiConfig config;
+
+        @Override
+        public CompletableFuture<ConnectionTestResult> testConnection() {
+            return testConnection(() -> gson.toJson(Map.of(
+                "shocks", List.of(),
+                "customName", config.getLogIdentifier())));
+        }
+
+        @Override
+        public CompletableFuture<ConnectionTestResult> testVibration() {
+            return testConnection(() -> {
+                var devices = config.getOpenShockShockerIds();
+                var finalShocks = new ArrayList<Control>();
+                for (var device : devices) {
+                    finalShocks.add(new Control(device, ControlType.VIBRATE, config.getVibrationIntensityMax(), transformDuration(config.getDuration()), false));
+                }
+                return gson.toJson(Map.of(
+                    "shocks", finalShocks,
+                    "customName", config.getLogIdentifier()));
+            });
+        }
+
+        private CompletableFuture<ConnectionTestResult> testConnection(Supplier<String> postBody) {
+            if (config.getOpenShockShockerIds().isEmpty() || config.getOpenShockApiToken().isBlank() || config.getLogIdentifier().isBlank())
+                return CompletableFuture.completedFuture(ConnectionTestResult.NOT_CONFIGURED);
+
+            return makeRequest(API_URI, getDefaultHeaders(config.getOpenShockApiToken()), postBody.get())
+                .thenApply(resp -> {
+                    var statusCode = resp.statusCode();
+                    System.err.println("Connection test response code: " + statusCode + ", body: " + resp.body());
+                    if (statusCode == 200) {
+                        return ConnectionTestResult.SUCCESS;
+                    } else if (statusCode == 401) {
+                        return ConnectionTestResult.AUTHENTICATION_FAILED;
+                    } else if (resp.body().contains("The JSON value could not be converted to System.Guid")) {
+                        // Device ID is malformed
+                        return ConnectionTestResult.NOT_CONFIGURED;
+                    } else if (resp.body().contains("Shocker.Control.NotFound")) {
+                        // Device ID is well-formed but does not exist
+                        return ConnectionTestResult.DEVICE_MISSING;
+                    } else {
+                        return ConnectionTestResult.UNKNOWN_ERROR;
+                    }
+                })
+                .exceptionally(e -> {
+                    System.err.println("Connection test failed; exception thrown");
+                    e.printStackTrace();
+                    return ConnectionTestResult.UNKNOWN_ERROR;
+                });
+        }
     }
 }

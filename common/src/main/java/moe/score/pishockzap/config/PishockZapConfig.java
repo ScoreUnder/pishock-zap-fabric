@@ -12,6 +12,7 @@ import moe.score.pishockzap.DefaultShockBackends;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.annotation.InternalMembers;
 import moe.score.pishockzap.backend.model.openshock.ShockDevice;
+import moe.score.pishockzap.config.internal.PiShockWebSocketApiConfig;
 import moe.score.pishockzap.util.Gsons;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 @Data
 @ApiStatus.Experimental
 @InternalMembers
-public class PishockZapConfig {
+public class PishockZapConfig implements PiShockWebSocketApiConfig {
     static final @NonNull String CONFIG_VERSION_KEY = "CONFIG_VERSION_DO_NOT_EDIT";
     static final int CONFIG_VERSION = 3;
 

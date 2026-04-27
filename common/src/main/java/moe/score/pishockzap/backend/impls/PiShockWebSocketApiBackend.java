@@ -4,25 +4,30 @@ import com.google.gson.annotations.SerializedName;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import moe.score.pishockzap.backend.OpType;
-import moe.score.pishockzap.backend.PiShockUtils;
-import moe.score.pishockzap.backend.SafeShockBackend;
+import lombok.experimental.UtilityClass;
+import moe.score.pishockzap.backend.*;
 import moe.score.pishockzap.backend.model.pishock.V2OperationType;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
+import moe.score.pishockzap.config.internal.PiShockWebSocketApiConfig;
 import moe.score.pishockzap.util.TriState;
 import moe.score.pishockzap.util.URIBuilder;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static moe.score.pishockzap.util.Gsons.pascalCaseGson;
 
@@ -44,25 +49,35 @@ public class PiShockWebSocketApiBackend extends SafeShockBackend {
         var devices = config.getPsHubShockers();
         var commands = new ArrayList<PublishMessage>();
 
-        var userId = config.getPsUserId();
-
         int numShockers = devices.values().stream().mapToInt(List::size).sum();
 
-        var logMetadata = new LogMetadata(userId, AccessType.API, false, false, config.getLogIdentifier());
+        var logMetadata = makeLogMetadata(config);
 
         boolean[] shocks = distributor.pickShockers(distribution, numShockers);
         int i = 0;
         for (var hubAndShockers : devices.int2ObjectEntrySet()) {
-            var hubId = hubAndShockers.getIntKey();
-            var hubChannel = "c" + hubId + "-ops";
+            var hubChannel = makeHubChannel(hubAndShockers.getIntKey());
             for (var shockerId : hubAndShockers.getValue()) {
                 if (!shocks[i++]) continue;
-                commands.add(new PublishMessage(hubChannel, new ShockerCommand(
-                    shockerId, V2OperationType.of(op), intensity, Math.round(duration * 1000), true, logMetadata)));
+                addShockerCommand(commands, op, intensity, duration, shockerId, hubChannel, logMetadata);
             }
         }
 
-        doApiCall(new PublishCommand(commands));
+        var publishCommand = new PublishCommand(commands);
+        doApiCall(publishCommand);
+    }
+
+    static @NonNull String makeHubChannel(int hubId) {
+        return "c" + hubId + "-ops";
+    }
+
+    static @NonNull LogMetadata makeLogMetadata(PiShockWebSocketApiConfig config) {
+        return new LogMetadata(config.getPsUserId(), AccessType.API, false, false, config.getLogIdentifier());
+    }
+
+    static void addShockerCommand(ArrayList<PublishMessage> commands, @NonNull OpType op, int intensity, float duration, int shockerId, String hubChannel, LogMetadata logMetadata) {
+        commands.add(new PublishMessage(hubChannel, new ShockerCommand(
+            shockerId, V2OperationType.of(op), intensity, Math.round(duration * 1000), true, logMetadata)));
     }
 
     @Override
@@ -172,10 +187,20 @@ public class PiShockWebSocketApiBackend extends SafeShockBackend {
     }
 
     static class Response {
-        Object errorCode;
+        String errorCode;
         boolean isError;
         String message;
         String originalCommand;
+        Object source;
+
+        @UtilityClass
+        static class ErrorCodes {
+            public static final String AUTH_ERROR = "AUTH_ERROR";
+            public static final String USER_ID_MISMATCH = "USER_ID_MISMATCH";
+            public static final String PERMISSION_ERROR = "PERMISSION_ERROR";
+            public static final String PERMISSION_DENIED = "PERMISSION_DENIED";
+            public static final String API_KEY_ERROR = "API_KEY_ERROR";
+        }
     }
 
     static class PingCommand {
@@ -231,5 +256,85 @@ public class PiShockWebSocketApiBackend extends SafeShockBackend {
     enum AccessType {
         @SerializedName("sc") SHARE_CODE,
         @SerializedName("api") API,
+    }
+
+    @RequiredArgsConstructor
+    public static class ConnectionTest implements BackendConnectionTest {
+        private final PiShockWebSocketApiConfig config;
+        private final HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).build();
+
+        @Override
+        public CompletableFuture<ConnectionTestResult> testConnection() {
+            return testConnection(PingCommand::new, response -> checkError(response).or(() -> {
+                if (response.originalCommand.contains("PING")) {
+                    return Optional.of(ConnectionTestResult.SUCCESS);
+                }
+                return Optional.empty();
+            }));
+        }
+
+        @Override
+        public CompletableFuture<ConnectionTestResult> testVibration() {
+            return testConnection(() -> {
+                var devices = config.getPsHubShockers();
+                var commands = new ArrayList<PublishMessage>();
+
+                var logMetadata = makeLogMetadata(config);
+
+                for (var hubAndShockers : devices.int2ObjectEntrySet()) {
+                    var hubChannel = makeHubChannel(hubAndShockers.getIntKey());
+                    for (var shockerId : hubAndShockers.getValue()) {
+                        addShockerCommand(commands, OpType.VIBRATE, config.getVibrationIntensityMax(), config.getDuration(), shockerId, hubChannel, logMetadata);
+                    }
+                }
+
+                return new PublishCommand(commands);
+            }, response -> checkError(response).or(() -> {
+                if (response.originalCommand.contains("PUBLISH")) {
+                    return Optional.of(ConnectionTestResult.SUCCESS);
+                }
+                return Optional.empty();
+            }));
+        }
+
+        private @NonNull CompletableFuture<ConnectionTestResult> testConnection(Supplier<Object> commandSupplier, Function<Response, Optional<ConnectionTestResult>> onResponse) {
+            if (config.getPsHubShockers().isEmpty() || config.getUsername().isBlank() || config.getApiKey().isBlank() || config.getPsUserId() == -1 || config.getLogIdentifier().isBlank()) {
+                return CompletableFuture.completedFuture(ConnectionTestResult.NOT_CONFIGURED);
+            }
+
+            CompletableFuture<ConnectionTestResult> resultFuture = new CompletableFuture<>();
+
+            var uri = getApiUri(config.getUsername(), config.getApiKey());
+            var wsFuture = httpClient.newWebSocketBuilder().buildAsync(uri, new WebSocket.Listener() {
+                @Override
+                public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
+                    System.out.println("WEBSOCKET RESPONSE: " + data);
+                    var result = onResponse.apply(pascalCaseGson.fromJson(data.toString(), Response.class));
+                    result.ifPresent(resultFuture::complete);
+                    return WebSocket.Listener.super.onText(webSocket, data, last);
+                }
+            });
+            wsFuture.thenAcceptAsync(s -> s.sendText(pascalCaseGson.toJson(commandSupplier.get()), true));
+
+            CompletableFuture.delayedExecutor(10, java.util.concurrent.TimeUnit.SECONDS).execute(() -> {
+                resultFuture.complete(ConnectionTestResult.TIMED_OUT);
+                wsFuture.thenAccept(WebSocket::abort);
+            });
+
+            return resultFuture;
+        }
+
+        private static Optional<ConnectionTestResult> checkError(Response response) {
+            if (!response.isError) {
+                return Optional.empty();
+            }
+            return switch (response.errorCode) {
+                case Response.ErrorCodes.AUTH_ERROR, Response.ErrorCodes.API_KEY_ERROR ->
+                    Optional.of(ConnectionTestResult.AUTHENTICATION_FAILED);
+                case Response.ErrorCodes.USER_ID_MISMATCH, Response.ErrorCodes.PERMISSION_DENIED,
+                     Response.ErrorCodes.PERMISSION_ERROR -> Optional.of(ConnectionTestResult.PERMISSION_DENIED);
+                default -> Optional.of(ConnectionTestResult.UNKNOWN_ERROR);
+            };
+        }
     }
 }
