@@ -154,17 +154,12 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             case DefaultShockBackends.PISHOCK_SERIAL -> 1;
             case DefaultShockBackends.OPENSHOCK_WEB -> 2;
             case DefaultShockBackends.OPENSHOCK_SERIAL -> 3;
-            case DefaultShockBackends.PISHOCK_WEB_V1 -> 4;
             default -> Integer.MAX_VALUE;
         };
     }
 
     private static Component getApiTypeTranslation(String apiType) {
-        var text = Translation.of(ShockBackendRegistry.getTranslationKey(apiType));
-        return switch (apiType) {
-            case DefaultShockBackends.PISHOCK_WEB_V1 -> text.withStyle(style -> style.withStrikethrough(true));
-            default -> text;
-        };
+        return Translation.of(ShockBackendRegistry.getTranslationKey(apiType));
     }
 
     private static void addApiCategory(ConfigHelper helper, ShockLimitsDetails shockLimitsDetails) {
