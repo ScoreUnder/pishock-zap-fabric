@@ -169,7 +169,11 @@ public class PishockZapMod implements ClientModInitializer {
     }
 
     private void toggleEnabled(Minecraft client) {
-        config.setEnabled(!config.isEnabled());
+        setEnabled(client, !config.isEnabled());
+    }
+
+    private void setEnabled(Minecraft client, boolean newEnabled) {
+        config.setEnabled(newEnabled);
         saveConfig();
 
         var player = client.player;
@@ -205,6 +209,16 @@ public class PishockZapMod implements ClientModInitializer {
                 .then(CommandCompat.literal("toggle")
                     .executes(context -> {
                         toggleEnabled(context.getSource().getClient());
+                        return 1;
+                    }))
+                .then(CommandCompat.literal("on")
+                    .executes(context -> {
+                        setEnabled(context.getSource().getClient(), true);
+                        return 1;
+                    }))
+                .then(CommandCompat.literal("off")
+                    .executes(context -> {
+                        setEnabled(context.getSource().getClient(), false);
                         return 1;
                     })));
         });
