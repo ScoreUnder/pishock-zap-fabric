@@ -3,3 +3,4 @@ c	net/fabricmc/fabric/api/client/keybinding/v1/KeyBindingHelper	net/fabricmc/fab
 	m	(Lnet/minecraft/client/KeyMapping;)Lnet/minecraft/client/KeyMapping;	registerKeyBinding	registerKeyBinding	registerKeyMapping
 c	me/shedaniel/clothconfig2/gui/widget/DynamicEntryListWidget$Entry	me/shedaniel/clothconfig2/gui/widget/DynamicEntryListWidget$Entry	me/shedaniel/clothconfig2/gui/widget/DynamicEntryListWidget$Entry
 	m	(Lnet/minecraft/client/gui/GuiGraphics;IIIIIIIZF)V	render	render	extractRenderState
+c	net/fabricmc/fabric/api/client/command/v2/ClientCommandManager	net/fabricmc/fabric/api/client/command/v2/ClientCommandManager	net/fabricmc/fabric/api/client/command/v2/ClientCommands

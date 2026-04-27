@@ -4,17 +4,17 @@ import com.mojang.blaze3d.platform.InputConstants;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.experimental.ExtensionMethod;
 import moe.score.pishockzap.backend.ShockBackendRegistry;
 import moe.score.pishockzap.backend.impls.NullBackend;
-import moe.score.pishockzap.compat.KeyBindingCompat;
-import moe.score.pishockzap.compat.PlayerCompat;
-import moe.score.pishockzap.compat.Translation;
+import moe.score.pishockzap.compat.*;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.frontend.ZapController;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 import static moe.score.pishockzap.util.Gsons.gson;
 
 @ApiStatus.Internal
+@ExtensionMethod(TextStyle.class)
 public class PishockZapMod implements ClientModInitializer {
     public static final String NAME = "PiShock-Zap";
     public static final String ID = "pishock-zap";
@@ -88,6 +89,7 @@ public class PishockZapMod implements ClientModInitializer {
             } catch (Exception | LinkageError e) {
                 logger.log(Level.SEVERE, "Failed to create shock backend of type \"" + newBackendId + "\"", e);
                 zapController.setBackend(new NullBackend());
+                currentBackendId = null;
             }
         }
 
@@ -153,6 +155,7 @@ public class PishockZapMod implements ClientModInitializer {
         loadConfig();
         zapController.start();
 
+        registerClientCommands();
         registerToggleHotkey();
         registerBackendJoinWorldNotifier();
     }
@@ -165,11 +168,36 @@ public class PishockZapMod implements ClientModInitializer {
 
                 var player = client.player;
                 if (player != null) {
-                    Style color = Style.EMPTY.withColor(config.isEnabled() ? 0x00FF00 : 0xFF0000);
+                    Style color = Style.EMPTY.withColor(config.isEnabled() ? ChatFormatting.GREEN : ChatFormatting.RED);
                     String key = "message.pishock-zap.toggle." + (config.isEnabled() ? "on" : "off");
                     PlayerCompat.displayInChat(player, Translation.of(key).setStyle(color));
+                    if (currentBackendId == null) {
+                        var openConfigLink = Translation.of("message.pishock-zap.open_config")
+                            .setStyle(Style.EMPTY
+                                .withColor(ChatFormatting.RESET)
+                                .withCommandOnClick("/" + ID + " config")
+                                .withHoverText(Translation.of("tooltip.pishock-zap.open_config")));
+                        PlayerCompat.displayInChat(player,
+                            Translation.of("message.pishock-zap.backend.not_configured", openConfigLink)
+                                .setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
+                    }
                 }
             }
+        });
+    }
+
+    private void registerClientCommands() {
+        CommandCompat.whenRegistering(dispatcher -> {
+            dispatcher.register(CommandCompat.literal(ID)
+                .then(CommandCompat.literal("config")
+                    .executes(context -> {
+                        var minecraft = Minecraft.getInstance();
+                        minecraft.execute(() -> {
+                            var screen = PishockZapModConfigMenu.createConfigScreen(minecraft.screen);
+                            minecraft.setScreen(screen);
+                        });
+                        return 1;
+                    })));
         });
     }
 

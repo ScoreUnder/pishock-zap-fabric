@@ -18,4 +18,8 @@ public class TextStyle {
     public static Style withUrlOnClick(Style style, String url) {
         return style.withClickEvent(new ClickEvent.OpenUrl(URI.create(url)));
     }
+
+    public static Style withCommandOnClick(Style style, String command) {
+        return style.withClickEvent(new ClickEvent.RunCommand(command));
+    }
 }

@@ -12,9 +12,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.ExtensionMethod;
 import lombok.experimental.FieldDefaults;
-import me.shedaniel.clothconfig2.gui.entries.StringListListEntry;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.ShockBackendRegistry;
+import moe.score.pishockzap.backend.client.PiShockWebClient;
 import moe.score.pishockzap.backend.impls.*;
 import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
 import moe.score.pishockzap.backend.model.openshock.ShockDevice;
@@ -51,7 +51,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
     public static final String PISHOCK_ACCOUNT_PAGE_URL = "https://login.pishock.com/account";
     private static final String PISHOCK_CONTROLLER_PAGE_URL = "https://pishock.com/#/control";
 
-    private static @NonNull Screen createConfigScreen(Screen parent) {
+    public static @NonNull Screen createConfigScreen(Screen parent) {
         var mod = Objects.requireNonNull(PishockZapMod.getInstance(), "PishockZapMod instance is null");
         var config = mod.getConfig();
 
@@ -188,7 +188,6 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var loggingDetails = addLoggingSubCategory(helper, getApiType);
         var serialPortDetails = addSerialPortSubCategory(helper, getApiType);
 
-        addPishockWebV1ApiSubCategory(helper, getApiType, pishockAccountDetails, loggingDetails);
         addPishockLocalSerialApiSubCategory(helper, getApiType, serialPortDetails, shockLimitsDetails);
         addWebHookApiSubCategory(helper, getApiType, shockLimitsDetails);
         addOpenShockWebApiSubCategory(helper, getApiType, openShockAccountDetails, loggingDetails, shockLimitsDetails);
@@ -263,39 +262,6 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         public void showForBackend(String backend) {
             showForBackend.accept(backend);
         }
-    }
-
-    private static void addPishockWebV1ApiSubCategory(ConfigHelper helper, Supplier<String> apiType, PishockAccountDetails accountDetails, LoggingBackendDetails loggingDetails) {
-        var thisBackend = DefaultShockBackends.PISHOCK_WEB_V1;
-        accountDetails.showForBackend(thisBackend);
-        loggingDetails.showForBackend(thisBackend);
-
-        helper.startSubCategory(Translation.of("title.pishock-zap.config.api.web_v1"))
-            .setDisplayRequirement(() -> thisBackend.equals(apiType.get()));
-
-        helper.addTextDescription(
-            Translation.of("description.pishock-zap.config.api.web_v1.deprecated")
-                .withStyle(style -> style.withBold(true).withColor(ChatFormatting.RED)));
-
-        StringListListEntry piShockShareCodesField = helper.makeStringListFieldNoDefault("api.share_codes", PishockZapConfig::getShareCodes, PishockZapConfig::setShareCodes, list -> {
-            if (!thisBackend.equals(apiType.get())) return Optional.empty();
-            if (list.isEmpty()) return Optional.of(Translation.of("error.pishock-zap.config.api.share_codes.empty"));
-            return Optional.empty();
-        }, shareCode -> {
-            if (!thisBackend.equals(apiType.get())) return Optional.empty();
-            return isShareCodeInvalid(shareCode);
-        });
-
-        ListEntryUtil.withExtensions(piShockShareCodesField, list ->
-            helper.addSimpleActionButton(
-                "api.web_v1.add_my_ids",
-                () -> new PiShockWebApiV1Backend.HttpBackend().probeShareCodes(accountDetails.username(), accountDetails.apiKey()),
-                v -> list.replaceValues(v)));
-
-        helper.add(piShockShareCodesField);
-        helper.addTextDescription("api.web_v1.disclaimer");
-
-        helper.endSubCategory();
     }
 
     private static SerialPortDetails addSerialPortSubCategory(ConfigHelper helper, Supplier<String> apiType) {
@@ -597,7 +563,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         helper.addSimpleActionButton("api.pishock.websocket.fetch_ids",
             () -> {
-                var backend = new PiShockWebApiV1Backend.HttpBackend();
+                var backend = new PiShockWebClient();
                 var apiKey = accountDetails.apiKey();
                 return backend.getUserProfile(accountDetails.username(), apiKey)
                     .thenComposeAsync(profile ->
@@ -655,15 +621,6 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         return psHubShockers.int2ObjectEntrySet().stream()
             .map(hub -> Pair.of(hub.getIntKey(), hub.getValue()))
             .toList();
-    }
-
-    private static @NonNull Optional<Component> isShareCodeInvalid(@NonNull String shareCode) {
-        if (shareCode.isBlank())
-            return Optional.of(Translation.of("error.pishock-zap.config.api.share_codes.entry.empty"));
-        if (shareCode.length() < 10 || !shareCode.matches("[0-9A-F]+")) {
-            return Optional.of(Translation.of("error.pishock-zap.config.api.share_codes.entry.invalid"));
-        }
-        return Optional.empty();
     }
 
     @Override

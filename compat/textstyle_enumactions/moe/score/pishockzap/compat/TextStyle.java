@@ -16,4 +16,8 @@ public class TextStyle {
     public static Style withUrlOnClick(Style style, String url) {
         return style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
     }
+
+    public static Style withCommandOnClick(Style style, String command) {
+        return style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
+    }
 }
