@@ -133,9 +133,9 @@ compare them and then note some more specific quirks of each.
 | Source code available           | :white_check_mark: | :white_check_mark:    | :white_check_mark:                   | :white_check_mark:     | :white_check_mark:        | :white_check_mark:        | :x:                                          |
 | Unit tests                      | :white_check_mark: | :white_check_mark:    | :x:                                  | :x:                    | :x:                       | :x:                       | :question:                                   |
 
-\* PiShock's Web V1 API got taken down without warning in early 2026, which
-broke certain mods/integrations. All mods which were not updated to use other
-PiShock APIs now will no longer work on any version of Minecraft.
+\* PiShock's Web V1 API got taken down in early 2026, which broke certain
+mods/integrations. All mods which were not updated to use other PiShock APIs now
+will no longer work on any version of Minecraft.
 
 ### [Raith's PiShock mod]
 
