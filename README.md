@@ -51,6 +51,7 @@ enable it manually.
 
 - A supported Minecraft version (see the [Releases page][releases])
 - Fabric or Quilt
+  - On NeoForge? Try [Raith's PiShock mod] instead!
 - Fabric API
 - Cloth Config
 - Mod Menu (optional but strongly recommended; gives access to the settings
