@@ -128,7 +128,7 @@
 
   "tooltip.pishock-zap.config.api_type": "The type of API to use for PiShock communication",
 
-  "tooltip.pishock-zap.config.api.test_conection": "Silently test connection to this API",
+  "tooltip.pishock-zap.config.api.test_connection": "Silently test connection to this API",
   "tooltip.pishock-zap.config.api.test_vibration": "Send a vibrate command to this API",
 
   "tooltip.pishock-zap.config.api.serial_port": "The path or name of the serial port to use\nfor local serial API communication\nFor example, COM3 or /dev/ttyUSB0",
