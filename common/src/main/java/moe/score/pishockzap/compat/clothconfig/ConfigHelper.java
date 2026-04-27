@@ -119,12 +119,12 @@ public class ConfigHelper {
             .build());
     }
 
-    public @NonNull IntegerListEntry makeIntField(String keyPart, Function<PishockZapConfig, Integer> get, BiConsumer<PishockZapConfig, Integer> set, Function<Integer, Optional<Component>> errorSupplier) {
+    public @NonNull IntegerListEntry makeIntFieldNoDefault(String keyPart, Function<PishockZapConfig, Integer> get, BiConsumer<PishockZapConfig, Integer> set, Function<Integer, Optional<Component>> errorSupplier) {
         return entryBuilder
             .startIntField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
             .setSaveConsumer(v -> set.accept(config, v))
             .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
-            .setDefaultValue(get.apply(defaultConfig))
+            .setDefaultValue(get.apply(config))
             .setErrorSupplier(errorSupplier)
             .build();
     }

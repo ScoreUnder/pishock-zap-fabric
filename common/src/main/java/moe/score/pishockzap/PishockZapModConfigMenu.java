@@ -572,7 +572,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                 helper.makeIntListField("api.pishock.websocket.devices.entry.devices", elem.getRight()))
         );
 
-        var websocketUserIdEntry = helper.makeIntField("api.pishock.websocket.user_id",
+        var websocketUserIdEntry = helper.makeIntFieldNoDefault("api.pishock.websocket.user_id",
             PishockZapConfig::getPsUserId,
             PishockZapConfig::setPsUserId,
             value -> {
