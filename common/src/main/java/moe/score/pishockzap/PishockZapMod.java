@@ -163,27 +163,31 @@ public class PishockZapMod implements ClientModInitializer {
     private void registerToggleHotkey() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (keyBinding.consumeClick()) {
-                config.setEnabled(!config.isEnabled());
-                saveConfig();
-
-                var player = client.player;
-                if (player != null) {
-                    Style color = Style.EMPTY.withColor(config.isEnabled() ? ChatFormatting.GREEN : ChatFormatting.RED);
-                    String key = "message.pishock-zap.toggle." + (config.isEnabled() ? "on" : "off");
-                    PlayerCompat.displayInChat(player, Translation.of(key).setStyle(color));
-                    if (currentBackendId == null) {
-                        var openConfigLink = Translation.of("message.pishock-zap.open_config")
-                            .setStyle(Style.EMPTY
-                                .withColor(ChatFormatting.RESET)
-                                .withCommandOnClick("/" + ID + " config")
-                                .withHoverText(Translation.of("tooltip.pishock-zap.open_config")));
-                        PlayerCompat.displayInChat(player,
-                            Translation.of("message.pishock-zap.backend.not_configured", openConfigLink)
-                                .setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
-                    }
-                }
+                toggleEnabled(client);
             }
         });
+    }
+
+    private void toggleEnabled(Minecraft client) {
+        config.setEnabled(!config.isEnabled());
+        saveConfig();
+
+        var player = client.player;
+        if (player != null) {
+            Style color = Style.EMPTY.withColor(config.isEnabled() ? ChatFormatting.GREEN : ChatFormatting.RED);
+            String key = "message.pishock-zap.toggle." + (config.isEnabled() ? "on" : "off");
+            PlayerCompat.displayInChat(player, Translation.of(key).setStyle(color));
+            if (currentBackendId == null) {
+                var openConfigLink = Translation.of("message.pishock-zap.open_config")
+                    .setStyle(Style.EMPTY
+                        .withColor(ChatFormatting.RESET)
+                        .withCommandOnClick("/" + ID + " config")
+                        .withHoverText(Translation.of("tooltip.pishock-zap.open_config")));
+                PlayerCompat.displayInChat(player,
+                    Translation.of("message.pishock-zap.backend.not_configured", openConfigLink)
+                        .setStyle(Style.EMPTY.withColor(ChatFormatting.RED)));
+            }
+        }
     }
 
     private void registerClientCommands() {
@@ -191,11 +195,16 @@ public class PishockZapMod implements ClientModInitializer {
             dispatcher.register(CommandCompat.literal(ID)
                 .then(CommandCompat.literal("config")
                     .executes(context -> {
-                        var minecraft = Minecraft.getInstance();
+                        var minecraft = context.getSource().getClient();
                         minecraft.execute(() -> {
                             var screen = PishockZapModConfigMenu.createConfigScreen(minecraft.screen);
                             minecraft.setScreen(screen);
                         });
+                        return 1;
+                    }))
+                .then(CommandCompat.literal("toggle")
+                    .executes(context -> {
+                        toggleEnabled(context.getSource().getClient());
                         return 1;
                     })));
         });
