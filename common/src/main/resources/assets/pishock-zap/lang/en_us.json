@@ -225,6 +225,11 @@
   "error.pishock-zap.config.api.openshock.device_ids.list_empty": "Must provide Device IDs",
   "error.pishock-zap.config.api.openshock.device_ids.empty": "Device ID cannot be empty",
 
+  "error.pishock-zap.config.api.pishock.websocket.user_id.negative": "User ID must be a positive number",
+
+  "error.pishock-zap.config.api.pishock.account.username.empty": "Username is required",
+  "error.pishock-zap.config.api.pishock.account.api_key.empty": "API key is required",
+
   "error.pishock-zap.config.api.openshock.account.api_token.empty": "API token is required",
 
   "key.category.pishock-zap.general": "PiShock-Zap",

@@ -236,8 +236,24 @@ public class PishockZapModConfigMenu implements ModMenuApi {
                     Translation.of("description.pishock-zap.config.api.pishock.account.share_codes_link"),
                     PISHOCK_CONTROLLER_PAGE_URL)));
 
-        var piShockUsernameEntry = helper.addTextFieldNoDefault("api.pishock.account.username", PishockZapConfig::getUsername, PishockZapConfig::setUsername);
-        var piShockApiKeyEntry = helper.addTextFieldNoDefault("api.pishock.account.api_key", PishockZapConfig::getApiKey, PishockZapConfig::setApiKey);
+        var piShockUsernameEntry = helper.addTextFieldNoDefault(
+            "api.pishock.account.username",
+            PishockZapConfig::getUsername, PishockZapConfig::setUsername,
+            username -> {
+                if (!showForBackends.contains(apiType.get())) return Optional.empty();
+                if (username.isBlank())
+                    return Optional.of(Translation.of("error.pishock-zap.config.api.pishock.account.username.empty"));
+                return Optional.empty();
+            });
+        var piShockApiKeyEntry = helper.addTextFieldNoDefault(
+            "api.pishock.account.api_key",
+            PishockZapConfig::getApiKey, PishockZapConfig::setApiKey,
+            apiKey -> {
+                if (!showForBackends.contains(apiType.get())) return Optional.empty();
+                if (apiKey.isBlank())
+                    return Optional.of(Translation.of("error.pishock-zap.config.api.pishock.account.api_key.empty"));
+                return Optional.empty();
+            });
 
         helper.endSubCategory();
 
@@ -559,7 +575,11 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var websocketUserIdEntry = helper.makeIntField("api.pishock.websocket.user_id",
             PishockZapConfig::getPsUserId,
             PishockZapConfig::setPsUserId,
-            value -> Optional.empty());
+            value -> {
+                if (!thisBackend.equals(apiType.get())) return Optional.empty();
+                if (value < 0) return Optional.of(Translation.of("error.pishock-zap.config.api.pishock.websocket.user_id.negative"));
+                return Optional.empty();
+            });
 
         helper.addSimpleActionButton("api.pishock.websocket.fetch_ids",
             () -> {
