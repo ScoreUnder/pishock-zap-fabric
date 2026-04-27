@@ -234,10 +234,8 @@ public class PishockZapConfig implements PiShockWebSocketApiConfig {
 
     private static String fromSetterName(String setterName) {
         if (setterName.length() < 4) return "";
-        var sb = new StringBuilder(setterName.length() - 3);
-        sb.append(Character.toLowerCase(setterName.charAt(3)));
-        sb.append(setterName, 4, setterName.length());
-        return sb.toString();
+        return Character.toLowerCase(setterName.charAt(3)) +
+            setterName.substring(4);
     }
 
     @ApiStatus.Internal
