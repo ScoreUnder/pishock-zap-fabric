@@ -90,7 +90,7 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Ope
     protected boolean isConfigured() {
         if (config.getOpenShockShockerIds().isEmpty()) return false;
         if (config.getOpenShockApiToken().isBlank()) return false;
-        return true;
+        return !config.getLogIdentifier().isBlank();
     }
 
     private static int transformDuration(float duration) {
