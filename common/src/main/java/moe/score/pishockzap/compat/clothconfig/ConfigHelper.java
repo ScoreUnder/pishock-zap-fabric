@@ -95,7 +95,7 @@ public class ConfigHelper {
             .startStrField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
             .setSaveConsumer(v -> set.accept(config, v))
             .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
-            // no default
+            .setDefaultValue(get.apply(config))  // Default value = current value (works as a "discard change" button)
             .build());
     }
 
@@ -104,7 +104,7 @@ public class ConfigHelper {
             .startStrField(Translation.of("title.pishock-zap.config." + keyPart), get.apply(config))
             .setSaveConsumer(v -> set.accept(config, v))
             .setTooltip(Translation.of("tooltip.pishock-zap.config." + keyPart))
-            // no default
+            .setDefaultValue(get.apply(config))  // Default value = current value (works as a "discard change" button)
             .setErrorSupplier(errorSupplier)
             .build());
     }
@@ -143,7 +143,7 @@ public class ConfigHelper {
             .setErrorSupplier(errorSupplier)
             .setCellErrorSupplier(cellErrorSupplier)
             .setExpanded(true)
-            // no default
+            .setDefaultValue(get.apply(config))  // Default value = current value (works as a "discard change" button)
             .build();
     }
 
@@ -155,7 +155,7 @@ public class ConfigHelper {
             .setErrorSupplier(errorSupplier)
             .setCellErrorSupplier(cellErrorSupplier)
             .setExpanded(true)
-            // no default
+            .setDefaultValue(get.apply(config))  // Default value = current value (works as a "discard change" button)
             .build();
     }
 
@@ -163,6 +163,7 @@ public class ConfigHelper {
         return entryBuilder
             .startIntList(Translation.of("title.pishock-zap.config." + keyPart), value)
             .setExpanded(true)
+            .setDefaultValue(value)
             .build();
     }
 
