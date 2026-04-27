@@ -14,6 +14,7 @@ import lombok.experimental.ExtensionMethod;
 import lombok.experimental.FieldDefaults;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.ShockBackendRegistry;
+import moe.score.pishockzap.backend.client.OpenShockWebClient;
 import moe.score.pishockzap.backend.client.PiShockWebClient;
 import moe.score.pishockzap.backend.impls.*;
 import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
@@ -478,7 +479,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         ListEntryUtil.withExtensions(openShockDeviceIdField, list ->
             helper.addSimpleActionButton(
                 "api.openshock.add_my_ids",
-                () -> OpenShockWebApiBackend.probeDeviceIds(accountDetails.apiToken()),
+                () -> OpenShockWebClient.probeDeviceIds(accountDetails.apiToken()),
                 values -> list.replaceValues(values)));
 
         helper.add(openShockDeviceIdField);
@@ -526,7 +527,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             accountDetails.showForBackend(thisBackend);
 
             helper.addSimpleActionButton("api.openshock.serial.fetch.button",
-                () -> OpenShockWebApiBackend.probeDevices(accountDetails.apiToken()),
+                () -> OpenShockWebClient.probeDevices(accountDetails.apiToken()),
                 result -> {
                     if (!result.isEmpty()) list.pishockZap$clear();
                     result.stream().map(s -> new ShockDevice(s.model(), s.rfId()))
@@ -577,7 +578,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             PishockZapConfig::setPsUserId,
             value -> {
                 if (!thisBackend.equals(apiType.get())) return Optional.empty();
-                if (value < 0) return Optional.of(Translation.of("error.pishock-zap.config.api.pishock.websocket.user_id.negative"));
+                if (value < 0)
+                    return Optional.of(Translation.of("error.pishock-zap.config.api.pishock.websocket.user_id.negative"));
                 return Optional.empty();
             });
 
