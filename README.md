@@ -189,8 +189,8 @@ due to performing blocking HTTP requests on the main thread.
 
 ### [pishock-mc]
 
-This is a relatively new Fabric mod which I have not yet had the chance to
-test in detail. It fulfils a similar niche to PiShock-Zap.
+This is a Fabric mod which I have not yet had the chance to test in detail. It
+fulfils a similar niche to PiShock-Zap.
 
 It uses a different method of damage detection, which is accurate but requires
 a server-side mod to be installed. This means it is not suitable for use on
