@@ -73,13 +73,13 @@
 
   "title.pishock-zap.config.api.test_connection": "Test connection",
   "tooltip.pishock-zap.config.api.test_connection": "Silently test connection to this API",
-  "label.pishock-zap.config.api.test_connection": "Test!",
+  "label.pishock-zap.config.api.test_connection": "Check!",
   "label.pishock-zap.config.api.test_connection.working": "In progress...",
   "label.pishock-zap.config.api.test_connection.error": "Internal error",
 
   "title.pishock-zap.config.api.test_vibration": "Test vibration",
   "tooltip.pishock-zap.config.api.test_vibration": "Send a vibrate command to this API",
-  "label.pishock-zap.config.api.test_vibration": "Test!",
+  "label.pishock-zap.config.api.test_vibration": "Vibrate!",
   "label.pishock-zap.config.api.test_vibration.working": "In progress...",
   "label.pishock-zap.config.api.test_vibration.error": "Internal error",
 
