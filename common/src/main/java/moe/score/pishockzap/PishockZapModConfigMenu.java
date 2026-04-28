@@ -227,10 +227,7 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             Translation.of("description.pishock-zap.config.api.pishock.account",
                 Translation.addLink(
                     Translation.of("description.pishock-zap.config.api.pishock.account.api_key_link"),
-                    PISHOCK_ACCOUNT_PAGE_URL),
-                Translation.addLink(
-                    Translation.of("description.pishock-zap.config.api.pishock.account.share_codes_link"),
-                    PISHOCK_CONTROLLER_PAGE_URL)));
+                    PISHOCK_ACCOUNT_PAGE_URL)));
 
         var piShockUsernameEntry = helper.addTextFieldNoDefault(
             "api.pishock.account.username",
