@@ -139,7 +139,11 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
     protected static <T> CompletableFuture<T> withSerialPort(String serialPortAddress, OnConnectFunction onConnect, Function<String, Optional<T>> onLineReceived, long timeout, TimeUnit timeoutUnit) {
         var result = openAndMonitorSerialPortForLines(serialPortAddress, onConnect, onLineReceived, timeout, timeoutUnit);
         for (int retry = 0; retry < 2; retry++) {
-            result = result.exceptionallyComposeAsync(e -> openAndMonitorSerialPortForLines(serialPortAddress, onConnect, onLineReceived, timeout, timeoutUnit));
+            result = result.exceptionallyComposeAsync(e -> openAndMonitorSerialPortForLines(serialPortAddress, output -> {
+                // Add an extra 500ms delay before first output when retrying serial I/O
+                Thread.sleep(500);
+                onConnect.accept(output);
+            }, onLineReceived, timeout, timeoutUnit));
         }
         return result;
     }

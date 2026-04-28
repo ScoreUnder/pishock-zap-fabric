@@ -117,10 +117,7 @@ public class OpenShockSerialBackend extends SerialBackend<ShockDevice> {
             if (config.getSerialPort().isBlank() || config.getOpenShockSerialDevices().isEmpty()) {
                 return CompletableFuture.completedFuture(ConnectionTestResult.NOT_CONFIGURED);
             }
-            return SerialBackend.withSerialPort(config.getSerialPort(), out -> {
-                    Thread.sleep(1000); // :( OpenShock serial tends to reboot on connect
-                    onConnect.accept(out);
-                }, onLineReceived, 5, TimeUnit.SECONDS)
+            return SerialBackend.withSerialPort(config.getSerialPort(), onConnect, onLineReceived, 5, TimeUnit.SECONDS)
                 .exceptionally(t -> ConnectionTestResult.CONNECTION_FAILED);
         }
 
