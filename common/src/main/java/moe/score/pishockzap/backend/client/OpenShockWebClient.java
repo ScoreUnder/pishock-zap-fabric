@@ -2,6 +2,7 @@ package moe.score.pishockzap.backend.client;
 
 import com.google.gson.reflect.TypeToken;
 import lombok.NonNull;
+import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.backend.model.openshock.Hub;
 import moe.score.pishockzap.backend.model.openshock.ResponseMessage;
@@ -24,7 +25,7 @@ public class OpenShockWebClient {
 
     public static @NonNull Map<String, String> getDefaultHeaders(String token) {
         if (userAgent == null) {
-            userAgent = PishockZapMod.NAME + "/" + PishockZapMod.getVersion() + " (minecraft mod; github.com/ScoreUnder/pishock-zap-fabric)";
+            userAgent = Constants.NAME + "/" + PishockZapMod.getVersion() + " (minecraft mod; github.com/ScoreUnder/pishock-zap-fabric)";
         }
         return Map.of(
             "User-Agent", userAgent,

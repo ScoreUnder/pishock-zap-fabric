@@ -2,7 +2,7 @@ package moe.score.pishockzap.frontend;
 
 import lombok.Getter;
 import lombok.NonNull;
-import moe.score.pishockzap.PishockZapMod;
+import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.ShockBackend;
 import moe.score.pishockzap.config.PishockZapConfig;
@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  */
 @ApiStatus.Internal
 public class ZapController implements ShockFrontend {
-    private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
+    private final Logger logger = Logger.getLogger(Constants.NAME);
     @Getter
     @NonNull
     private volatile ShockBackend backend;

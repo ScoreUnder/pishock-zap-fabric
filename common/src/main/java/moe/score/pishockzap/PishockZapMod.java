@@ -40,8 +40,6 @@ import static moe.score.pishockzap.util.Gsons.gson;
 @ApiStatus.Internal
 @ExtensionMethod(TextStyle.class)
 public class PishockZapMod implements ClientModInitializer {
-    public static final String NAME = "PiShock-Zap";
-    public static final String ID = "pishock-zap";
     @Getter
     private static @Nullable PishockZapMod instance = null;
 
@@ -52,8 +50,8 @@ public class PishockZapMod implements ClientModInitializer {
         "general"
     );
 
-    private final Logger logger = Logger.getLogger(NAME);
-    private final Path configFile = FabricLoader.getInstance().getConfigDir().resolve(NAME.toLowerCase() + ".json");
+    private final Logger logger = Logger.getLogger(Constants.NAME);
+    private final Path configFile = FabricLoader.getInstance().getConfigDir().resolve(Constants.NAME.toLowerCase() + ".json");
     @Getter
     private final PishockZapConfig config = new PishockZapConfig();
     private final PlayerHpWatcher<LocalPlayer> playerHpWatcher = new PlayerHpWatcher<>();
@@ -185,7 +183,7 @@ public class PishockZapMod implements ClientModInitializer {
                 var openConfigLink = Translation.of("message.pishock-zap.open_config")
                     .setStyle(Style.EMPTY
                         .withColor(ChatFormatting.RESET)
-                        .withCommandOnClick("/" + ID + " config")
+                        .withCommandOnClick("/" + Constants.ID + " config")
                         .withHoverText(Translation.of("tooltip.pishock-zap.open_config")));
                 PlayerCompat.displayInChat(player,
                     Translation.of("message.pishock-zap.backend.not_configured", openConfigLink)
@@ -196,7 +194,7 @@ public class PishockZapMod implements ClientModInitializer {
 
     private void registerClientCommands() {
         CommandCompat.whenRegistering(dispatcher -> {
-            dispatcher.register(CommandCompat.literal(ID)
+            dispatcher.register(CommandCompat.literal(Constants.ID)
                 .then(CommandCompat.literal("config")
                     .executes(context -> {
                         var minecraft = context.getSource().getClient();
@@ -229,7 +227,7 @@ public class PishockZapMod implements ClientModInitializer {
     }
 
     public static String getVersion() {
-        return FabricLoader.getInstance().getModContainer(ID)
+        return FabricLoader.getInstance().getModContainer(Constants.ID)
             .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("unknown");
     }
 

@@ -2,7 +2,7 @@ package moe.score.pishockzap.backend;
 
 import com.fazecast.jSerialComm.SerialPort;
 import lombok.NonNull;
-import moe.score.pishockzap.PishockZapMod;
+import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import org.jetbrains.annotations.ApiStatus;
@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 public abstract class SerialBackend<D> extends SafeShockBackend {
     public static final int PISHOCK_SERIAL_BAUD_RATE = 115200;
     protected static WeakReference<SerialBackend<?>> INSTANCE;
-    protected final Logger logger = Logger.getLogger(PishockZapMod.NAME);
+    protected final Logger logger = Logger.getLogger(Constants.NAME);
     private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
     private final @NonNull Executor executor;
     protected String lastPortName;

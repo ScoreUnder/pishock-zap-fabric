@@ -1,7 +1,7 @@
 package moe.score.pishockzap.compat;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import moe.score.pishockzap.PishockZapMod;
+import moe.score.pishockzap.Constants;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.resources.Identifier;
@@ -12,7 +12,7 @@ public class KeyBindingCompat {
             id,
             type,
             code,
-            KeyMapping.Category.register(Identifier.fromNamespaceAndPath(PishockZapMod.ID, path))
+            KeyMapping.Category.register(Identifier.fromNamespaceAndPath(Constants.ID, path))
         ));
     }
 }

@@ -3,6 +3,7 @@ package moe.score.pishockzap.frontend;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.PiShockUtils;
@@ -18,7 +19,7 @@ import java.util.logging.Logger;
 @RequiredArgsConstructor
 @ApiStatus.Internal
 public class ShockQueue {
-    private final Logger logger = Logger.getLogger(PishockZapMod.NAME);
+    private final Logger logger = Logger.getLogger(Constants.NAME);
     private final BlockingQueue<Either<QueuedShock, CalculatedShock>> queue = new LinkedBlockingQueue<>();
     @NonNull
     private final PishockZapConfig config;

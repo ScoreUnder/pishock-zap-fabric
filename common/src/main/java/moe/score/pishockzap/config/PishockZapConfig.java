@@ -1,6 +1,5 @@
 package moe.score.pishockzap.config;
 
-import com.google.common.collect.ImmutableList;
 import com.google.gson.reflect.TypeToken;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -8,8 +7,8 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.Data;
 import lombok.NonNull;
+import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.DefaultShockBackends;
-import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.annotation.InternalMembers;
 import moe.score.pishockzap.backend.model.openshock.ShockDevice;
 import moe.score.pishockzap.config.internal.PiShockWebSocketApiConfig;
@@ -253,7 +252,7 @@ public class PishockZapConfig implements PiShockWebSocketApiConfig {
             String fieldName = field.getName();
             Method setter = setMethods.get(fieldName);
             if (setter == null) {
-                Logger.getLogger(PishockZapMod.NAME).warning("Missing setter for config field " + fieldName);
+                Logger.getLogger(Constants.NAME).warning("Missing setter for config field " + fieldName);
                 continue;
             }
             Object value = config.get(fieldName);
