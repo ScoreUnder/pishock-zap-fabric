@@ -52,6 +52,9 @@ enable it manually.
 - A supported Minecraft version (see the [Releases page][releases])
 - Fabric or Quilt
   - On NeoForge? Try [Raith's PiShock mod] instead!
+    - Or apparently this mod still works on NeoForge if you're using [Sinytra
+      Connector](https://github.com/Sinytra/Connector), but I don't test this
+      compatibility so I cannot guarantee it.
 - Fabric API
 - Cloth Config
 - Mod Menu (optional but strongly recommended; gives access to the settings
