@@ -2,6 +2,8 @@ package moe.score.pishockzap.backend.impls;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.backend.BulkHttpRequestShockBackend;
 import moe.score.pishockzap.backend.ConnectionTestResult;
 import moe.score.pishockzap.backend.OpType;
@@ -20,6 +22,7 @@ import java.util.function.Supplier;
 
 import static moe.score.pishockzap.util.Gsons.gson;
 
+@Slf4j(topic = Constants.NAME)
 public class WebHookBackend extends BulkHttpRequestShockBackend<Map<String, Object>> {
     public WebHookBackend(PishockZapConfig config, Executor executor) {
         super(config, executor);
@@ -55,7 +58,7 @@ public class WebHookBackend extends BulkHttpRequestShockBackend<Map<String, Obje
 
     @Override
     protected void onResponse(Map<String, Object> data, @NonNull String response) {
-        logger.info("Custom Webhook call successful, request: " + gson.toJson(data) + "\nresponse: " + response);
+        log.trace("Custom Webhook call successful, request: {}\nresponse: {}", gson.toJson(data), response);
     }
 
     @Override
@@ -69,6 +72,7 @@ public class WebHookBackend extends BulkHttpRequestShockBackend<Map<String, Obje
     }
 
     @RequiredArgsConstructor
+    @Slf4j(topic = Constants.NAME)
     public static class ConnectionTest extends SimpleHttpRequestShockBackend.ConnectionTest {
         private final WebHookApiConfig config;
 
@@ -99,7 +103,7 @@ public class WebHookBackend extends BulkHttpRequestShockBackend<Map<String, Obje
             return makeRequest(uri, Map.of(), postBody.get())
                 .thenApply(resp -> {
                     var statusCode = resp.statusCode();
-                    System.err.println("Connection test response code: " + statusCode + ", body: " + resp.body());
+                    log.trace("Connection test response code: {}, body: {}", statusCode, resp.body());
                     if (statusCode >= 200 && statusCode < 300) {
                         return ConnectionTestResult.SUCCESS;
                     } else {
@@ -107,8 +111,7 @@ public class WebHookBackend extends BulkHttpRequestShockBackend<Map<String, Obje
                     }
                 })
                 .exceptionally(e -> {
-                    System.err.println("Connection test failed; exception thrown");
-                    e.printStackTrace();
+                    log.warn("Connection test failed; exception thrown", e);
                     if (e instanceof IllegalArgumentException && e.getMessage().contains("invalid URI scheme")) {
                         return ConnectionTestResult.NOT_CONFIGURED;
                     }

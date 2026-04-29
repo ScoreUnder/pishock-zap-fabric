@@ -1,11 +1,13 @@
 package moe.score.pishockzap.compat.clothconfig;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.gui.entries.*;
+import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.backend.BackendConnectionTest;
 import moe.score.pishockzap.backend.ConnectionTestResult;
 import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
@@ -26,6 +28,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 
+@Slf4j(topic = Constants.NAME)
 public class ConfigHelper {
     private final PishockZapConfig config;
     private final PishockZapConfig defaultConfig;
@@ -242,7 +245,7 @@ public class ConfigHelper {
                     }, Minecraft.getInstance())
                     .exceptionallyAsync((throwable) -> {
                         if (throwable != null) {
-                            throwable.printStackTrace();
+                            log.warn("Error occurred while performing action for button '{}'", keyPart, throwable);
                             btn.setEditable(true);
                             btn.setButtonText(Translation.of("label.pishock-zap.config." + keyPart + ".error"));
                         }

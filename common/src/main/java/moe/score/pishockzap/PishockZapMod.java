@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.ExtensionMethod;
+import lombok.extern.slf4j.Slf4j;
 import moe.score.pishockzap.backend.ShockBackendRegistry;
 import moe.score.pishockzap.backend.impls.NullBackend;
 import moe.score.pishockzap.compat.*;
@@ -33,12 +34,12 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static moe.score.pishockzap.util.Gsons.gson;
 
 @ApiStatus.Internal
 @ExtensionMethod(TextStyle.class)
+@Slf4j(topic = Constants.NAME)
 public class PishockZapMod implements ClientModInitializer {
     @Getter
     private static @Nullable PishockZapMod instance = null;
@@ -50,7 +51,6 @@ public class PishockZapMod implements ClientModInitializer {
         "general"
     );
 
-    private final Logger logger = Logger.getLogger(Constants.NAME);
     private final Path configFile = FabricLoader.getInstance().getConfigDir().resolve(Constants.NAME.toLowerCase() + ".json");
     @Getter
     private final PishockZapConfig config = new PishockZapConfig();
@@ -67,7 +67,7 @@ public class PishockZapMod implements ClientModInitializer {
         try (BufferedWriter configWriter = Files.newBufferedWriter(configFile)) {
             gson.toJson(configMap, configWriter);
         } catch (IOException e) {
-            logger.log(Level.WARNING, "Failed to save config file, exception details follow", e);
+            log.warn("Failed to save config file, exception details follow", e);
         }
 
         applyConfigChanges();
@@ -85,7 +85,7 @@ public class PishockZapMod implements ClientModInitializer {
                 zapController.setBackend(ShockBackendRegistry.getCreateFunc(newBackendId).apply(config, apiExecutor));
                 currentBackendId = newBackendId;
             } catch (Exception | LinkageError e) {
-                logger.log(Level.SEVERE, "Failed to create shock backend of type \"" + newBackendId + "\"", e);
+                log.error("Failed to create shock backend of type \"{}\"", newBackendId, e);
                 zapController.setBackend(new NullBackend());
                 currentBackendId = null;
             }
@@ -102,7 +102,7 @@ public class PishockZapMod implements ClientModInitializer {
     @SuppressWarnings("unchecked")  // Type erasure means we can't get a Map<String, Object> "safely"
     public void loadConfig() {
         if (!Files.exists(configFile)) {
-            logger.info("Config file not found, using default config");
+            log.info("Config file not found, using default config");
             saveConfig();
             return;
         }
@@ -111,7 +111,7 @@ public class PishockZapMod implements ClientModInitializer {
         try {
             configMap = gson.fromJson(Files.newBufferedReader(configFile), Map.class);
         } catch (Exception e) {
-            logger.log(Level.WARNING, "Failed to load config file, exception details follow", e);
+            log.warn("Failed to load config file, exception details follow", e);
             return;
         }
 

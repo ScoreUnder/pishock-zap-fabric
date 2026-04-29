@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
+import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.backend.*;
 import moe.score.pishockzap.backend.model.pishock.V2OperationType;
 import moe.score.pishockzap.config.PishockZapConfig;
@@ -258,6 +260,7 @@ public class PiShockWebSocketApiBackend extends SafeShockBackend {
     }
 
     @RequiredArgsConstructor
+    @Slf4j(topic = Constants.NAME)
     public static class ConnectionTest implements BackendConnectionTest {
         private final PiShockWebSocketApiConfig config;
         private final HttpClient httpClient = HttpClient.newBuilder().build();
@@ -307,21 +310,21 @@ public class PiShockWebSocketApiBackend extends SafeShockBackend {
             var wsFuture = httpClient.newWebSocketBuilder().buildAsync(uri, new WebSocket.Listener() {
                 @Override
                 public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-                    System.out.println("WebSocket closed: " + statusCode + " " + reason);
+                    log.trace("WebSocket closed: {} {}", statusCode, reason);
                     resultFuture.complete(ConnectionTestResult.CONNECTION_FAILED);
                     return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
                 }
 
                 @Override
                 public void onError(WebSocket webSocket, Throwable error) {
-                    System.err.println("WebSocket error: " + error.getMessage());
+                    log.trace("WebSocket error", error);
                     resultFuture.complete(ConnectionTestResult.CONNECTION_FAILED);
                     WebSocket.Listener.super.onError(webSocket, error);
                 }
 
                 @Override
                 public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-                    System.out.println("WEBSOCKET RESPONSE: " + data);
+                    log.trace("WEBSOCKET RESPONSE: {}", data);
                     var result = onResponse.apply(pascalCaseGson.fromJson(data.toString(), Response.class));
                     result.ifPresent(resultFuture::complete);
                     return WebSocket.Listener.super.onText(webSocket, data, last);
@@ -331,7 +334,7 @@ public class PiShockWebSocketApiBackend extends SafeShockBackend {
                 if (ex == null) {
                     sock.sendText(pascalCaseGson.toJson(commandSupplier.get()), true);
                 } else {
-                    ex.printStackTrace();
+                    log.warn("Failed to connect to WebSocket", ex);
                     resultFuture.complete(ConnectionTestResult.CONNECTION_FAILED);
                 }
             });

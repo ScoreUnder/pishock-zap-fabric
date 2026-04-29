@@ -2,28 +2,28 @@ package moe.score.pishockzap.backend;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
+import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.config.ShockDistribution;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Random;
-import java.util.logging.Logger;
 
 @UtilityClass
 @ApiStatus.Internal
+@Slf4j(topic = Constants.NAME)
 public class PiShockUtils {
     public static final int PISHOCK_MAX_DURATION = 15;
     public static final int PISHOCK_MAX_INTENSITY = 100;
 
-    private static final Logger logger = Logger.getLogger(PiShockUtils.class.getName());
-
     public static boolean shockParamsAreValid(int intensity, float duration, float intensityMax, float durationMax) {
         if (intensity == 0 || duration == 0.0f) return false;
         if (intensity < 0 || intensity > intensityMax) {
-            logger.warning("Shock operation intensity out of range: " + intensity);
+            log.warn("Shock operation intensity out of range: {}", intensity);
             return false;
         }
         if (duration < 0.0f || duration > durationMax || !Float.isFinite(duration)) {
-            logger.warning("Shock operation duration out of range: " + duration);
+            log.warn("Shock operation duration out of range: {}", duration);
             return false;
         }
         return true;

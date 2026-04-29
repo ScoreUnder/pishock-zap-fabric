@@ -2,6 +2,7 @@ package moe.score.pishockzap.frontend;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.ShockBackend;
@@ -9,17 +10,14 @@ import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * Takes in a stream of incoming damage events and users the ShockQueue to
  * process them according to the limits and backoff settings in the
  * configuration, then sends them to the PiShock API.
  */
 @ApiStatus.Internal
+@Slf4j(topic = Constants.NAME)
 public class ZapController implements ShockFrontend {
-    private final Logger logger = Logger.getLogger(Constants.NAME);
     @Getter
     @NonNull
     private volatile ShockBackend backend;
@@ -51,7 +49,7 @@ public class ZapController implements ShockFrontend {
         while (true) {
             try {
                 var shockData = shockQueue.takeAndMergeShocks();
-                logger.info("Performing shock: " + shockData);
+                log.info("Performing shock: {}", shockData);
                 var ok = backend.performOp(shockData.distribution(), shockData.type(), shockData.intensity(), shockData.duration());
 
                 if (ok) {
@@ -62,20 +60,20 @@ public class ZapController implements ShockFrontend {
             } catch (InterruptedException e) {
                 return;
             } catch (Exception e) {
-                logger.log(Level.SEVERE, "Error in shock queue thread", e);
+                log.error("Error in shock queue thread", e);
             }
         }
     }
 
     @Override
     public void queueShock(@NonNull ShockDistribution distribution, boolean isDeath, float damageEquivalent) {
-        logger.info("Queueing shock: " + distribution + ", " + isDeath + ", " + damageEquivalent);
+        log.debug("Queueing shock: {}, {}, {}", distribution, isDeath, damageEquivalent);
         shockQueue.queueShock(distribution, isDeath, damageEquivalent);
     }
 
     @Override
     public void queueRawShock(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
-        logger.info("Queueing raw shock: " + distribution + ", " + op + ", " + intensity + "%, " + duration + "s");
+        log.debug("Queueing raw shock: {}, {}, {}%, {}s", distribution, op, intensity, duration);
         shockQueue.queueRawShock(distribution, op, intensity, duration);
     }
 
@@ -95,10 +93,10 @@ public class ZapController implements ShockFrontend {
             float damageEquivalent = config.isShockOnHealth() ? maxHealth - hp : damage;
             damageEquivalent /= maxHealth;
             if (damageEquivalent > 1.0f) {
-                logger.warning("Damage equivalent " + damageEquivalent + " exceeds 100% damage, capping");
+                log.warn("Damage equivalent {} exceeds 100% damage, capping", damageEquivalent);
                 damageEquivalent = 1.0f;
             }
-            logger.info("Death? " + deathZap + ", damage: " + damage + ", hp: " + hp + ", damage equivalent: " + damageEquivalent);
+            log.trace("Death? {}, damage: {}, hp: {}, damage equivalent: {}", deathZap, damage, hp, damageEquivalent);
             queueShock(distribution, deathZap, damageEquivalent);
         }
     }

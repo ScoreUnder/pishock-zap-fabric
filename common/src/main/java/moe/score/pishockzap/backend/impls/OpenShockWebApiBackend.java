@@ -2,6 +2,8 @@ package moe.score.pishockzap.backend.impls;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.backend.BulkHttpRequestShockBackend;
 import moe.score.pishockzap.backend.ConnectionTestResult;
 import moe.score.pishockzap.backend.OpType;
@@ -25,6 +27,7 @@ import java.util.function.Supplier;
 import static moe.score.pishockzap.backend.client.OpenShockWebClient.getDefaultHeaders;
 import static moe.score.pishockzap.util.Gsons.gson;
 
+@Slf4j(topic = Constants.NAME)
 public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Control>> {
     private static final URI API_URI = URI.create("https://api.openshock.app/2/shockers/control");
 
@@ -66,7 +69,7 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Con
     @Override
     protected void onResponse(List<Control> data, @NonNull String response) {
         if (!response.contains("Successfully sent control messages")) {
-            logger.warning("OpenShock API call failed; response: " + response);
+            log.warn("OpenShock API call failed; response: {}", response);
         }
     }
 
@@ -87,6 +90,7 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Con
     }
 
     @RequiredArgsConstructor
+    @Slf4j(topic = Constants.NAME)
     public static class ConnectionTest extends SimpleHttpRequestShockBackend.ConnectionTest {
         private final OpenShockWebApiConfig config;
 
@@ -118,7 +122,7 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Con
             return makeRequest(API_URI, getDefaultHeaders(config.getOpenShockApiToken()), postBody.get())
                 .thenApply(resp -> {
                     var statusCode = resp.statusCode();
-                    System.err.println("Connection test response code: " + statusCode + ", body: " + resp.body());
+                    log.trace("Connection test response code: {}, body: {}", statusCode, resp.body());
                     if (statusCode == 200) {
                         return ConnectionTestResult.SUCCESS;
                     } else if (statusCode == 401) {
@@ -134,8 +138,7 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Con
                     }
                 })
                 .exceptionally(e -> {
-                    System.err.println("Connection test failed; exception thrown");
-                    e.printStackTrace();
+                    log.warn("Connection test failed; exception thrown", e);
                     return ConnectionTestResult.UNKNOWN_ERROR;
                 });
         }

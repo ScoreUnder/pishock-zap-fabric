@@ -2,6 +2,7 @@ package moe.score.pishockzap.backend;
 
 import com.fazecast.jSerialComm.SerialPort;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
@@ -18,14 +19,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 @ApiStatus.Internal
+@Slf4j(topic = Constants.NAME)
 public abstract class SerialBackend<D> extends SafeShockBackend {
     public static final int PISHOCK_SERIAL_BAUD_RATE = 115200;
     protected static WeakReference<SerialBackend<?>> INSTANCE;
-    protected final Logger logger = Logger.getLogger(Constants.NAME);
     private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
     private final @NonNull Executor executor;
     protected String lastPortName;
@@ -41,7 +41,7 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
     protected void safePerformOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
         var shockers = getDevices();
         if (shockers.isEmpty()) {
-            logger.warning("No shock devices configured");
+            log.warn("No shock devices configured");
             return;
         }
 
@@ -112,9 +112,7 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
             try {
                 writeLines(lines);
             } catch (Exception e) {
-                logger.warning("API call failed; exception thrown");
-                e.printStackTrace();
-
+                log.warn("API call failed; exception thrown", e);
                 close();
             }
         });
@@ -155,11 +153,11 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
             boolean serialPortIsMine;
             SerialPort port = existingInstance == null ? null : existingInstance.reuseThisSerialPort(serialPortAddress);
             if (port == null) {
-                System.out.println("Opening my own serial port");
+                log.debug("Opening new serial port connection to {}", serialPortAddress);
                 port = createAndOpenPort(serialPortAddress);
                 serialPortIsMine = true;
             } else {
-                System.out.println("Reusing a serial port");
+                log.debug("Reusing existing serial port connection to {}", serialPortAddress);
                 serialPortIsMine = false;
             }
             return monitorSerialPortForLines(port, serialPortIsMine, onConnect, onLineReceived, timeout, timeoutUnit);
@@ -175,7 +173,7 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
             try {
                 String line;
                 while ((line = readRetrying(input, 3)) != null) {
-                    System.out.println("Got from serial: " + line);
+                    log.trace("Got from serial: {}", line);
                     var lineResult = lineConsumer.apply(line);
                     if (lineResult.isPresent()) {
                         result.complete(lineResult.get());
@@ -193,12 +191,12 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
                     try {
                         output.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        log.warn("Failed to close serial output stream", e);
                     } finally {
                         try {
                             input.close();
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            log.warn("Failed to close serial input stream", e);
                         } finally {
                             port.closePort();
                         }

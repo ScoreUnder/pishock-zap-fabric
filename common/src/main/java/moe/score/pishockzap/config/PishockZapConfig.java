@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.DefaultShockBackends;
 import moe.score.pishockzap.annotation.InternalMembers;
@@ -22,7 +23,6 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 @Data
 @ApiStatus.Experimental
 @InternalMembers
+@Slf4j(topic = Constants.NAME)
 public class PishockZapConfig implements PiShockWebSocketApiConfig {
     static final @NonNull String CONFIG_VERSION_KEY = "CONFIG_VERSION_DO_NOT_EDIT";
     static final int CONFIG_VERSION = 3;
@@ -152,9 +153,9 @@ public class PishockZapConfig implements PiShockWebSocketApiConfig {
             }
             setter.invoke(this, value);
         } catch (IllegalAccessException | InvocationTargetException | NumberFormatException e) {
-            e.printStackTrace();
+            log.error("Failed to set config field {} with value {}", field.getName(), value, e);
         } catch (IllegalArgumentException | ClassCastException e) {
-            System.err.printf("Config value %s is not of type %s (got %s)%n", field.getName(), field.getType().getName(), value.getClass().getName());
+            log.error("Config value {} is not of type {} (got {})", field.getName(), field.getType().getName(), value.getClass().getName());
         }
     }
 
@@ -252,7 +253,7 @@ public class PishockZapConfig implements PiShockWebSocketApiConfig {
             String fieldName = field.getName();
             Method setter = setMethods.get(fieldName);
             if (setter == null) {
-                Logger.getLogger(Constants.NAME).warning("Missing setter for config field " + fieldName);
+                log.warn("Missing setter for config field {}", fieldName);
                 continue;
             }
             Object value = config.get(fieldName);
@@ -277,7 +278,7 @@ public class PishockZapConfig implements PiShockWebSocketApiConfig {
                 }
                 config.put(field.getName(), value);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                log.warn("Failed to access config field {}", field.getName(), e);
             }
         }
 

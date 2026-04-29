@@ -3,8 +3,8 @@ package moe.score.pishockzap.frontend;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import moe.score.pishockzap.Constants;
-import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.backend.OpType;
 import moe.score.pishockzap.backend.PiShockUtils;
 import moe.score.pishockzap.config.PishockZapConfig;
@@ -14,12 +14,11 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Logger;
 
 @RequiredArgsConstructor
 @ApiStatus.Internal
+@Slf4j(topic = Constants.NAME)
 public class ShockQueue {
-    private final Logger logger = Logger.getLogger(Constants.NAME);
     private final BlockingQueue<Either<QueuedShock, CalculatedShock>> queue = new LinkedBlockingQueue<>();
     @NonNull
     private final PishockZapConfig config;
@@ -93,7 +92,7 @@ public class ShockQueue {
 
         if (shock.damageEquivalent > 1.0f) {
             // Should never happen, but safety first
-            logger.warning("Damage equivalent is greater than max damage, clamping to max damage");
+            log.warn("Damage equivalent is greater than max damage, clamping to max damage");
             shock.damageEquivalent = 1.0f;
         }
 
@@ -136,11 +135,11 @@ public class ShockQueue {
 
     private float sanityCheckDuration(float duration) {
         if (duration < 0.0f || duration > PiShockUtils.PISHOCK_MAX_DURATION) {
-            logger.warning("Duration out of range: " + duration);
+            log.warn("Duration out of range: {}", duration);
             duration = Math.max(0.0f, Math.min(duration, PiShockUtils.PISHOCK_MAX_DURATION));
         }
         if (duration < config.getDuration() || duration > config.getMaxDuration()) {
-            logger.warning("Duration out of configured range: " + duration);
+            log.warn("Duration out of configured range: {}", duration);
             duration = Math.max(config.getDuration(), Math.min(duration, config.getMaxDuration()));
         }
         return duration;
@@ -148,15 +147,15 @@ public class ShockQueue {
 
     private int sanityCheckIntensity(@NonNull OpType type, int intensity) {
         if (intensity < 0 || intensity > PiShockUtils.PISHOCK_MAX_INTENSITY) {
-            logger.warning("Intensity out of range: " + intensity);
+            log.warn("Intensity out of range: {}", intensity);
             intensity = Math.max(0, Math.min(intensity, PiShockUtils.PISHOCK_MAX_INTENSITY));
         }
         if (type == OpType.SHOCK && (intensity < config.getShockIntensityMin() || intensity > config.getShockIntensityMax())) {
-            logger.warning("Shock intensity out of range: " + intensity);
+            log.warn("Shock intensity out of range: {}", intensity);
             intensity = Math.max(config.getShockIntensityMin(), Math.min(intensity, config.getShockIntensityMax()));
         }
         if (type == OpType.VIBRATE && (intensity < config.getVibrationIntensityMin() || intensity > config.getVibrationIntensityMax())) {
-            logger.warning("Vibration intensity out of range: " + intensity);
+            log.warn("Vibration intensity out of range: {}", intensity);
             intensity = Math.max(config.getVibrationIntensityMin(), Math.min(intensity, config.getVibrationIntensityMax()));
         }
         return intensity;

@@ -3,6 +3,8 @@ package moe.score.pishockzap.backend.impls;
 import com.google.gson.annotations.SerializedName;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.backend.BackendConnectionTest;
 import moe.score.pishockzap.backend.ConnectionTestResult;
 import moe.score.pishockzap.backend.OpType;
@@ -22,6 +24,7 @@ import java.util.function.Function;
 
 import static moe.score.pishockzap.util.Gsons.gson;
 
+@Slf4j(topic = Constants.NAME)
 public class OpenShockSerialBackend extends SerialBackend<ShockDevice> {
     public OpenShockSerialBackend(@NonNull PishockZapConfig config, @NonNull Executor executor) {
         super(config, executor);
@@ -40,11 +43,11 @@ public class OpenShockSerialBackend extends SerialBackend<ShockDevice> {
     @Override
     public boolean isConfigured() {
         if (getDevices().isEmpty()) {
-            logger.warning("No shocker IDs configured");
+            log.warn("No shocker IDs configured");
             return false;
         }
         if (config.getSerialPort().isBlank()) {
-            logger.warning("No serial port configured");
+            log.warn("No serial port configured");
             return false;
         }
         return true;

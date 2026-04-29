@@ -1,6 +1,7 @@
 package moe.score.pishockzap.backend;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.config.ShockDistribution;
@@ -17,12 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @ApiStatus.Internal
+@Slf4j(topic = Constants.NAME)
 public abstract class SimpleHttpRequestShockBackend<T, U> extends SafeShockBackend {
-    protected final Logger logger = Logger.getLogger(Constants.NAME);
     protected final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
     protected final Executor executor;
     protected final HttpClient httpClient;
@@ -37,7 +36,7 @@ public abstract class SimpleHttpRequestShockBackend<T, U> extends SafeShockBacke
     public void safePerformOp(@NonNull ShockDistribution distribution, @NonNull OpType op, int intensity, float duration) {
         var devices = getDevices();
         if (devices.isEmpty()) {
-            logger.warning("Cannot " + op + ": No devices available!");
+            log.warn("Cannot {}: No devices available!", op);
             return;
         }
 
@@ -74,7 +73,7 @@ public abstract class SimpleHttpRequestShockBackend<T, U> extends SafeShockBacke
                 executor)
             .thenAcceptAsync(resp -> onResponse(data, resp.body()), executor)
             .whenComplete((v, e) -> {
-                if (e != null) logger.log(Level.WARNING, "API call failed; exception thrown", e);
+                if (e != null) log.warn("API call failed; exception thrown", e);
             });
     }
 
