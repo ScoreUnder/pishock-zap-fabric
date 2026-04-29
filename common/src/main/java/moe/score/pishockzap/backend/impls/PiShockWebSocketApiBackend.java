@@ -16,7 +16,6 @@ import moe.score.pishockzap.util.URIBuilder;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -261,7 +260,7 @@ public class PiShockWebSocketApiBackend extends SafeShockBackend {
     @RequiredArgsConstructor
     public static class ConnectionTest implements BackendConnectionTest {
         private final PiShockWebSocketApiConfig config;
-        private final HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).build();
+        private final HttpClient httpClient = HttpClient.newBuilder().build();
 
         @Override
         public CompletableFuture<ConnectionTestResult> testConnection() {
@@ -307,6 +306,20 @@ public class PiShockWebSocketApiBackend extends SafeShockBackend {
             var uri = getApiUri(config.getUsername(), config.getApiKey());
             var wsFuture = httpClient.newWebSocketBuilder().buildAsync(uri, new WebSocket.Listener() {
                 @Override
+                public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
+                    System.out.println("WebSocket closed: " + statusCode + " " + reason);
+                    resultFuture.complete(ConnectionTestResult.CONNECTION_FAILED);
+                    return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
+                }
+
+                @Override
+                public void onError(WebSocket webSocket, Throwable error) {
+                    System.err.println("WebSocket error: " + error.getMessage());
+                    resultFuture.complete(ConnectionTestResult.CONNECTION_FAILED);
+                    WebSocket.Listener.super.onError(webSocket, error);
+                }
+
+                @Override
                 public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
                     System.out.println("WEBSOCKET RESPONSE: " + data);
                     var result = onResponse.apply(pascalCaseGson.fromJson(data.toString(), Response.class));
@@ -314,14 +327,24 @@ public class PiShockWebSocketApiBackend extends SafeShockBackend {
                     return WebSocket.Listener.super.onText(webSocket, data, last);
                 }
             });
-            wsFuture.thenAcceptAsync(s -> s.sendText(pascalCaseGson.toJson(commandSupplier.get()), true));
-
-            CompletableFuture.delayedExecutor(10, java.util.concurrent.TimeUnit.SECONDS).execute(() -> {
-                resultFuture.complete(ConnectionTestResult.TIMED_OUT);
-                wsFuture.thenAccept(WebSocket::abort);
+            wsFuture.whenComplete((sock, ex) -> {
+                if (ex == null) {
+                    sock.sendText(pascalCaseGson.toJson(commandSupplier.get()), true);
+                } else {
+                    ex.printStackTrace();
+                    resultFuture.complete(ConnectionTestResult.CONNECTION_FAILED);
+                }
             });
 
-            return resultFuture;
+            CompletableFuture.delayedExecutor(10, java.util.concurrent.TimeUnit.SECONDS)
+                .execute(() -> resultFuture.complete(ConnectionTestResult.TIMED_OUT));
+
+            return resultFuture.whenComplete((x, ex) ->
+                wsFuture.thenAccept(w -> {
+                    w.sendClose(WebSocket.NORMAL_CLOSURE, "");
+                    CompletableFuture.delayedExecutor(5, java.util.concurrent.TimeUnit.SECONDS)
+                        .execute(w::abort);
+                }));
         }
 
         private static Optional<ConnectionTestResult> checkError(Response response) {
