@@ -3,6 +3,7 @@
   "package": "moe.score.pishockzap.compat.mixin.clothconfig",
   "compatibilityLevel": "JAVA_${java_version}",
   "client": [
+    "AbstractConfigListEntryMixin",
     "SubCategoryMixin"
   ],
   "injectors": {

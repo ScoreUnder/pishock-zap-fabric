@@ -19,6 +19,7 @@ import moe.score.pishockzap.backend.client.PiShockWebClient;
 import moe.score.pishockzap.backend.impls.*;
 import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
 import moe.score.pishockzap.backend.model.openshock.ShockDevice;
+import moe.score.pishockzap.compat.RequirementCompat;
 import moe.score.pishockzap.compat.TextStyle;
 import moe.score.pishockzap.compat.Translation;
 import moe.score.pishockzap.compat.clothconfig.Arity2StructEntry;
@@ -35,11 +36,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.IntSupplier;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collectors;
 
 import static moe.score.pishockzap.backend.PiShockUtils.PISHOCK_MAX_DURATION;
@@ -416,6 +415,25 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         var category = helper.startSubCategory(Translation.of("title.pishock-zap.config.api.openshock.account"))
             .setDisplayRequirement(() -> showForBackends.contains(apiType.get()));
 
+        var openShockApiUriField = helper.addTextField(
+            "api.openshock.account.uri", PishockZapConfig::getOpenShockApiUri, PishockZapConfig::setOpenShockApiUri, uriStr -> {
+                if (!showForBackends.contains(apiType.get())) return Optional.empty();
+                if (uriStr.isBlank())
+                    return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.account.uri.empty"));
+                try {
+                    var uri = new URI(uriStr);
+                    if (uri.getScheme() == null || uri.getScheme().isBlank()) {
+                        return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.account.uri.syntax.scheme"));
+                    }
+                    if (uri.getHost() == null || uri.getHost().isBlank()) {
+                        return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.account.uri.syntax.host"));
+                    }
+                } catch (URISyntaxException ex) {
+                    return Optional.of(Translation.of("error.pishock-zap.config.api.openshock.account.uri.syntax", ex.getMessage()));
+                }
+                return Optional.empty();
+            });
+
         var openShockApiTokenField = helper.addTextFieldNoDefault(
             "api.openshock.account.api_token", PishockZapConfig::getOpenShockApiToken, PishockZapConfig::setOpenShockApiToken, tok -> {
                 if (!showForBackends.contains(apiType.get())) return Optional.empty();
@@ -426,14 +444,21 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         helper.endSubCategory();
 
-        return new OpenShockAccountDetails(openShockApiTokenField::getValue, showForBackends::add);
+        return new OpenShockAccountDetails(openShockApiUriField::getValue, openShockApiTokenField::getValue, showForBackends::add,
+            () -> openShockApiUriField.getConfigError().isEmpty() && openShockApiTokenField.getConfigError().isEmpty());
     }
 
     @AllArgsConstructor
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
     private static class OpenShockAccountDetails {
+        Supplier<String> uri;
         Supplier<String> apiToken;
         Consumer<String> showForBackend;
+        BooleanSupplier isConfigured;
+
+        public String uri() {
+            return uri.get();
+        }
 
         public String apiToken() {
             return apiToken.get();
@@ -441,6 +466,10 @@ public class PishockZapModConfigMenu implements ModMenuApi {
 
         public void showForBackend(String backend) {
             showForBackend.accept(backend);
+        }
+
+        public boolean isConfigured() {
+            return isConfigured.getAsBoolean();
         }
     }
 
@@ -468,11 +497,13 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             }
         );
 
-        ListEntryUtil.withExtensions(openShockDeviceIdField, list ->
-            helper.addSimpleActionButton(
+        ListEntryUtil.withExtensions(openShockDeviceIdField, list -> {
+            var btn = helper.addSimpleActionButton(
                 "api.openshock.add_my_ids",
-                () -> OpenShockWebClient.probeDeviceIds(accountDetails.apiToken()),
-                values -> list.replaceValues(values)));
+                () -> new OpenShockWebClient(URI.create(accountDetails.uri())).probeDeviceIds(accountDetails.apiToken()),
+                values -> list.replaceValues(values));
+            RequirementCompat.setRequirement(btn, accountDetails::isConfigured);
+        });
 
         helper.add(openShockDeviceIdField);
 
@@ -481,6 +512,8 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         helper.addConnectionTests(() -> new OpenShockWebApiBackend.ConnectionTest(new OpenShockWebApiConfig() {
             @Getter
             final List<String> openShockShockerIds = openShockDeviceIdField.getValue();
+            @Getter
+            final String openShockApiUri = accountDetails.uri();
             @Getter
             final String openShockApiToken = accountDetails.apiToken();
             @Getter
@@ -518,13 +551,14 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         ListEntryUtil.withExtensions(openShockDeviceListEntry, list -> {
             accountDetails.showForBackend(thisBackend);
 
-            helper.addSimpleActionButton("api.openshock.serial.fetch.button",
-                () -> OpenShockWebClient.probeDevices(accountDetails.apiToken()),
+            var btn = helper.addSimpleActionButton("api.openshock.serial.fetch.button",
+                () -> new OpenShockWebClient(URI.create(accountDetails.uri())).probeDevices(accountDetails.apiToken()),
                 result -> {
                     if (!result.isEmpty()) list.pishockZap$clear();
                     result.stream().map(s -> new ShockDevice(s.model(), s.rfId()))
                         .forEachOrdered(list::pishockZap$addListEntry);
                 });
+            RequirementCompat.setRequirement(btn, accountDetails::isConfigured);
         });
 
         helper.add(openShockDeviceListEntry);

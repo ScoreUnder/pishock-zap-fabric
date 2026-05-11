@@ -17,6 +17,7 @@ import moe.score.pishockzap.util.TriState;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ import static moe.score.pishockzap.util.Gsons.gson;
 
 @Slf4j(topic = Constants.NAME)
 public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Control>> {
-    private static final URI API_URI = URI.create("https://api.openshock.app/2/shockers/control");
+    private static final URI API_PATH = URI.create("2/shockers/control");
 
     public OpenShockWebApiBackend(PishockZapConfig config, Executor executor) {
         super(config, executor);
@@ -48,9 +49,13 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Con
         return finalShocks;
     }
 
+    private URI getBaseUri() {
+        return URI.create(config.getOpenShockApiUri());
+    }
+
     @Override
     protected @NonNull URI getUri(List<Control> data) {
-        return API_URI;
+        return getBaseUri().resolve(API_PATH);
     }
 
     @Override
@@ -75,8 +80,20 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Con
 
     @Override
     protected boolean isConfigured() {
+        return isConfigured(config);
+    }
+
+    private static boolean isConfigured(OpenShockWebApiConfig config) {
         if (config.getOpenShockShockerIds().isEmpty()) return false;
         if (config.getOpenShockApiToken().isBlank()) return false;
+        try {
+            var uri = new URI(config.getOpenShockApiUri());
+            if (uri.getScheme() == null || uri.getHost() == null) {
+                return false;
+            }
+        } catch (URISyntaxException ex) {
+            return false;
+        }
         return !config.getLogIdentifier().isBlank();
     }
 
@@ -116,10 +133,12 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Con
         }
 
         private CompletableFuture<ConnectionTestResult> testConnection(Supplier<String> postBody) {
-            if (config.getOpenShockShockerIds().isEmpty() || config.getOpenShockApiToken().isBlank() || config.getLogIdentifier().isBlank())
+            if (!isConfigured(config))
                 return CompletableFuture.completedFuture(ConnectionTestResult.NOT_CONFIGURED);
 
-            return makeRequest(API_URI, getDefaultHeaders(config.getOpenShockApiToken()), postBody.get())
+            var uri = URI.create(config.getOpenShockApiUri()).resolve(API_PATH);
+            var headers = getDefaultHeaders(config.getOpenShockApiToken());
+            return makeRequest(uri, headers, postBody.get())
                 .thenApply(resp -> {
                     var statusCode = resp.statusCode();
                     log.trace("Connection test response code: {}, body: {}", statusCode, resp.body());

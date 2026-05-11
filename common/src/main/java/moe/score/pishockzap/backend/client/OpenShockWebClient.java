@@ -2,6 +2,7 @@ package moe.score.pishockzap.backend.client;
 
 import com.google.gson.reflect.TypeToken;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.PishockZapMod;
 import moe.score.pishockzap.backend.model.openshock.Hub;
@@ -19,9 +20,12 @@ import java.util.concurrent.CompletableFuture;
 
 import static moe.score.pishockzap.util.Gsons.gson;
 
+@RequiredArgsConstructor
 public class OpenShockWebClient {
-    private static final URI API_MY_DEVICES_URI = URI.create("https://api.openshock.app/1/shockers/own");
+    private static final URI MY_DEVICES_PATH = URI.create("1/shockers/own");
     private static String userAgent;
+
+    private final URI baseUri;
 
     public static @NonNull Map<String, String> getDefaultHeaders(String token) {
         if (userAgent == null) {
@@ -33,15 +37,15 @@ public class OpenShockWebClient {
             "Open-Shock-Token", token);
     }
 
-    public static CompletableFuture<List<String>> probeDeviceIds(String apiToken) {
+    public CompletableFuture<List<String>> probeDeviceIds(String apiToken) {
         return probeDevices(apiToken).thenApply(ds -> ds.stream().map(Shocker::id).toList());
     }
 
-    public static CompletableFuture<List<Shocker>> probeDevices(String apiToken) {
+    public CompletableFuture<List<Shocker>> probeDevices(String apiToken) {
         var executor = new CompletableFuture<Void>().defaultExecutor();
         @SuppressWarnings("resource")
         var httpClient = HttpClient.newBuilder().executor(executor).build();
-        var req = HttpRequest.newBuilder(API_MY_DEVICES_URI);
+        var req = HttpRequest.newBuilder(baseUri.resolve(MY_DEVICES_PATH));
         for (var header : getDefaultHeaders(apiToken).entrySet()) {
             req.setHeader(header.getKey(), header.getValue());
         }

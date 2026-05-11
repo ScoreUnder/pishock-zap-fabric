@@ -170,6 +170,12 @@
   "error.pishock-zap.config.api.pishock.account.api_key.empty": "API key is required",
 
   "title.pishock-zap.config.api.openshock.account": "OpenShock Account",
+  "title.pishock-zap.config.api.openshock.account.uri": "API URI (Advanced)",
+  "tooltip.pishock-zap.config.api.openshock.account.uri": "The base URI of the OpenShock API server.\nOnly change this if you are using a custom OpenShock server.",
+  "error.pishock-zap.config.api.openshock.account.uri.empty": "API URI is required",
+  "error.pishock-zap.config.api.openshock.account.uri.syntax": "API URI is invalid: %s",
+  "error.pishock-zap.config.api.openshock.account.uri.syntax.scheme": "API URI must contain a scheme (e.g. https://)",
+  "error.pishock-zap.config.api.openshock.account.uri.syntax.host": "API URI must contain a host (e.g. api.openshock.app)",
   "title.pishock-zap.config.api.openshock.account.api_token": "API token",
   "tooltip.pishock-zap.config.api.openshock.account.api_token": "An API token with access to your shockers",
   "error.pishock-zap.config.api.openshock.account.api_token.empty": "API token is required",

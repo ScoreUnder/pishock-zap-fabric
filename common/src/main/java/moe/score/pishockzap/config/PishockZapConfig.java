@@ -12,6 +12,7 @@ import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.DefaultShockBackends;
 import moe.score.pishockzap.annotation.InternalMembers;
 import moe.score.pishockzap.backend.model.openshock.ShockDevice;
+import moe.score.pishockzap.config.internal.OpenShockWebApiConfig;
 import moe.score.pishockzap.config.internal.PiShockWebSocketApiConfig;
 import moe.score.pishockzap.util.Gsons;
 import org.jetbrains.annotations.ApiStatus;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 @ApiStatus.Experimental
 @InternalMembers
 @Slf4j(topic = Constants.NAME)
-public class PishockZapConfig implements PiShockWebSocketApiConfig {
+public class PishockZapConfig implements PiShockWebSocketApiConfig, OpenShockWebApiConfig {
     static final @NonNull String CONFIG_VERSION_KEY = "CONFIG_VERSION_DO_NOT_EDIT";
     static final int CONFIG_VERSION = 3;
 
@@ -107,6 +108,8 @@ public class PishockZapConfig implements PiShockWebSocketApiConfig {
     /// Custom Webhook URL
     private @NonNull String customWebhookUrl = "";
 
+    /// OpenShock API URI
+    private @NonNull String openShockApiUri = "https://api.openshock.app";
     /// OpenShock API token
     private @NonNull String openShockApiToken = "";
     /// OpenShock shocker IDs

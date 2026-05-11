@@ -222,15 +222,15 @@ public class ConfigHelper {
             .build();
     }
 
-    public <T> void addSimpleActionButton(String keyPart, Supplier<CompletableFuture<T>> action, Consumer<T> success) {
-        addActionButton(keyPart, action, t -> {
+    public <T> ButtonListEntry addSimpleActionButton(String keyPart, Supplier<CompletableFuture<T>> action, Consumer<T> success) {
+        return addActionButton(keyPart, action, t -> {
             success.accept(t);
             return Translation.of("label.pishock-zap.config." + keyPart);
         });
     }
 
-    public <T> void addActionButton(String keyPart, Supplier<CompletableFuture<T>> action, Function<T, Component> success) {
-        add(ButtonListEntry.builder()
+    public <T> ButtonListEntry addActionButton(String keyPart, Supplier<CompletableFuture<T>> action, Function<T, Component> success) {
+        return add(ButtonListEntry.builder()
             .setButtonText(Translation.of("label.pishock-zap.config." + keyPart))
             .setFieldName(Translation.of("title.pishock-zap.config." + keyPart))
             .setTooltipSupplier(() -> Optional.of(new Component[]{Translation.of("tooltip.pishock-zap.config." + keyPart)}))
