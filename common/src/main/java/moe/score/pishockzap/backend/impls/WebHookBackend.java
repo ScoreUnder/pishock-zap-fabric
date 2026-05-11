@@ -13,6 +13,7 @@ import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.config.internal.WebHookApiConfig;
 import org.jetbrains.annotations.Nullable;
 
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -114,6 +115,9 @@ public class WebHookBackend extends BulkHttpRequestShockBackend<Map<String, Obje
                     log.warn("Connection test failed; exception thrown", e);
                     if (e instanceof IllegalArgumentException && e.getMessage().contains("invalid URI scheme")) {
                         return ConnectionTestResult.NOT_CONFIGURED;
+                    }
+                    if (e instanceof ConnectException) {
+                        return ConnectionTestResult.CONNECTION_FAILED;
                     }
                     return ConnectionTestResult.UNKNOWN_ERROR;
                 });

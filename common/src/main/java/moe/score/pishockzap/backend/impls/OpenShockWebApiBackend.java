@@ -16,6 +16,7 @@ import moe.score.pishockzap.config.internal.OpenShockWebApiConfig;
 import moe.score.pishockzap.util.TriState;
 import org.jetbrains.annotations.Nullable;
 
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -158,6 +159,12 @@ public class OpenShockWebApiBackend extends BulkHttpRequestShockBackend<List<Con
                 })
                 .exceptionally(e -> {
                     log.warn("Connection test failed; exception thrown", e);
+                    if (e instanceof IllegalArgumentException && e.getMessage().contains("invalid URI scheme")) {
+                        return ConnectionTestResult.NOT_CONFIGURED;
+                    }
+                    if (e instanceof ConnectException) {
+                        return ConnectionTestResult.CONNECTION_FAILED;
+                    }
                     return ConnectionTestResult.UNKNOWN_ERROR;
                 });
         }
