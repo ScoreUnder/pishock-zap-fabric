@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 
 import static moe.score.pishockzap.util.Gsons.gson;
 
@@ -198,10 +197,14 @@ public class PishockZapMod implements ClientModInitializer {
                 .then(CommandCompat.literal("config")
                     .executes(context -> {
                         var minecraft = context.getSource().getClient();
-                        minecraft.execute(() -> {
+                        // Using a second executor to avoid the "releasing zalgo" effect of calling
+                        // Minecraft's "execute" when potentially on the main thread.
+                        // There's a function that wraps a runnable and always schedules, but it's different
+                        // between versions, and it's easier this way :)
+                        apiExecutor.execute(() -> minecraft.execute(() -> {
                             var screen = PishockZapModConfigMenu.createConfigScreen(minecraft.screen);
                             minecraft.setScreen(screen);
-                        });
+                        }));
                         return 1;
                     }))
                 .then(CommandCompat.literal("toggle")
