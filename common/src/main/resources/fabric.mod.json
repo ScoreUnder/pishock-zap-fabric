@@ -6,7 +6,7 @@
   "description": "Connect PiShock/OpenShock devices to Minecraft! Like hardcore mode, but with real consequences",
   "authors": ["score"],
   "contact": {},
-  "license": "GPLv3",
+  "license": "CC0-1.0",
   "environment": "client",
   "entrypoints": {
     "client": [
