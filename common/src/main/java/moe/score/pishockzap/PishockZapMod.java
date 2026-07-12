@@ -202,8 +202,8 @@ public class PishockZapMod implements ClientModInitializer {
                         // There's a function that wraps a runnable and always schedules, but it's different
                         // between versions, and it's easier this way :)
                         apiExecutor.execute(() -> minecraft.execute(() -> {
-                            var screen = PishockZapModConfigMenu.createConfigScreen(minecraft.screen);
-                            minecraft.setScreen(screen);
+                            var screen = PishockZapModConfigMenu.createConfigScreen(MinecraftCompat.getScreen(minecraft));
+                            MinecraftCompat.setScreen(minecraft, screen);
                         }));
                         return 1;
                     }))
