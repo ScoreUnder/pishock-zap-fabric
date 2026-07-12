@@ -1,7 +1,7 @@
 {
   "modmenu.nameTranslation.pishock-zap": "PiShock-Zap",
-  "modmenu.descriptionTranslation.pishock-zap": "Connect PiShock devices to Minecraft! Like hardcore mode, but with real consequences. Zap yourself when you take damage or die!",
-  "modmenu.summaryTranslation.pishock-zap": "Zap yourself with PiShock when you take damage.",
+  "modmenu.descriptionTranslation.pishock-zap": "Zaps you with your shock collar when you take damage or die! Connect Minecraft to your shock collars using PiShock, OpenShock, or your own custom setup.",
+  "modmenu.summaryTranslation.pishock-zap": "Zaps you with your shock collar when you take damage.",
 
   "title.pishock-zap.config": "PiShock-Zap Config",
 
