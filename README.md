@@ -1,5 +1,9 @@
 # PiShock-Zap
 
+![Project icon](https://raw.githubusercontent.com/ScoreUnder/pishock-zap-fabric/main/extras/icon_art.png)
+
+Icon art by leafgreen.7430
+
 ## 🔞 Not intended for users below the age of 18!
 
 This is a project that carries some element of personal risk and was developed

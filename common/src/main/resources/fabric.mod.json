@@ -4,6 +4,7 @@
   "version": "${version}",
   "name": "PiShock-Zap",
   "description": "Connect PiShock/OpenShock devices to Minecraft! Like hardcore mode, but with real consequences",
+  "icon": "assets/pishock-zap/icon.png",
   "authors": ["score"],
   "contact": {},
   "license": "CC0-1.0",
