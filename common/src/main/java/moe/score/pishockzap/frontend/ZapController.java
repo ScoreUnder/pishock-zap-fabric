@@ -21,7 +21,7 @@ public class ZapController implements ShockFrontend {
     @Getter
     @NonNull
     private volatile ShockBackend backend;
-    private final Thread thread = new Thread(this::run);
+    private final Thread thread = new Thread(this::run, "ZapController");
     private final @NonNull PishockZapConfig config;
     private final @NonNull ShockQueue shockQueue;
 
@@ -29,10 +29,10 @@ public class ZapController implements ShockFrontend {
         this.backend = backend;
         this.config = config;
         this.shockQueue = new ShockQueue(config);
+        this.thread.setDaemon(true);
     }
 
     public void start() {
-        this.thread.setDaemon(true);
         this.thread.start();
     }
 

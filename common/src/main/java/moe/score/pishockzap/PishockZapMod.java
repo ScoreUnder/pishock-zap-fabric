@@ -12,6 +12,7 @@ import moe.score.pishockzap.compat.*;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.frontend.ZapController;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -155,6 +156,7 @@ public class PishockZapMod implements ClientModInitializer {
         registerClientCommands();
         registerToggleHotkey();
         registerBackendJoinWorldNotifier();
+        registerClientShutdownHook();
     }
 
     private void registerToggleHotkey() {
@@ -227,6 +229,13 @@ public class PishockZapMod implements ClientModInitializer {
 
     private void registerBackendJoinWorldNotifier() {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> zapController.getBackend().onWorldJoin());
+    }
+
+    private void registerClientShutdownHook() {
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
+            zapController.stop();
+            apiExecutor.shutdownNow();
+        });
     }
 
     public static String getVersion() {
