@@ -63,7 +63,7 @@ public class PiShockWebClient {
 
     private CompletableFuture<Map<String, List<Integer>>> getShareCodesByOwner(String apiKey, int userId) {
         return CompletableFuture.supplyAsync(() ->
-                HttpRequest.newBuilder(new URIBuilder("https://ps.pishock.com/PiShock/GetShareCodesByOwner")
+                HttpRequest.newBuilder(new URIBuilder("https://api.pishock.com/PiShock/GetShareCodesByOwner")
                     .addParameter("UserId", String.valueOf(userId))
                     .addParameter("Token", apiKey)
                     .addParameter("api", "true")
@@ -82,7 +82,7 @@ public class PiShockWebClient {
     private @NonNull CompletableFuture<Map<String, List<ShareCodeInfo>>> getShockersByShareIds(String apiKey, int userId, List<Integer> shareIds) {
         return CompletableFuture.supplyAsync(
             () -> {
-                URIBuilder builder = new URIBuilder("https://ps.pishock.com/PiShock/GetShockersByShareIds")
+                URIBuilder builder = new URIBuilder("https://api.pishock.com/PiShock/GetShockersByShareIds")
                     .addParameter("UserId", String.valueOf(userId))
                     .addParameter("Token", apiKey)
                     .addParameter("api", "true");
@@ -103,7 +103,7 @@ public class PiShockWebClient {
 
     public @NonNull CompletableFuture<List<UserDevice>> getUserDevices(int userId, String apiKey) {
         return CompletableFuture.supplyAsync(() ->
-                HttpRequest.newBuilder(new URIBuilder("https://ps.pishock.com/PiShock/GetUserDevices")
+                HttpRequest.newBuilder(new URIBuilder("https://api.pishock.com/PiShock/GetUserDevices")
                     .addParameter("UserId", String.valueOf(userId))
                     .addParameter("Token", apiKey)
                     .addParameter("api", "true")
