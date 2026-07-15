@@ -93,7 +93,6 @@
   "description.pishock-zap.config.api.local.device_ids.link": "PiShock controller page",
   "error.pishock-zap.config.api.local.device_ids.list_empty": "Need at least one device ID",
   "error.pishock-zap.config.api.local.device_ids.must_be_positive": "Device IDs must be a positive number",
-  "error.pishock-zap.config.api.local.device_ids.too_high": "Impossibly high device ID",
   "title.pishock-zap.config.api.local.add_my_ids": "Fetch IDs automatically",
   "tooltip.pishock-zap.config.api.local.add_my_ids": "Request shocker device IDs from\nthe connected PiShock",
   "label.pishock-zap.config.api.local.add_my_ids": "Go",

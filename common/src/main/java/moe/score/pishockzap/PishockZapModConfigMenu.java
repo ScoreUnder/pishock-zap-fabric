@@ -330,8 +330,6 @@ public class PishockZapModConfigMenu implements ModMenuApi {
             if (!thisBackend.equals(apiType.get())) return Optional.empty();
             if (id == null || id < 0)
                 return Optional.of(Translation.of("error.pishock-zap.config.api.local.device_ids.must_be_positive"));
-            if (id >= 65536 * 4)
-                return Optional.of(Translation.of("error.pishock-zap.config.api.local.device_ids.too_high"));
             return Optional.empty();
         });
 
