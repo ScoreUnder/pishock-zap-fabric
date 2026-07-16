@@ -68,7 +68,8 @@ public class PiShockSerialBackend extends SerialBackend<Integer> {
     }
 
     static String getOperateCommandString(@NonNull OpType op, int intensity, float duration, Integer deviceId) {
-        var operateCommand = new OperateCommand(new OperatePayload(deviceId, V2OperationType.of(op), intensity, transformDuration(duration)));
+        int transformedId = deviceId & 0xFFFF; // The PiShock firmware silently ignores too-large device IDs from serial
+        var operateCommand = new OperateCommand(new OperatePayload(transformedId, V2OperationType.of(op), intensity, transformDuration(duration)));
         return gson.toJson(operateCommand);
     }
 
