@@ -1,5 +1,7 @@
 # PiShock-Zap
 
+[![Download on Modrinth](https://raw.githubusercontent.com/gabrielvicenteYT/modrinth-icons/a05e2307b42762d64a370a3cf3e8b6b30735dce1/Branding/Badge/badge-light.svg)](https://modrinth.com/mod/shock)
+
 ![Project icon](https://raw.githubusercontent.com/ScoreUnder/pishock-zap-fabric/main/extras/icon_art.png)
 
 Icon art by leafgreen.7430
