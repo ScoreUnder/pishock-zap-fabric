@@ -1,7 +1,5 @@
 package moe.score.pishockzap;
 
-import com.terraformersmc.modmenu.api.ConfigScreenFactory;
-import com.terraformersmc.modmenu.api.ModMenuApi;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -47,7 +45,7 @@ import static moe.score.pishockzap.backend.PiShockUtils.PISHOCK_MAX_INTENSITY;
 @SuppressWarnings("unused")
 @ApiStatus.Internal
 @ExtensionMethod(ListEntryUtil.class)
-public class PishockZapModConfigMenu implements ModMenuApi {
+public class PishockZapModConfigMenu {
     public static final String PISHOCK_ACCOUNT_PAGE_URL = "https://login.pishock.com/account";
     private static final String PISHOCK_CONTROLLER_PAGE_URL = "https://pishock.com/#/control";
 
@@ -667,10 +665,5 @@ public class PishockZapModConfigMenu implements ModMenuApi {
         return psHubShockers.int2ObjectEntrySet().stream()
             .map(hub -> Pair.of(hub.getIntKey(), hub.getValue()))
             .toList();
-    }
-
-    @Override
-    public @NonNull ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return PishockZapModConfigMenu::createConfigScreen;
     }
 }

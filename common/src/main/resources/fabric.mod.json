@@ -14,7 +14,7 @@
       "moe.score.pishockzap.PishockZapMod"
     ],
     "modmenu": [
-      "moe.score.pishockzap.PishockZapModConfigMenu"
+      "moe.score.pishockzap.compat.modmenu.ModMenuImpl"
     ]
   },
   "mixins": [
