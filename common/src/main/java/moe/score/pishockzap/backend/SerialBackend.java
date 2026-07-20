@@ -29,8 +29,9 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
     private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
     private final @NonNull Executor executor;
     protected String lastPortName;
-    protected volatile @Nullable SerialPort commPort;
-    protected volatile @Nullable Writer jsonWriter = null;
+    protected @Nullable SerialPort commPort;
+    protected @Nullable Writer jsonWriter = null;
+    private final Object commPortLock = new Object();
 
     public SerialBackend(@NonNull PishockZapConfig config, @NonNull Executor executor) {
         super(config);
@@ -64,8 +65,12 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
     protected abstract String getOperationData(@NonNull OpType op, int intensity, float duration, D device);
 
     public @Nullable SerialPort reuseThisSerialPort(String serialPortAddress) {
-        var commPort = this.commPort;
-        return Objects.equals(lastPortName, serialPortAddress) && commPort != null ? commPort : null;
+        synchronized (commPortLock) {
+            if (!Objects.equals(lastPortName, serialPortAddress)) {
+                return null;
+            }
+            return this.commPort;
+        }
     }
 
     protected static @NonNull SerialPort createAndOpenPort(String portName) {
@@ -77,19 +82,21 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
     }
 
     private @NonNull Writer openWriter() {
-        if (!PORT_HOLDER_INSTANCE.refersTo(this)) {
-            PORT_HOLDER_INSTANCE = new WeakReference<>(this);
-        }
-        if (!Objects.equals(lastPortName, config.getSerialPort())) {
-            lastPortName = config.getSerialPort();
-            close();
-        }
-        Writer jsonWriter = this.jsonWriter;
-        if (jsonWriter != null) return jsonWriter;
+        synchronized (commPortLock) {
+            if (!PORT_HOLDER_INSTANCE.refersTo(this)) {
+                PORT_HOLDER_INSTANCE = new WeakReference<>(this);
+            }
+            if (!Objects.equals(lastPortName, config.getSerialPort())) {
+                lastPortName = config.getSerialPort();
+                close();
+            }
+            Writer jsonWriter = this.jsonWriter;
+            if (jsonWriter != null) return jsonWriter;
 
-        var commPort = this.commPort = createAndOpenPort(lastPortName);
-        jsonWriter = this.jsonWriter = new OutputStreamWriter(commPort.getOutputStream());
-        return jsonWriter;
+            var commPort = this.commPort = createAndOpenPort(lastPortName);
+            jsonWriter = this.jsonWriter = new OutputStreamWriter(commPort.getOutputStream());
+            return jsonWriter;
+        }
     }
 
     private void writeLines(@NonNull Iterable<String> data) throws IOException {
@@ -119,11 +126,13 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
 
     @Override
     public void close() {
-        var commPort = this.commPort;
-        if (commPort != null) {
-            this.commPort = null;
-            this.jsonWriter = null;
-            commPort.closePort();
+        synchronized (commPortLock) {
+            var commPort = this.commPort;
+            if (commPort != null) {
+                this.commPort = null;
+                this.jsonWriter = null;
+                commPort.closePort();
+            }
         }
     }
 
