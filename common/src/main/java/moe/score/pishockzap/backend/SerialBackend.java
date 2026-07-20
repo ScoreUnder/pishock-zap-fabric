@@ -2,6 +2,7 @@ package moe.score.pishockzap.backend;
 
 import com.fazecast.jSerialComm.SerialPort;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.config.PishockZapConfig;
@@ -73,14 +74,18 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
         }
     }
 
+    @SneakyThrows(IOException.class)
     protected static @NonNull SerialPort createAndOpenPort(String portName) {
         SerialPort commPort = SerialPort.getCommPort(portName);
         commPort.setBaudRate(PISHOCK_SERIAL_BAUD_RATE);
         commPort.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING | SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 1000, 0);
-        commPort.openPort();
+        if (!commPort.openPort()) {
+            throw new IOException("Serial port " + portName + " could not be opened");
+        }
         return commPort;
     }
 
+    // Sneaky-throws IOException
     private @NonNull Writer openWriter() {
         synchronized (commPortLock) {
             if (!PORT_HOLDER_INSTANCE.refersTo(this)) {
