@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
 import static moe.score.pishockzap.util.Gsons.gson;
@@ -162,7 +163,7 @@ public class PiShockSerialBackend extends SerialBackend<Integer> {
                 return CompletableFuture.completedFuture(ConnectionTestResult.NOT_CONFIGURED);
             }
             return SerialBackend.withSerialPort(config.getSerialPort(), onConnect, onLineReceived, 3, TimeUnit.SECONDS)
-                .exceptionally(t -> t instanceof InterruptedException ? ConnectionTestResult.TIMED_OUT : ConnectionTestResult.CONNECTION_FAILED);
+                .exceptionally(t -> t instanceof TimeoutException ? ConnectionTestResult.TIMED_OUT : ConnectionTestResult.CONNECTION_FAILED);
         }
 
         public CompletableFuture<ConnectionTestResult> testVibration() {

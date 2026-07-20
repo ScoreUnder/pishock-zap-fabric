@@ -172,16 +172,83 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
                 log.debug("Reusing existing serial port connection to {}", serialPortAddress);
                 serialPortIsMine = false;
             }
-            return monitorSerialPortForLines(port, serialPortIsMine, onConnect, onLineReceived, timeout, timeoutUnit);
+
+            var result = monitorSerialPortForLines(port, onConnect, onLineReceived, timeout, timeoutUnit);
+
+            // Clean up serial port on complete if we own it
+            if (serialPortIsMine) {
+                final var portToClose = port;
+                result = result.whenComplete((r, e) -> portToClose.closePort());
+            }
+
+            return result;
         }).thenCompose(t -> t);
     }
 
-    private static <T> @NonNull CompletableFuture<T> monitorSerialPortForLines(SerialPort port, boolean closeWhenDone, OnConnectFunction onConnect, Function<String, Optional<T>> lineConsumer, long timeout, TimeUnit timeoutUnit) {
+    private static <T> @NonNull CompletableFuture<T> monitorSerialPortForLines(SerialPort port, OnConnectFunction onConnect, Function<String, Optional<T>> lineConsumer, long timeout, TimeUnit timeoutUnit) {
         var result = new CompletableFuture<T>();
         var input = new BufferedReader(new InputStreamReader(port.getInputStream()));
         var output = new OutputStreamWriter(port.getOutputStream());
 
-        var inputThread = new Thread(() -> {
+        var threads = new SerialPortIOThreads<>(result, input, output, onConnect, lineConsumer);
+        threads.start();
+
+        return result.orTimeout(timeout, timeoutUnit).whenComplete((r, e) -> {
+            if (e != null) {
+                threads.interrupt();
+            }
+        });
+    }
+
+    protected interface OnConnectFunction {
+        void accept(OutputStreamWriter output) throws Exception;
+    }
+
+    private static class SerialPortIOThreads<T> {
+        private final Thread inputThread;
+        private final Thread outputThread;
+        private final CompletableFuture<T> result;
+        private final BufferedReader input;
+        private final OutputStreamWriter output;
+        private final Function<String, Optional<T>> lineConsumer;
+        private final OnConnectFunction onConnect;
+        private volatile boolean stillGoing = true;
+
+        public SerialPortIOThreads(CompletableFuture<T> result, BufferedReader input, OutputStreamWriter output, OnConnectFunction onConnect, Function<String, Optional<T>> lineConsumer) {
+            this.result = result;
+            this.input = input;
+            this.output = output;
+            this.onConnect = onConnect;
+            this.lineConsumer = lineConsumer;
+
+            this.inputThread = new Thread(this::readInputLoop);
+            this.inputThread.setDaemon(true);
+
+            this.outputThread = new Thread(this::writeOutputOnConnect);
+            this.outputThread.setDaemon(true);
+        }
+
+        public void start() {
+            inputThread.start();
+            outputThread.start();
+        }
+
+        public void interrupt() {
+            stillGoing = false;
+            inputThread.interrupt();
+            outputThread.interrupt();
+        }
+
+        private void writeOutputOnConnect() {
+            try {
+                onConnect.accept(output);
+                output.flush();
+            } catch (Throwable t) {
+                result.completeExceptionally(t);
+            }
+        }
+
+        private void readInputLoop() {
             try {
                 String line;
                 while ((line = readRetrying(input, 3)) != null) {
@@ -192,64 +259,26 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
                         break;
                     }
                 }
-            } catch (Exception e) {
-                result.completeExceptionally(e);
-                throw new RuntimeException(e);
             } catch (Throwable t) {
                 result.completeExceptionally(t);
-                throw t;
             } finally {
-                if (closeWhenDone) {
-                    try {
-                        output.close();
-                    } catch (IOException e) {
-                        log.warn("Failed to close serial output stream", e);
-                    } finally {
-                        try {
-                            input.close();
-                        } catch (IOException e) {
-                            log.warn("Failed to close serial input stream", e);
-                        } finally {
-                            port.closePort();
-                        }
-                    }
-                }
                 if (!result.isDone()) {
                     result.completeExceptionally(new RuntimeException("Serial input thread terminated without completing the result"));
                 }
             }
-        });
-        inputThread.setDaemon(true);
-        inputThread.start();
-
-        var outputThread = new Thread(() -> {
-            try {
-                onConnect.accept(output);
-                output.flush();
-            } catch (Exception e) {
-                result.completeExceptionally(e);
-                throw new RuntimeException(e);
-            }
-        });
-        outputThread.setDaemon(true);
-        outputThread.start();
-
-        var delayedExecutor = CompletableFuture.delayedExecutor(timeout, timeoutUnit);
-        delayedExecutor.execute(inputThread::interrupt);
-        delayedExecutor.execute(outputThread::interrupt);
-        return result;
-    }
-
-    private static String readRetrying(BufferedReader input, int retries) throws IOException {
-        try {
-            return input.readLine();
-        } catch (InterruptedIOException ex) {
-            if (retries == 0) throw ex;
-            return readRetrying(input, retries - 1);
         }
-    }
 
-    protected interface OnConnectFunction {
-        void accept(OutputStreamWriter output) throws Exception;
+        private String readRetrying(BufferedReader input, int retries) throws IOException, InterruptedException {
+            if (!stillGoing) {
+                throw new InterruptedException("Serial input thread interrupted");
+            }
+
+            try {
+                return input.readLine();
+            } catch (InterruptedIOException ex) {
+                if (retries == 0) throw ex;
+                return readRetrying(input, retries - 1);
+            }
+        }
     }
 }
