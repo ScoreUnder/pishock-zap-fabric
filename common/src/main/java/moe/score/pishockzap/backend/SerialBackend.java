@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 @ApiStatus.Internal
 @Slf4j(topic = Constants.NAME)
 public abstract class SerialBackend<D> extends SafeShockBackend {
-    public static final int PISHOCK_SERIAL_BAUD_RATE = 115200;
+    public static final int SERIAL_BAUD_RATE = 115200;
     private static @NonNull WeakReference<SerialBackend<?>> PORT_HOLDER_INSTANCE = new WeakReference<>(null);
     private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
     private final @NonNull Executor executor;
@@ -77,7 +77,7 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
     @SneakyThrows(IOException.class)
     protected static @NonNull SerialPort createAndOpenPort(String portName) {
         SerialPort commPort = SerialPort.getCommPort(portName);
-        commPort.setBaudRate(PISHOCK_SERIAL_BAUD_RATE);
+        commPort.setBaudRate(SERIAL_BAUD_RATE);
         commPort.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING | SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 1000, 0);
         if (!commPort.openPort()) {
             throw new IOException("Serial port " + portName + " could not be opened");
