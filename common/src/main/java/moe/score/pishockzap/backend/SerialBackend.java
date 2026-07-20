@@ -227,6 +227,7 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
                 onConnect.accept(output);
                 output.flush();
             } catch (Exception e) {
+                result.completeExceptionally(e);
                 throw new RuntimeException(e);
             }
         });
