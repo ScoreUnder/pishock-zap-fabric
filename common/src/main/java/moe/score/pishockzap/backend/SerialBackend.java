@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 @Slf4j(topic = Constants.NAME)
 public abstract class SerialBackend<D> extends SafeShockBackend {
     public static final int PISHOCK_SERIAL_BAUD_RATE = 115200;
-    protected static WeakReference<SerialBackend<?>> INSTANCE;
+    private static @NonNull WeakReference<SerialBackend<?>> PORT_HOLDER_INSTANCE = new WeakReference<>(null);
     private final PiShockUtils.ShockDistributor distributor = new PiShockUtils.ShockDistributor();
     private final @NonNull Executor executor;
     protected String lastPortName;
@@ -77,9 +77,8 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
     }
 
     private @NonNull Writer openWriter() {
-        var instance = INSTANCE;
-        if (instance == null || instance.get() != this) {
-            INSTANCE = new WeakReference<>(this);
+        if (!PORT_HOLDER_INSTANCE.refersTo(this)) {
+            PORT_HOLDER_INSTANCE = new WeakReference<>(this);
         }
         if (!Objects.equals(lastPortName, config.getSerialPort())) {
             lastPortName = config.getSerialPort();
@@ -148,8 +147,7 @@ public abstract class SerialBackend<D> extends SafeShockBackend {
 
     private static <T> @NonNull CompletableFuture<T> openAndMonitorSerialPortForLines(String serialPortAddress, OnConnectFunction onConnect, Function<String, Optional<T>> onLineReceived, long timeout, TimeUnit timeoutUnit) {
         return CompletableFuture.supplyAsync(() -> {
-            WeakReference<SerialBackend<?>> instanceRef = SerialBackend.INSTANCE;
-            SerialBackend<?> existingInstance = instanceRef == null ? null : instanceRef.get();
+            SerialBackend<?> existingInstance = SerialBackend.PORT_HOLDER_INSTANCE.get();
             boolean serialPortIsMine;
             SerialPort port = existingInstance == null ? null : existingInstance.reuseThisSerialPort(serialPortAddress);
             if (port == null) {
