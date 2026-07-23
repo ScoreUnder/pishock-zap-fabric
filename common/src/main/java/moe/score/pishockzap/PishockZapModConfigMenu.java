@@ -49,6 +49,7 @@ public class PishockZapModConfigMenu {
     public static final String PISHOCK_ACCOUNT_PAGE_URL = "https://login.pishock.com/account";
     private static final String PISHOCK_CONTROLLER_PAGE_URL = "https://pishock.com/#/control";
     private static final int DURATION_SLIDER_SCALE = 20;
+    private static final int PERCENT_SCALE = 100;
 
     public static @NonNull Screen createConfigScreen(Screen parent) {
         var mod = Objects.requireNonNull(PishockZapMod.getInstance(), "PishockZapMod instance is null");
@@ -134,9 +135,10 @@ public class PishockZapModConfigMenu {
     private static void addDamageThresholdsSubCategory(ConfigHelper helper) {
         helper.startSubCategory(Translation.of("title.pishock-zap.config.limits.damage_thresholds"));
 
-        helper.addFloatSlider("limits.vibration_threshold", "hp", PishockZapConfig::getVibrationThreshold, PishockZapConfig::setVibrationThreshold, 0, 1, 100, 100);
-        helper.addFloatSlider("limits.min_damage", "hp", PishockZapConfig::getMinDamage, PishockZapConfig::setMinDamage, 0, 1, 100, 100);
-        helper.addFloatSlider("limits.max_damage", "hp", PishockZapConfig::getMaxDamage, PishockZapConfig::setMaxDamage, 0, 1, 100, 100);
+        var hpPrecision = 100;
+        helper.addFloatSlider("limits.vibration_threshold", "hp", PishockZapConfig::getVibrationThreshold, PishockZapConfig::setVibrationThreshold, 0, 1, hpPrecision, PERCENT_SCALE);
+        helper.addFloatSlider("limits.min_damage", "hp", PishockZapConfig::getMinDamage, PishockZapConfig::setMinDamage, 0, 1, hpPrecision, PERCENT_SCALE);
+        helper.addFloatSlider("limits.max_damage", "hp", PishockZapConfig::getMaxDamage, PishockZapConfig::setMaxDamage, 0, 1, hpPrecision, PERCENT_SCALE);
 
         helper.endSubCategory();
     }
