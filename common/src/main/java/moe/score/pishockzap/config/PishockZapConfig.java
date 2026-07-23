@@ -113,15 +113,15 @@ public class PishockZapConfig implements PiShockWebSocketApiConfig, OpenShockWeb
     /// OpenShock API token
     private @NonNull String openShockApiToken = "";
     /// OpenShock shocker IDs
-    private @NonNull List<String> openShockShockerIds = List.of();
+    private @NonNull List<@NonNull String> openShockShockerIds = List.of();
 
     /// PiShock (WebSocket backend) user ID
     private int psUserId = -1;
     /// PiShock (WebSocket backend) hub/shocker mapping
-    private Int2ObjectMap<IntList> psHubShockers = new Int2ObjectArrayMap<>();
+    private @NonNull Int2ObjectMap<@NonNull IntList> psHubShockers = new Int2ObjectArrayMap<>();
 
     /// OpenShock devices for serial use
-    private @NonNull List<ShockDevice> openShockSerialDevices = List.of();
+    private @NonNull List<@NonNull ShockDevice> openShockSerialDevices = List.of();
 
     private boolean fieldIsListOfInteger(@NonNull Field field) {
         return field.getName().equals("deviceIds");
