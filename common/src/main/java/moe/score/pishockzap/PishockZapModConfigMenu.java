@@ -48,6 +48,7 @@ import static moe.score.pishockzap.backend.PiShockUtils.PISHOCK_MAX_INTENSITY;
 public class PishockZapModConfigMenu {
     public static final String PISHOCK_ACCOUNT_PAGE_URL = "https://login.pishock.com/account";
     private static final String PISHOCK_CONTROLLER_PAGE_URL = "https://pishock.com/#/control";
+    private static final int DURATION_SLIDER_SCALE = 20;
 
     public static @NonNull Screen createConfigScreen(Screen parent) {
         var mod = Objects.requireNonNull(PishockZapMod.getInstance(), "PishockZapMod instance is null");
@@ -81,8 +82,8 @@ public class PishockZapModConfigMenu {
         helper.startSubCategory("general.warnings");
 
         helper.addBooleanSwitch("general.warnings.enabled", PishockZapConfig::isUseWarningVibration, PishockZapConfig::setUseWarningVibration);
-        helper.addFloatSlider("general.warnings.duration", "duration", PishockZapConfig::getWarningDuration, PishockZapConfig::setWarningDuration, 0.1f, 15f);
-        helper.addFloatSlider("general.warnings.delay", "duration", PishockZapConfig::getWarningDelay, PishockZapConfig::setWarningDelay, 0f, 15f);
+        helper.addFloatSlider("general.warnings.duration", "duration", PishockZapConfig::getWarningDuration, PishockZapConfig::setWarningDuration, 0.1f, 15f, DURATION_SLIDER_SCALE, 1);
+        helper.addFloatSlider("general.warnings.delay", "duration", PishockZapConfig::getWarningDelay, PishockZapConfig::setWarningDelay, 0f, 15f, DURATION_SLIDER_SCALE, 1);
 
         helper.endSubCategory();
     }
@@ -102,9 +103,8 @@ public class PishockZapModConfigMenu {
     private static ShockLimitsDetails addShockLimitsSubCategory(ConfigHelper helper) {
         helper.startSubCategory(Translation.of("title.pishock-zap.config.limits.shock_limits"));
 
-        var sliderScale = 1000f;
-        var duration = helper.addFloatSlider("limits.duration", "duration", PishockZapConfig::getDuration, PishockZapConfig::setDuration, 0.1f, PISHOCK_MAX_DURATION, sliderScale, 1);
-        helper.addFloatSlider("limits.max_duration", "duration", PishockZapConfig::getMaxDuration, PishockZapConfig::setMaxDuration, 0.1f, PISHOCK_MAX_DURATION);
+        var duration = helper.addFloatSlider("limits.duration", "duration", PishockZapConfig::getDuration, PishockZapConfig::setDuration, 0.1f, PISHOCK_MAX_DURATION, DURATION_SLIDER_SCALE, 1);
+        helper.addFloatSlider("limits.max_duration", "duration", PishockZapConfig::getMaxDuration, PishockZapConfig::setMaxDuration, 0.1f, PISHOCK_MAX_DURATION, DURATION_SLIDER_SCALE, 1);
         helper.addIntSlider("limits.vibration_intensity_min", "vibration_intensity", PishockZapConfig::getVibrationIntensityMin, PishockZapConfig::setVibrationIntensityMin, 1, PISHOCK_MAX_INTENSITY);
         var vibrationIntensityMax = helper.addIntSlider("limits.vibration_intensity_max", "vibration_intensity", PishockZapConfig::getVibrationIntensityMax, PishockZapConfig::setVibrationIntensityMax, 1, PISHOCK_MAX_INTENSITY);
         helper.addIntSlider("limits.shock_intensity_min", "intensity", PishockZapConfig::getShockIntensityMin, PishockZapConfig::setShockIntensityMin, 1, PISHOCK_MAX_INTENSITY);
@@ -113,7 +113,7 @@ public class PishockZapModConfigMenu {
 
         helper.endSubCategory();
 
-        return new ShockLimitsDetails(() -> duration.getValue() / sliderScale, vibrationIntensityMax::getValue);
+        return new ShockLimitsDetails(() -> duration.getValue() / (float) DURATION_SLIDER_SCALE, vibrationIntensityMax::getValue);
     }
 
     @AllArgsConstructor
@@ -146,7 +146,7 @@ public class PishockZapModConfigMenu {
 
         helper.addBooleanSwitch("general.shock_on_death", PishockZapConfig::isShockOnDeath, PishockZapConfig::setShockOnDeath);
         helper.addIntSlider("limits.shock_intensity_death", "intensity", PishockZapConfig::getShockIntensityDeath, PishockZapConfig::setShockIntensityDeath, 1, PISHOCK_MAX_INTENSITY);
-        helper.addFloatSlider("limits.shock_duration_death", "duration", PishockZapConfig::getShockDurationDeath, PishockZapConfig::setShockDurationDeath, 0.1f, PISHOCK_MAX_DURATION);
+        helper.addFloatSlider("limits.shock_duration_death", "duration", PishockZapConfig::getShockDurationDeath, PishockZapConfig::setShockDurationDeath, 0.1f, PISHOCK_MAX_DURATION, DURATION_SLIDER_SCALE, 1);
         helper.add(helper.makeShockDistributionDropdown("limits.shock_distribution_death", PishockZapConfig::getShockDistributionDeath, PishockZapConfig::setShockDistributionDeath));
 
         helper.endSubCategory();
@@ -155,7 +155,7 @@ public class PishockZapModConfigMenu {
     private static void addDebounceCategory(ConfigHelper helper) {
         helper.startCategory("debounce");
 
-        helper.addFloatSlider("debounce.debounce_time", "time_interval", PishockZapConfig::getDebounceTime, PishockZapConfig::setDebounceTime, 0.1f, 60f);
+        helper.addFloatSlider("debounce.debounce_time", "time_interval", PishockZapConfig::getDebounceTime, PishockZapConfig::setDebounceTime, 0.1f, 60f, DURATION_SLIDER_SCALE, 1);
         helper.addBooleanSwitch("debounce.accumulate_duration", PishockZapConfig::isAccumulateDuration, PishockZapConfig::setAccumulateDuration);
         helper.addBooleanSwitch("debounce.accumulate_intensity", PishockZapConfig::isAccumulateIntensity, PishockZapConfig::setAccumulateIntensity);
         helper.addBooleanSwitch("debounce.queue_different", PishockZapConfig::isQueueDifferent, PishockZapConfig::setQueueDifferent);
