@@ -32,6 +32,8 @@ public class PishockZapConfig implements PiShockWebSocketApiConfig, OpenShockWeb
     private boolean enabled = false;
     /// Whether shocks should be sent as vibrations instead
     private boolean vibrationOnly = false;
+    /// Whether to shock on damage at all
+    private boolean shockOnDamage = true;
     /// Whether to shock/vibrate when the player dies
     private boolean shockOnDeath = true;
     /// Whether to shock/vibrate based on the player's health rather than damage

@@ -120,6 +120,11 @@ public class PishockZapMod implements ClientModInitializer {
             return;
         }
 
+        if (!config.isShockOnDamage()) {
+            // If the user doesn't want to get shocked for damage, then stop here
+            return;
+        }
+
         zapController.queueShockForDamage(hpInfo.hp(), hpInfo.maxHealth(), damage);
     }
 
