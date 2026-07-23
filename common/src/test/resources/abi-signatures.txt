@@ -3,6 +3,7 @@
 # (Or just as a way to poke me to remember to mark a class as internal)
 
 C:moe.score.pishockzap.PishockZapApi:FINAL,PUBLIC:
+M:moe.score.pishockzap.PishockZapApi:canBypassLimits:PUBLIC,STATIC:()Z
 M:moe.score.pishockzap.PishockZapApi:getBackend:PUBLIC,STATIC:()Lmoe/score/pishockzap/backend/ShockBackend;
 M:moe.score.pishockzap.PishockZapApi:getFrontend:PUBLIC,STATIC:()Lmoe/score/pishockzap/frontend/ShockFrontend;
 M:moe.score.pishockzap.PishockZapApi:getMaxDuration:PUBLIC,STATIC:(Lmoe/score/pishockzap/backend/OpType;)F

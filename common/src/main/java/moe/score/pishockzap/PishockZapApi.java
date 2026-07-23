@@ -15,7 +15,7 @@ import org.jetbrains.annotations.ApiStatus;
 public class PishockZapApi {
     /**
      * Gets the maximum intensity you may use for a given operation.
-     * Requests which exceed this intensity will be ignored.
+     * Requests which exceed this intensity will be ignored, unless {@link #canBypassLimits()} returns {@code true}.
      *
      * @param op the operation this applies to
      * @return the highest allowed intensity value
@@ -35,7 +35,7 @@ public class PishockZapApi {
 
     /**
      * Gets the maximum duration (in seconds) you may use for a given operation.
-     * Requests which exceed this duration will be ignored.
+     * Requests which exceed this duration will be ignored, unless {@link #canBypassLimits()} returns {@code true}.
      *
      * @param op the operation this applies to
      * @return the highest allowed duration
@@ -69,6 +69,19 @@ public class PishockZapApi {
     @ApiStatus.AvailableSince("2.1.0")
     public static boolean isInitialised() {
         return PishockZapMod.getInstance() != null;
+    }
+
+    /**
+     * Returns whether the user has allowed bypassing the configured limits for intensity and duration.
+     * This typically means that they want to configure those limits within your mod; don't hardcode and assume.
+     * If this returns {@code true}, you may use the full range of intensity and duration values, and the
+     * maximum values returned by {@link #getMaxIntensity(OpType)} and {@link #getMaxDuration(OpType)} are
+     * not enforced.
+     * If this returns {@code false}, you must stay within the configured limits.
+     */
+    @ApiStatus.AvailableSince("2.4.0")
+    public static boolean canBypassLimits() {
+        return mod().getConfig().isAllowBypassLimits();
     }
 
     /**

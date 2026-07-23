@@ -17,7 +17,7 @@ public abstract class SafeShockBackend implements ShockBackend {
         if (!config.isEnabled()) return false;
         if (config.isVibrationOnly()) op = OpType.VIBRATE;
         if (!isConfigured()) return false;
-        if (intensity > PishockZapApi.getMaxIntensity(op) || duration > PishockZapApi.getMaxDuration(op)) return false;
+        if (!config.isAllowBypassLimits() && (intensity > PishockZapApi.getMaxIntensity(op) || duration > PishockZapApi.getMaxDuration(op))) return false;
         if (!areShockParamsValid(op, intensity, duration)) return false;
 
         safePerformOp(distribution, op, intensity, duration);

@@ -65,6 +65,8 @@ public class PishockZapConfig implements PiShockWebSocketApiConfig, OpenShockWeb
     private @NonNull ShockDistribution shockDistribution = ShockDistribution.ROUND_ROBIN;
     /// The distribution of shocks when the player dies
     private @NonNull ShockDistribution shockDistributionDeath = ShockDistribution.ALL;
+    /// Whether to allow other mods to bypass the intensity and duration limits
+    private boolean allowBypassLimits = false;
 
     /// Debounce time between shock/vibrate requests (seconds)
     private float debounceTime = 0.1f;

@@ -80,6 +80,8 @@ public class PishockZapModConfigMenu {
         addDamageThresholdsSubCategory(helper);
         addShockOnDeathSubCategory(helper);
 
+        helper.addBooleanSwitch("limits.allow_bypass", PishockZapConfig::isAllowBypassLimits, PishockZapConfig::setAllowBypassLimits);
+
         return shockLimits;
     }
 
