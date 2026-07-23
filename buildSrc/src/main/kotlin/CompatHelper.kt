@@ -50,11 +50,21 @@ fun addMixinsToFabricModJson(resourcesDir: File) {
     }
 }
 
+fun getCompatSourceCategories(rootProject: org.gradle.api.Project): Set<String> {
+    val compatDir = rootProject.file("compat")
+    return compatDir.listFiles { file -> file.isDirectory }?.map {
+        it.name.substringBefore('_').substringBefore('.')
+    }?.toSet() ?: emptySet()
+}
+
 fun setupCompatSourcePaths(compatSources: List<String>, rootProject: org.gradle.api.Project, sourceSets: SourceSetContainer) {
     sourceSets["main"].java.srcDir(rootProject.file("common/src/main/java"))
     sourceSets["main"].resources.srcDir(rootProject.file("common/src/main/resources"))
 
-    compatSources.forEach { name ->
+    val existingCompatSourceCategories = compatSources.map { it.substringBefore('_') }.toSet()
+    val unspecifiedCompatSourceCategories = getCompatSourceCategories(rootProject).subtract(existingCompatSourceCategories)
+
+    (compatSources + unspecifiedCompatSourceCategories).forEach { name ->
         sourceSets["main"].java.srcDir(rootProject.file("compat/${name}"))
         sourceSets["main"].resources.srcDir(rootProject.file("compat/${name}_res"))
     }
