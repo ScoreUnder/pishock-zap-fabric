@@ -71,6 +71,14 @@ public class PishockZapModConfigMenu {
         helper.addBooleanSwitch("general.vibration_only", PishockZapConfig::isVibrationOnly, PishockZapConfig::setVibrationOnly);
         helper.addBooleanSwitch("general.shock_on_health", PishockZapConfig::isShockOnHealth, PishockZapConfig::setShockOnHealth);
         helper.addBooleanSwitch("general.fractional_damage", PishockZapConfig::isFractionalDamage, PishockZapConfig::setFractionalDamage);
+
+        helper.startSubCategory("general.warnings");
+
+        helper.addBooleanSwitch("general.warnings.enabled", PishockZapConfig::isUseWarningVibration, PishockZapConfig::setUseWarningVibration);
+        helper.addFloatSlider("general.warnings.duration", "duration", PishockZapConfig::getWarningDuration, PishockZapConfig::setWarningDuration, 0.1f, 15f);
+        helper.addFloatSlider("general.warnings.delay", "duration", PishockZapConfig::getWarningDelay, PishockZapConfig::setWarningDelay, 0f, 15f);
+
+        helper.endSubCategory();
     }
 
     private static ShockLimitsDetails addLimitsCategory(ConfigHelper helper) {

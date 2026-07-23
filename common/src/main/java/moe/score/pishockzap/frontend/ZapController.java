@@ -49,19 +49,33 @@ public class ZapController implements ShockFrontend {
         while (true) {
             try {
                 var shockData = shockQueue.takeAndMergeShocks();
-                log.info("Performing shock: {}", shockData);
-                var ok = backend.performOp(shockData.distribution(), shockData.type(), shockData.intensity(), shockData.duration());
 
-                if (ok) {
-                    // Waiting for shock to complete and then waiting for debounce time, so not a busy-wait per se
-                    //noinspection BusyWait
-                    Thread.sleep((long) ((shockData.duration() + config.getDebounceTime()) * 1000.0f));
+                if (shockData.type() == OpType.SHOCK && needWarnings()) {
+                    log.info("Performing warning vibration for shock: {}", shockData);
+                    var vibrateIntensity = Math.min(config.getVibrationIntensityMax(), Math.max(config.getVibrationIntensityMin(), shockData.intensity()));
+                    performOpAndWait(shockData.distribution(), OpType.VIBRATE, vibrateIntensity, config.getWarningDuration(), config.getWarningDelay());
                 }
+
+                log.info("Performing shock: {}", shockData);
+                performOpAndWait(shockData.distribution(), shockData.type(), shockData.intensity(), shockData.duration(), config.getDebounceTime());
             } catch (InterruptedException e) {
                 return;
             } catch (Exception e) {
                 log.error("Error in shock queue thread", e);
             }
+        }
+    }
+
+    private boolean needWarnings() {
+        return config.isUseWarningVibration() && !config.isVibrationOnly();
+    }
+
+    private void performOpAndWait(ShockDistribution distribution, OpType op, int intensity, float duration, float delay) throws InterruptedException {
+        var ok = backend.performOp(distribution, op, intensity, duration);
+
+        if (ok) {
+            // Wait for shock to complete, and then wait for debounce time
+            Thread.sleep((long) ((duration + delay) * 1000.0f));
         }
     }
 

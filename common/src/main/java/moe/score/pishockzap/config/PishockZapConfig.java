@@ -38,6 +38,12 @@ public class PishockZapConfig implements PiShockWebSocketApiConfig, OpenShockWeb
     private boolean shockOnHealth = false;
     /// Whether to allow fractional half-heart damage
     private boolean fractionalDamage = false;
+    /// Whether to send a warning vibration before shocking the player
+    private boolean useWarningVibration = false;
+    /// How long to send a warning vibration for before shocking the player
+    private float warningDuration = 0.3f;
+    /// How long to wait after sending the warning vibration before shocking the player
+    private float warningDelay = 0.1f;
 
     /// The duration per shock/vibration
     private float duration = 0.4f;

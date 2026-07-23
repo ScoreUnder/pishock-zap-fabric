@@ -16,6 +16,13 @@
   "tooltip.pishock-zap.config.general.shock_on_health": "Shock the user with an intensity\nbased on remaining health instead of damage.\nThis may encourage the user to stay healed up.",
   "title.pishock-zap.config.general.fractional_damage": "Fractional damage",
   "tooltip.pishock-zap.config.general.fractional_damage": "Calculate on exact damage values,\neven if it is not visible in the health bar.\nThis can make things more interesting when you are\nheavily armored, or have resistance effects.",
+  "title.pishock-zap.config.general.warnings": "Vibration warning before shock",
+  "title.pishock-zap.config.general.warnings.enabled": "Use warnings",
+  "tooltip.pishock-zap.config.general.warnings.enabled": "Give a vibration warning before every shock.",
+  "title.pishock-zap.config.general.warnings.duration": "Warning duration",
+  "tooltip.pishock-zap.config.general.warnings.duration": "The duration of the vibration warning before a shock.",
+  "title.pishock-zap.config.general.warnings.delay": "Shock delay",
+  "tooltip.pishock-zap.config.general.warnings.delay": "The delay between the end of the vibration warning\nand the start of the shock.",
 
   "title.pishock-zap.config.limits": "Limits",
   "title.pishock-zap.config.limits.duration": "Duration",
