@@ -1,60 +1,64 @@
 package moe.score.pishockzap.config;
 
+import com.google.gson.JsonObject;
+import lombok.NonNull;
 import moe.score.pishockzap.DefaultShockBackends;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.HashMap;
 import java.util.stream.Stream;
 
-import static moe.score.pishockzap.config.PishockZapConfig.CONFIG_VERSION;
-import static moe.score.pishockzap.config.PishockZapConfig.CONFIG_VERSION_KEY;
+import static moe.score.pishockzap.config.ConfigSerialiser.VERSION;
+import static moe.score.pishockzap.config.ConfigSerialiser.VERSION_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PishockZapConfigTest {
+
+    private static @NonNull PishockZapConfig jsonToConfig(JsonObject oldConfigData) {
+        var config = new PishockZapConfig();
+        ConfigSerialiser.updateConfigFromJson(config, oldConfigData);
+        return config;
+    }
+
     @Test
     void oldConfigIsMigrated() {
-        var oldConfigData = new HashMap<String, Object>();
+        var oldConfigData = new JsonObject();
 
-        oldConfigData.put("vibrationThreshold", 8);
-        oldConfigData.put("maxDamage", 16);
+        oldConfigData.addProperty("vibrationThreshold", 8);
+        oldConfigData.addProperty("maxDamage", 16);
 
-        var config = new PishockZapConfig();
-        config.setFromConfig(oldConfigData);
+        var config = jsonToConfig(oldConfigData);
 
         assertEquals(0.4f, config.getVibrationThreshold(), 0.0001f);
         assertEquals(0.8f, config.getMaxDamage(), 0.0001f);
 
-        var newConfigData = new HashMap<String, Object>();
-        config.copyToConfig(newConfigData);
+        var newConfigData = ConfigSerialiser.configToJson(config);
 
-        assertEquals(0.4f, (Float) newConfigData.get("vibrationThreshold"), 0.0001f);
-        assertEquals(0.8f, (Float) newConfigData.get("maxDamage"), 0.0001f);
-        assertEquals(CONFIG_VERSION, newConfigData.get(CONFIG_VERSION_KEY));
+        assertEquals(0.4f, newConfigData.get("vibrationThreshold").getAsFloat(), 0.0001f);
+        assertEquals(0.8f, newConfigData.get("maxDamage").getAsFloat(), 0.0001f);
+        assertEquals(VERSION, newConfigData.get(VERSION_KEY).getAsInt());
     }
 
     @Test
     void v1ConfigIsNotMigrated() {
-        var oldConfigData = new HashMap<String, Object>();
+        var oldConfigData = new JsonObject();
 
-        oldConfigData.put("vibrationThreshold", 0.5f);
-        oldConfigData.put("maxDamage", 0.75f);
-        oldConfigData.put(CONFIG_VERSION_KEY, 1.0);
+        oldConfigData.addProperty("vibrationThreshold", 0.5f);
+        oldConfigData.addProperty("maxDamage", 0.75f);
+        oldConfigData.addProperty(VERSION_KEY, 1.0);
 
-        var config = new PishockZapConfig();
-        config.setFromConfig(oldConfigData);
+        var config = jsonToConfig(oldConfigData);
 
         assertEquals(0.5f, config.getVibrationThreshold(), 0.0001f);
         assertEquals(0.75f, config.getMaxDamage(), 0.0001f);
 
-        var newConfigData = new HashMap<String, Object>();
-        config.copyToConfig(newConfigData);
+        var newConfigData = ConfigSerialiser.configToJson(config);
 
-        assertEquals(0.5f, (Float) newConfigData.get("vibrationThreshold"), 0.0001f);
-        assertEquals(0.75f, (Float) newConfigData.get("maxDamage"), 0.0001f);
-        assertEquals(CONFIG_VERSION, newConfigData.get(CONFIG_VERSION_KEY));
+        assertEquals(0.5f, newConfigData.get("vibrationThreshold").getAsFloat(), 0.0001f);
+        assertEquals(0.75f, newConfigData.get("maxDamage").getAsFloat(), 0.0001f);
+        assertEquals(VERSION, newConfigData.get(VERSION_KEY).getAsInt());
     }
 
     static Stream<Arguments> provideV1LocalSerialConfigData() {
@@ -77,57 +81,51 @@ class PishockZapConfigTest {
     @ParameterizedTest
     @MethodSource("provideV1LocalSerialConfigData")
     void v1ConfigLocalIsMigrated(boolean localEnabled, String expectedApiType) {
-        var oldConfigData = new HashMap<String, Object>();
+        var oldConfigData = new JsonObject();
 
-        oldConfigData.put("localEnabled", localEnabled);
-        oldConfigData.put(CONFIG_VERSION_KEY, 1.0);
+        oldConfigData.addProperty("localEnabled", localEnabled);
+        oldConfigData.addProperty(VERSION_KEY, 1.0);
 
-        var config = new PishockZapConfig();
-        config.setFromConfig(oldConfigData);
+        var config = jsonToConfig(oldConfigData);
 
         assertEquals(expectedApiType, config.getApiType());
 
-        var newConfigData = new HashMap<String, Object>();
-        config.copyToConfig(newConfigData);
+        var newConfigData = ConfigSerialiser.configToJson(config);
 
-        assertEquals(CONFIG_VERSION, newConfigData.get(CONFIG_VERSION_KEY));
+        assertEquals(VERSION, newConfigData.get(VERSION_KEY).getAsInt());
     }
 
     @ParameterizedTest
     @MethodSource("provideV2LocalSerialConfigData")
     void v2ConfigApiTypeIsMigrated(String oldApiType, String expectedApiType) {
-        var oldConfigData = new HashMap<String, Object>();
+        var oldConfigData = new JsonObject();
 
-        oldConfigData.put("apiType", oldApiType);
-        oldConfigData.put(CONFIG_VERSION_KEY, 2.0);
+        oldConfigData.addProperty("apiType", oldApiType);
+        oldConfigData.addProperty(VERSION_KEY, 2.0);
 
-        var config = new PishockZapConfig();
-        config.setFromConfig(oldConfigData);
+        var config = jsonToConfig(oldConfigData);
 
         assertEquals(expectedApiType, config.getApiType());
 
-        var newConfigData = new HashMap<String, Object>();
-        config.copyToConfig(newConfigData);
+        var newConfigData = ConfigSerialiser.configToJson(config);
 
-        assertEquals(CONFIG_VERSION, newConfigData.get(CONFIG_VERSION_KEY));
+        assertEquals(VERSION, newConfigData.get(VERSION_KEY).getAsInt());
     }
 
     @ParameterizedTest
     @MethodSource("provideV2LocalSerialConfigData")
     void v3ConfigApiTypeIsNotMigrated(String ignored, String expectedApiType) {
-        var oldConfigData = new HashMap<String, Object>();
+        var oldConfigData = new JsonObject();
 
-        oldConfigData.put("apiType", expectedApiType);
-        oldConfigData.put(CONFIG_VERSION_KEY, 3.0);
+        oldConfigData.addProperty("apiType", expectedApiType);
+        oldConfigData.addProperty(VERSION_KEY, 3.0);
 
-        var config = new PishockZapConfig();
-        config.setFromConfig(oldConfigData);
+        var config = jsonToConfig(oldConfigData);
 
         assertEquals(expectedApiType, config.getApiType());
 
-        var newConfigData = new HashMap<String, Object>();
-        config.copyToConfig(newConfigData);
+        var newConfigData = ConfigSerialiser.configToJson(config);
 
-        assertEquals(CONFIG_VERSION, newConfigData.get(CONFIG_VERSION_KEY));
+        assertEquals(VERSION, newConfigData.get(VERSION_KEY).getAsInt());
     }
 }

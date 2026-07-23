@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import moe.score.pishockzap.backend.ShockBackendRegistry;
 import moe.score.pishockzap.backend.impls.NullBackend;
 import moe.score.pishockzap.compat.*;
+import moe.score.pishockzap.config.ConfigSerialiser;
 import moe.score.pishockzap.config.PishockZapConfig;
 import moe.score.pishockzap.frontend.ZapController;
 import net.fabricmc.api.ClientModInitializer;
@@ -25,17 +26,13 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static moe.score.pishockzap.util.Gsons.gson;
 
 @ApiStatus.Internal
 @ExtensionMethod(TextStyle.class)
@@ -61,15 +58,14 @@ public class PishockZapMod implements ClientModInitializer {
     private String currentBackendId = null;
 
     public void saveConfig() {
-        Map<String, Object> configMap = new HashMap<>();
-        config.copyToConfig(configMap);
-
-        try (BufferedWriter configWriter = Files.newBufferedWriter(configFile)) {
-            gson.toJson(configMap, configWriter);
+        try (var configWriter = Files.newBufferedWriter(configFile)) {
+            ConfigSerialiser.writeConfig(config, configWriter);
         } catch (IOException e) {
-            log.warn("Failed to save config file, exception details follow", e);
+            log.error("Failed to save config file, exception details follow", e);
         }
 
+        // Apply after saving, because we often saved due to finishing a batch of changes
+        // (i.e. config menu)
         applyConfigChanges();
     }
 
@@ -99,23 +95,18 @@ public class PishockZapMod implements ClientModInitializer {
         }
     }
 
-    @SuppressWarnings("unchecked")  // Type erasure means we can't get a Map<String, Object> "safely"
     public void loadConfig() {
-        if (!Files.exists(configFile)) {
+        try (var configReader = Files.newBufferedReader(configFile)) {
+            var json = GsonCompat.parse(configReader).getAsJsonObject();
+            ConfigSerialiser.updateConfigFromJson(config, json);
+        } catch (NoSuchFileException e) {
             log.info("Config file not found, using default config");
             saveConfig();
             return;
-        }
-
-        Map<String, Object> configMap;
-        try {
-            configMap = gson.fromJson(Files.newBufferedReader(configFile), Map.class);
         } catch (Exception e) {
-            log.warn("Failed to load config file, exception details follow", e);
+            log.error("Failed to load config file, exception details follow", e);
             return;
         }
-
-        config.setFromConfig(configMap);
 
         applyConfigChanges();
     }
