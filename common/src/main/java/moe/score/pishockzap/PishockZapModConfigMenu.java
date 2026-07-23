@@ -72,6 +72,11 @@ public class PishockZapModConfigMenu {
         helper.addBooleanSwitch("general.enabled", PishockZapConfig::isEnabled, PishockZapConfig::setEnabled);
         helper.addBooleanSwitch("general.vibration_only", PishockZapConfig::isVibrationOnly, PishockZapConfig::setVibrationOnly);
 
+        addGameplayShockSubCategory(helper);
+        addWarningSubCategory(helper);
+    }
+
+    private static void addGameplayShockSubCategory(ConfigHelper helper) {
         helper.startSubCategory("general.shock_gameplay");
 
         helper.addBooleanSwitch("general.shock_on_damage", PishockZapConfig::isShockOnDamage, PishockZapConfig::setShockOnDamage);
@@ -79,7 +84,9 @@ public class PishockZapModConfigMenu {
         helper.addBooleanSwitch("general.fractional_damage", PishockZapConfig::isFractionalDamage, PishockZapConfig::setFractionalDamage);
 
         helper.endSubCategory();
+    }
 
+    private static void addWarningSubCategory(ConfigHelper helper) {
         helper.startSubCategory("general.warnings");
 
         helper.addBooleanSwitch("general.warnings.enabled", PishockZapConfig::isUseWarningVibration, PishockZapConfig::setUseWarningVibration);
