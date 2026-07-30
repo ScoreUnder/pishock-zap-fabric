@@ -124,6 +124,29 @@ public class PiShockWebClient {
             executor
         ).whenComplete(
             logResponse("get user devices")
+        ).thenApplyAsync(
+            resp -> {
+                if (resp.statusCode() != 200) {
+                    throw new RuntimeException("Failed to get user devices: " + resp.statusCode() + " " + resp.body());
+                }
+                return resp;
+            },
+            executor
+        ).exceptionallyComposeAsync(
+            t -> CompletableFuture.supplyAsync(() ->
+                    HttpRequest.newBuilder(new URIBuilder("https://ps.pishock.com/PiShock/GetUserDevices")
+                        .addParameter("UserId", String.valueOf(userId))
+                        .addParameter("Token", apiKey)
+                        .addParameter("api", "true")
+                        .build()).build(),
+                executor
+            ).thenComposeAsync(
+                req -> httpClient.sendAsync(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)),
+                executor
+            ).whenComplete(
+                logResponse("get user devices")
+            ),
+            executor
         ).thenApplyAsync(resp -> gson.fromJson(resp.body(),
                 new TypeToken<List<UserDevice>>() {
                 }.getType()),
