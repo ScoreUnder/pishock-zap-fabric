@@ -22,6 +22,8 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Style;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -145,6 +147,7 @@ public class PishockZapMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         instance = this;
+        Configurator.setLevel(log.getName(), Level.TRACE);
         DefaultShockBackends.registerAll();
         loadConfig();
         zapController.start();

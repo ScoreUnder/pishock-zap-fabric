@@ -2,6 +2,8 @@ package moe.score.pishockzap.backend.client;
 
 import com.google.gson.reflect.TypeToken;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import moe.score.pishockzap.Constants;
 import moe.score.pishockzap.backend.model.pishock.ShareCodeInfo;
 import moe.score.pishockzap.backend.model.pishock.UserDevice;
 import moe.score.pishockzap.backend.model.pishock.UserProfile;
@@ -15,10 +17,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.BiConsumer;
 
 import static moe.score.pishockzap.util.Gsons.gson;
 import static moe.score.pishockzap.util.Gsons.pascalCaseGson;
 
+@Slf4j(topic = Constants.NAME)
 public class PiShockWebClient {
     private final Executor executor;
     private final HttpClient httpClient;
@@ -58,6 +62,8 @@ public class PiShockWebClient {
         ).thenComposeAsync(
             req -> httpClient.sendAsync(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)),
             executor
+        ).whenComplete(
+            logResponse("get user profile")
         ).thenApplyAsync(resp -> pascalCaseGson.fromJson(resp.body(), UserProfile.class), executor);
     }
 
@@ -72,6 +78,8 @@ public class PiShockWebClient {
         ).thenComposeAsync(
             req -> httpClient.sendAsync(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)),
             executor
+        ).whenComplete(
+            logResponse("get share codes by owner")
         ).thenApplyAsync(
             resp -> gson.fromJson(resp.body(),
                 new TypeToken<Map<String, List<Integer>>>() {
@@ -94,6 +102,8 @@ public class PiShockWebClient {
         ).thenComposeAsync(
             req -> httpClient.sendAsync(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)),
             executor
+        ).whenComplete(
+            logResponse("get shockers by share ids")
         ).thenApplyAsync(
             resp -> gson.fromJson(resp.body(),
                 new TypeToken<Map<String, List<ShareCodeInfo>>>() {
@@ -112,9 +122,21 @@ public class PiShockWebClient {
         ).thenComposeAsync(
             req -> httpClient.sendAsync(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)),
             executor
+        ).whenComplete(
+            logResponse("get user devices")
         ).thenApplyAsync(resp -> gson.fromJson(resp.body(),
                 new TypeToken<List<UserDevice>>() {
                 }.getType()),
             executor);
+    }
+
+    private static @NonNull BiConsumer<HttpResponse<String>, Throwable> logResponse(String operation) {
+        return (resp, err) -> {
+            if (err != null) {
+                log.warn("Error from {}", operation, err);
+            } else {
+                log.debug("Response from {} (status {} on {}): {}", operation, resp.statusCode(), resp.request().uri(), resp.body());
+            }
+        };
     }
 }
