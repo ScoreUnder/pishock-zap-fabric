@@ -4,7 +4,9 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import net.fabricmc.loom.api.mappings.layered.spec.FileSpec
 import net.fabricmc.loom.api.mappings.layered.spec.LayeredMappingSpecBuilder
+import org.gradle.api.Project
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.get
 import java.io.File
 
@@ -72,3 +74,38 @@ fun setupCompatSourcePaths(compatSources: List<String>, rootProject: org.gradle.
     sourceSets["test"].java.srcDir(rootProject.file("common/src/test/java"))
     sourceSets["test"].resources.srcDir(rootProject.file("common/src/test/resources"))
 }
+
+fun DependencyHandlerScope.addModDeps(type: String, modVersions: ModVersions) {
+    add(type, "net.fabricmc:fabric-loader:${modVersions.fabricLoader}")
+    add(type, "net.fabricmc.fabric-api:fabric-api:${modVersions.fabricApi}")
+    add(type, "com.terraformersmc:modmenu:${modVersions.modmenu}")
+    add(type, "me.shedaniel.cloth:cloth-config-fabric:${modVersions.clothConfig}")
+}
+
+val Project.modVersions: ModVersions get() {
+    val modmenuVersion = property("modmenu_version") as String
+    val clothConfigVersion = property("cloth_config_version") as String
+    val fabricVersion = property("fabric_version") as String
+    val loaderVersion = property("loader_version") as String
+    return ModVersions(
+        fabricLoader = loaderVersion,
+        fabricApi = fabricVersion,
+        modmenu = modmenuVersion,
+        clothConfig = clothConfigVersion,
+    )
+}
+
+val Project.compatSources: List<String> get() {
+    return (project.property("compat_sources") as String).split(",")
+}
+
+val Project.minecraftVersion: String get() {
+    return project.property("minecraft_version") as String
+}
+
+data class ModVersions(
+    val fabricLoader: String,
+    val fabricApi: String,
+    val modmenu: String,
+    val clothConfig: String,
+)

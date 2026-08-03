@@ -24,6 +24,7 @@ dependencies {
     implementation("net.fabricmc:fabric-loom:${rootProps["loom_version"]}")
     implementation("net.fabricmc:mapping-io:0.8.0")
     implementation("com.google.code.gson:gson:2.14.0")
+    implementation("io.freefair.gradle:lombok-plugin:9.2.0")
 }
 
 tasks.withType<JavaCompile>().configureEach {
