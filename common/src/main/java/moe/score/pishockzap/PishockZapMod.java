@@ -1,6 +1,5 @@
 package moe.score.pishockzap;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -26,7 +25,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -45,8 +43,7 @@ public class PishockZapMod implements ClientModInitializer {
 
     private static final KeyMapping keyBinding = KeyBindingCompat.registerKeyBinding(
         "key.pishock-zap.toggle",
-        InputConstants.Type.KEYSYM,
-        GLFW.GLFW_KEY_F12,
+        KeyBindingCompat.KEY_F12,
         "general"
     );
 
