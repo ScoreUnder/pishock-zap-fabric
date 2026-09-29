@@ -17,6 +17,7 @@ import moe.score.pishockzap.backend.client.PiShockWebClient;
 import moe.score.pishockzap.backend.impls.*;
 import moe.score.pishockzap.backend.model.openshock.ShockCollarModel;
 import moe.score.pishockzap.backend.model.openshock.ShockDevice;
+import moe.score.pishockzap.backend.model.pishock.api.ShockerInfo;
 import moe.score.pishockzap.compat.RequirementCompat;
 import moe.score.pishockzap.compat.TextStyle;
 import moe.score.pishockzap.compat.Translation;
@@ -27,6 +28,7 @@ import moe.score.pishockzap.config.ShockDistribution;
 import moe.score.pishockzap.config.internal.*;
 import moe.score.pishockzap.mixin.pool.ListEntryUtil;
 import moe.score.pishockzap.util.FloatSupplier;
+import moe.score.pishockzap.util.IntObjectPair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -612,12 +614,12 @@ public class PishockZapModConfigMenu {
             "api.pishock.websocket.devices",
             config -> hubShockerMapToList(config.getPsHubShockers()),
             (config, list) -> config.setPsHubShockers(listToHubShockerMap(list)),
-            Pair.of(0, new IntArrayList(new int[]{0})),
+            new IntObjectPair<>(0, new IntArrayList(new int[]{0})),
             (elem, widget) -> new Arity2StructEntry<>(
                 Translation.of("title.pishock-zap.config.api.pishock.websocket.devices.entry"),
-                (a, b) -> Pair.of(a, new IntArrayList(b)),
-                helper.makeIntField("api.pishock.websocket.devices.entry.id", elem.getLeft()),
-                helper.makeIntListField("api.pishock.websocket.devices.entry.devices", elem.getRight()))
+                (a, b) -> new IntObjectPair<>(a, new IntArrayList(b)),
+                helper.makeIntField("api.pishock.websocket.devices.entry.id", elem.left()),
+                helper.makeIntListField("api.pishock.websocket.devices.entry.devices", elem.right()))
         );
 
         var websocketUserIdEntry = helper.makeIntFieldNoDefault("api.pishock.websocket.user_id",
@@ -634,22 +636,19 @@ public class PishockZapModConfigMenu {
             () -> {
                 var backend = new PiShockWebClient();
                 var apiKey = accountDetails.apiKey();
-                return backend.getUserProfile(accountDetails.username(), apiKey)
-                    .thenComposeAsync(profile ->
-                        backend.getUserDevices(profile.userId, apiKey)
-                            .thenApply(devices -> Pair.of(profile, devices)));
+                var accountFuture = backend.getUserAccount(apiKey);
+                var shockersFuture = backend.getShockers(apiKey);
+                return accountFuture.thenCombine(shockersFuture, Pair::of);
             },
             result -> {
-                var profile = result.getLeft();
-                var devices = result.getRight();
+                var account = result.getLeft();
+                var shockers = result.getRight();
 
-                websocketUserIdEntry.setValue(Integer.toString(profile.userId));
+                websocketUserIdEntry.setValue(Integer.toString(account.userId));
 
                 ListEntryUtil.withExtensions(hubDeviceIdListEntry, list -> {
-                    if (devices.isEmpty()) return;
-                    list.replaceValues(devices.stream()
-                        .map(d -> Pair.<Integer, IntList>of(d.clientId, IntArrayList.wrap(d.shockers.stream()
-                            .mapToInt(s -> s.shockerId).toArray()))).toList());
+                    if (shockers.isEmpty()) return;
+                    list.replaceValues(groupShockers(shockers));
                 });
             });
 
@@ -678,17 +677,25 @@ public class PishockZapModConfigMenu {
         helper.endSubCategory();
     }
 
-    private static @NonNull Int2ObjectArrayMap<IntList> listToHubShockerMap(List<Pair<Integer, IntList>> list) {
+    private static @NonNull Int2ObjectArrayMap<IntList> listToHubShockerMap(List<IntObjectPair<IntList>> list) {
         var result = new Int2ObjectArrayMap<IntList>();
         for (var pair : list) {
-            result.put(pair.getLeft().intValue(), pair.getRight());
+            result.computeIfAbsent(pair.left(), k -> new IntArrayList()).addAll(pair.right());
         }
         return result;
     }
 
-    private static @NonNull List<Pair<Integer, IntList>> hubShockerMapToList(Int2ObjectMap<IntList> psHubShockers) {
+    private static @NonNull List<IntObjectPair<IntList>> hubShockerMapToList(Int2ObjectMap<IntList> psHubShockers) {
         return psHubShockers.int2ObjectEntrySet().stream()
-            .map(hub -> Pair.of(hub.getIntKey(), hub.getValue()))
+            .map(hub -> new IntObjectPair<>(hub.getIntKey(), hub.getValue()))
             .toList();
+    }
+
+    private static @NonNull List<IntObjectPair<IntList>> groupShockers(Iterable<ShockerInfo> shockers) {
+        var deviceMap = new Int2ObjectArrayMap<IntList>();
+        for (var s : shockers) {
+            deviceMap.computeIfAbsent(s.hubId, k -> new IntArrayList()).add(s.shockerId);
+        }
+        return hubShockerMapToList(deviceMap);
     }
 }
